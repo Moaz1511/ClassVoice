@@ -1,0 +1,23 @@
+# ClassVoice Cursor Rules
+
+Before every task, read these files in order:
+
+1. `docs/01_PRD.md`
+2. `docs/02_AppFlow.md`
+3. `docs/03_UI_Spec.md`
+4. `docs/04_TRD.md`
+5. `docs/05_Schema.md`
+6. `docs/06_Plan.md`
+
+Rules:
+
+- Follow `docs/06_Plan.md` sequentially and respect dependencies.
+- After every completed checklist item, update `docs/06_Plan.md` immediately with `[x]`, date, commit/PR, verification command, and evidence.
+- Do not implement a feature outside the PRD MVP or any item listed under “Out of scope” without an explicit document update/ADR.
+- Do not change framework/library versions, routes, schema, RLS, consent behavior, or security controls silently.
+- Every Ready voice requires non-revoked consent; every private resource requires workspace authorization.
+- Never expose service-role credentials, API-key secrets, storage object keys, embeddings, raw audio, or full user text to the browser/logs.
+- Use generated OpenAPI types, semantic design tokens, strict TypeScript, typed Python, and tests for behavior changes.
+- Preserve user changes and avoid destructive filesystem commands.
+
+When finished, report completed plan steps, changed files, tests run, security implications, and the next plan step.
