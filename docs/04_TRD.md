@@ -171,6 +171,34 @@ Routers do not contain inference logic, SQL string construction, or policy decis
 - **Supabase Storage or S3-compatible storage:** private `voice-inputs`, `voice-derived`, `generated-audio`, and `exports` buckets.
 - **Redis:** queue, short-lived locks, rate-limit counters.
 
+### Authentication configuration contract
+
+The repository supports two explicit authentication profiles. Local and CI use the
+deterministic in-memory provider; deployed environments set
+`CLASSVOICE_AUTH_PROVIDER=supabase` and provide real Supabase credentials through
+secret storage. The API validates the contract before startup and never logs secret
+values.
+
+| Variable | Local default | Supabase profile |
+|---|---|---|
+| `CLASSVOICE_AUTH_PROVIDER` | `local` | `supabase` |
+| `CLASSVOICE_AUTH_EMAIL_CONFIRMATION` | `true` | `true` (required before private resources) |
+| `CLASSVOICE_AUTH_REDIRECT_ALLOWLIST` | `http://localhost:3000/auth/callback` | Exact HTTPS callback URLs only |
+| `CLASSVOICE_AUTH_VERIFICATION_TTL_SECONDS` | `86400` | `86400` |
+| `CLASSVOICE_AUTH_PASSWORD_RESET_TTL_SECONDS` | `3600` | `3600` |
+| `CLASSVOICE_AUTH_SESSION_TTL_SECONDS` | `3600` | `3600` |
+| `NEXT_PUBLIC_SUPABASE_URL` | placeholder only | Required project URL |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | placeholder only | Required browser-safe anon key |
+| `SUPABASE_SERVICE_ROLE_KEY` | placeholder only | Required API-only secret |
+
+For the hosted Supabase project, enable email confirmation, configure password-reset
+redirects to an allowlisted `/auth/reset-password` callback, and enable only the
+approved OAuth providers (`google` and `github`). Callback URLs are exact matches;
+wildcards, query strings, fragments, and non-local HTTP URLs are rejected. Local
+tests exercise sign-up, verification, sign-in/out, reset, OAuth state, redirect
+allowlisting, and expired-session behavior without contacting Supabase or sending
+real email.
+
 ### Optional/operational
 
 - **Sentry `10.28.0`:** error reporting with text/audio payloads redacted.
