@@ -93,7 +93,7 @@ jobs:
           CLASSVOICE_INTEGRATION_DATABASE_URL: postgresql://classvoice:change-me-local-only@localhost:5432/classvoice
         run: |
           alembic -c db/alembic.ini upgrade head
-          pytest apps/api/tests/test_identity_migration.py apps/api/tests/test_voice_schema_migration.py
+          pytest apps/api/tests/test_identity_migration.py apps/api/tests/test_voice_schema_migration.py apps/api/tests/test_generation_schema_migration.py
           alembic -c db/alembic.ini downgrade base
           alembic -c db/alembic.ini upgrade head
       - name: Tear down database
