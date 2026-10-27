@@ -190,6 +190,10 @@ values.
 | `NEXT_PUBLIC_SUPABASE_URL` | placeholder only | Required project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | placeholder only | Required browser-safe anon key |
 | `SUPABASE_SERVICE_ROLE_KEY` | placeholder only | Required API-only secret |
+| `SUPABASE_JWT_SECRET` | unset | Required API-only HS256 verification secret |
+| `SUPABASE_JWT_ISSUER` | derived/optional | Defaults to `<project-url>/auth/v1` |
+| `SUPABASE_JWT_AUDIENCE` | `authenticated` | Exact JWT audience claim |
+| `SUPABASE_JWT_CLOCK_SKEW_SECONDS` | `30` | Small validation grace period |
 
 For the hosted Supabase project, enable email confirmation, configure password-reset
 redirects to an allowlisted `/auth/reset-password` callback, and enable only the
@@ -198,6 +202,12 @@ wildcards, query strings, fragments, and non-local HTTP URLs are rejected. Local
 tests exercise sign-up, verification, sign-in/out, reset, OAuth state, redirect
 allowlisting, and expired-session behavior without contacting Supabase or sending
 real email.
+
+API authorization accepts only HS256 Supabase access tokens with a valid signature,
+issuer, audience, `authenticated` role, UUID `sub`, `iat`, and `exp` claims. The
+verified subject is resolved to a workspace membership in the database; JWT role
+claims are never treated as workspace roles. Each protected operation then checks
+the requested workspace, minimum membership role, and explicit scope dependency.
 
 ### Optional/operational
 

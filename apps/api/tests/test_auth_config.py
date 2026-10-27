@@ -15,6 +15,10 @@ def test_local_defaults_are_safe_and_redacted() -> None:
     assert config.redacted() == {
         "provider": "local",
         "supabase_configured": False,
+        "jwt_configured": False,
+        "jwt_issuer": None,
+        "jwt_audience": "authenticated",
+        "jwt_clock_skew_seconds": 30,
         "redirect_allowlist": ("http://localhost:3000/auth/callback",),
         "email_confirmation_required": True,
         "verification_ttl_seconds": 86_400,
@@ -42,6 +46,7 @@ def test_supabase_profile_accepts_real_values_without_exposing_secrets() -> None
             "NEXT_PUBLIC_SUPABASE_URL": "https://project.supabase.co",
             "NEXT_PUBLIC_SUPABASE_ANON_KEY": "anon-key-from-secret-store",
             "SUPABASE_SERVICE_ROLE_KEY": "service-role-from-secret-store",
+            "SUPABASE_JWT_SECRET": "jwt-secret-from-secret-store",
             "CLASSVOICE_AUTH_REDIRECT_ALLOWLIST": "https://app.example.com/auth/callback",
         }
     )
@@ -49,6 +54,10 @@ def test_supabase_profile_accepts_real_values_without_exposing_secrets() -> None
     assert config.redacted() == {
         "provider": "supabase",
         "supabase_configured": True,
+        "jwt_configured": True,
+        "jwt_issuer": "https://project.supabase.co/auth/v1",
+        "jwt_audience": "authenticated",
+        "jwt_clock_skew_seconds": 30,
         "redirect_allowlist": ("https://app.example.com/auth/callback",),
         "email_confirmation_required": True,
         "verification_ttl_seconds": 86_400,

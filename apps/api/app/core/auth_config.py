@@ -23,6 +23,7 @@ _PLACEHOLDER_VALUES = frozenset(
     {
         "replace-with-anon-key",
         "replace-with-server-only-key",
+        "replace-with-jwt-secret",
         "https://your-project.supabase.co",
     }
 )
@@ -69,6 +70,10 @@ class AuthConfig:
     supabase_url: str | None = None
     supabase_anon_key: str | None = None
     supabase_service_role_key: str | None = None
+    jwt_secret: str | None = None
+    jwt_issuer: str | None = None
+    jwt_audience: str = "authenticated"
+    jwt_clock_skew_seconds: int = 30
     redirect_allowlist: tuple[str, ...] = ("http://localhost:3000/auth/callback",)
     email_confirmation_required: bool = True
     verification_ttl_seconds: int = 86_400
@@ -94,6 +99,14 @@ class AuthConfig:
             supabase_url=values.get("NEXT_PUBLIC_SUPABASE_URL"),
             supabase_anon_key=values.get("NEXT_PUBLIC_SUPABASE_ANON_KEY"),
             supabase_service_role_key=values.get("SUPABASE_SERVICE_ROLE_KEY"),
+            jwt_secret=values.get("SUPABASE_JWT_SECRET"),
+            jwt_issuer=values.get("SUPABASE_JWT_ISSUER")
+            or _default_jwt_issuer(values.get("NEXT_PUBLIC_SUPABASE_URL")),
+            jwt_audience=values.get("SUPABASE_JWT_AUDIENCE", "authenticated").strip(),
+            jwt_clock_skew_seconds=_parse_positive_int(
+                values.get("SUPABASE_JWT_CLOCK_SKEW_SECONDS", "30"),
+                "SUPABASE_JWT_CLOCK_SKEW_SECONDS",
+            ),
             redirect_allowlist=redirects,
             email_confirmation_required=_parse_bool(
                 values.get("CLASSVOICE_AUTH_EMAIL_CONFIRMATION", "true"),
@@ -128,17 +141,21 @@ class AuthConfig:
         if normalized_redirects != self.redirect_allowlist:
             raise AuthConfigurationError("OAuth redirect allowlist contains duplicate slashes")
         for name, value in (
+            ("jwt_clock_skew_seconds", self.jwt_clock_skew_seconds),
             ("verification_ttl_seconds", self.verification_ttl_seconds),
             ("password_reset_ttl_seconds", self.password_reset_ttl_seconds),
             ("session_ttl_seconds", self.session_ttl_seconds),
         ):
             if value <= 0:
                 raise AuthConfigurationError(f"{name} must be a positive integer")
+        if not self.jwt_audience.strip():
+            raise AuthConfigurationError("SUPABASE_JWT_AUDIENCE cannot be empty")
         if self.provider == "supabase":
             required_values = {
                 "NEXT_PUBLIC_SUPABASE_URL": self.supabase_url,
                 "NEXT_PUBLIC_SUPABASE_ANON_KEY": self.supabase_anon_key,
                 "SUPABASE_SERVICE_ROLE_KEY": self.supabase_service_role_key,
+                "SUPABASE_JWT_SECRET": self.jwt_secret,
             }
             missing = [
                 name
@@ -153,6 +170,11 @@ class AuthConfig:
             parsed_url = urlsplit(self.supabase_url)
             if parsed_url.scheme != "https" or not parsed_url.netloc:
                 raise AuthConfigurationError("NEXT_PUBLIC_SUPABASE_URL must be an https URL")
+            if self.jwt_issuer is None or not self.jwt_issuer.strip():
+                raise AuthConfigurationError("SUPABASE_JWT_ISSUER is required")
+            parsed_issuer = urlsplit(self.jwt_issuer)
+            if parsed_issuer.scheme != "https" or not parsed_issuer.netloc:
+                raise AuthConfigurationError("SUPABASE_JWT_ISSUER must be an https URL")
 
     def assert_redirect_allowed(self, redirect_uri: str) -> str:
         """Return a normalized callback URI only when it is explicitly allowlisted."""
@@ -173,9 +195,19 @@ class AuthConfig:
         return {
             "provider": self.provider,
             "supabase_configured": self.provider == "supabase",
+            "jwt_configured": self.jwt_secret is not None and self.jwt_issuer is not None,
+            "jwt_issuer": self.jwt_issuer,
+            "jwt_audience": self.jwt_audience,
+            "jwt_clock_skew_seconds": self.jwt_clock_skew_seconds,
             "redirect_allowlist": self.redirect_allowlist,
             "email_confirmation_required": self.email_confirmation_required,
             "verification_ttl_seconds": self.verification_ttl_seconds,
             "password_reset_ttl_seconds": self.password_reset_ttl_seconds,
             "session_ttl_seconds": self.session_ttl_seconds,
         }
+
+
+def _default_jwt_issuer(supabase_url: str | None) -> str | None:
+    if supabase_url is None or supabase_url in _PLACEHOLDER_VALUES:
+        return None
+    return f"{supabase_url.rstrip('/')}/auth/v1"
