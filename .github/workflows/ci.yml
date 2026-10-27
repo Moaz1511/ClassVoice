@@ -71,9 +71,9 @@ jobs:
         with:
           python-version: 3.13.14
           cache: pip
-          cache-dependency-path: apps/api/requirements.txt
+          cache-dependency-path: apps/api/requirements-dev.txt
       - name: Install migration dependencies
-        run: python -m pip install -r apps/api/requirements.txt
+        run: python -m pip install -r apps/api/requirements-dev.txt
       - name: Start PostgreSQL 17.11
         run: docker compose up -d postgres
       - name: Wait for PostgreSQL
@@ -90,8 +90,10 @@ jobs:
       - name: Upgrade, downgrade, and re-upgrade migrations
         env:
           DATABASE_URL: postgresql+asyncpg://classvoice:change-me-local-only@localhost:5432/classvoice
+          CLASSVOICE_INTEGRATION_DATABASE_URL: postgresql://classvoice:change-me-local-only@localhost:5432/classvoice
         run: |
           alembic -c db/alembic.ini upgrade head
+          pytest apps/api/tests/test_identity_migration.py
           alembic -c db/alembic.ini downgrade base
           alembic -c db/alembic.ini upgrade head
       - name: Tear down database

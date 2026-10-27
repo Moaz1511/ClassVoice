@@ -34,7 +34,7 @@
 - [x] **P1-04** Configure Alembic and create the extensions/enums from `05_Schema.md`.
   - Depends on: P1-02.
   - Accept when: migration applies to an empty Postgres 17.11 database and downgrades in development.
-- [ ] **P1-05** Implement identity/workspace tables, profile trigger, onboarding transaction, and seed only synthetic data.
+- [x] **P1-05** Implement identity/workspace tables, profile trigger, onboarding transaction, and seed only synthetic data.
   - Depends on: P1-04.
   - Accept when: a verified user can create exactly one personal workspace and owner membership.
 - [ ] **P1-06** Implement voice/consent/model/audio tables and all documented constraints/indexes.
@@ -210,3 +210,4 @@
 | 2026-10-27 | Docker diagnosis | n/a | Confirmed Docker Desktop 29.1.3, `desktop-linux` context, healthy daemon, correct `docker-users` membership, and successful `hello-world` container. Restarted Docker Desktop and WSL2; pinned PostgreSQL image pulls still fail with registry socket-buffer/direct-connection errors. |
 | 2026-10-28 | P1-03 | n/a | Added root npm scripts and lockfile, workspace package manifests, pinned ESLint `9.38.0`/TypeScript `5.9.3` and Python CI tools, baseline web/API tests, and GitHub Actions jobs for web, API, Compose validation, and the migration replay gate. Baseline web lint/typecheck/test, Ruff, mypy, pytest (1 passed), and `docker compose config --quiet` passed; a temporary invalid TypeScript assignment failed the typecheck as required and was restored. |
 | 2026-10-28 | P1-04 | n/a | Added pinned Alembic `1.17.1`, SQLAlchemy `2.1.6`, asyncpg `0.30.0`, and greenlet support; configured `db/alembic.ini`, async `env.py`, migration template, and revision `0001_extensions_enums` for pgcrypto, citext, and all 14 enums in `05_Schema.md`. Offline SQL generation, Ruff, mypy, and pytest passed. Live PostgreSQL 17.11 verification upgraded to `0001_extensions_enums`, downgraded to base, and completed successfully on an isolated host port. CI migration replay now runs upgrade → downgrade → upgrade, and triggers cover both `Moaz_Workspace` and `main`. |
+| 2026-10-28 | P1-05 | n/a | Added revision `0002_identity_workspace` with guarded local `auth.users` compatibility, profiles, workspaces, workspace members, indexes, updated-at triggers, the auth-user profile trigger, and an idempotent `create_personal_workspace` transaction. Added synthetic-only seed SQL and an async integration test. Live PostgreSQL 17.11 test passed onboarding twice with one workspace/owner membership, then downgrade/re-upgrade; all web/API checks passed and Compose services remained healthy. |
