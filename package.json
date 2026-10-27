@@ -11,5 +11,10 @@
   ],
   "engines": {
     "node": "24.22.1"
+  },
+  "scripts": {
+    "lint": "npm --workspace @classvoice/web run lint",
+    "typecheck": "npm --workspace @classvoice/web run typecheck",
+    "test": "npm --workspace @classvoice/web run test"
   }
 }
