@@ -98,6 +98,21 @@ async def test_generation_idempotency_returns_one_durable_job(
             user_id,
             model_id,
         )
+        await database.execute(
+            """
+            INSERT INTO public.voice_consent_records (
+                voice_profile_id, workspace_id, subject_user_id,
+                consent_statement_version, attestation_text_hash,
+                evidence_asset_id
+            )
+            VALUES ($1, $2, $3, 'consent-v1', $4, $5)
+            """,
+            voice_id,
+            workspace["id"],
+            user_id,
+            "f" * 64,
+            asset_id,
+        )
         project_id = await database.fetchval(
             """
             INSERT INTO public.projects (workspace_id, created_by, name)

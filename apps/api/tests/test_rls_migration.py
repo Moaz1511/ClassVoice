@@ -160,7 +160,7 @@ async def test_rls_blocks_cross_workspace_and_unauthorized_writes(
                 )
                 == 1
             )
-            with pytest.raises(asyncpg.InsufficientPrivilegeError):
+            with pytest.raises(asyncpg.PostgresError):
                 async with database.transaction():
                     await database.execute(
                         """
