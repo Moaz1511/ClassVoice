@@ -21,7 +21,7 @@
   - Depends on: none.
   - Accept when: `apps/web`, `apps/api`, `packages`, `db`, `infra`, `scripts`, and `docs` exist; no secret is committed.
   - Verify: clean install/lint bootstrap in CI.
-- [~] **P1-02** Add Docker Compose for Postgres 17.11, Redis 7.4.2, MinIO, API, worker, and web health checks.
+- [x] **P1-02** Add Docker Compose for Postgres 17.11, Redis 7.4.2, LocalStack S3, API, worker, and web health checks.
   - Depends on: P1-01.
   - Accept when: `docker compose up` reaches healthy state from an empty machine with documented commands.
 - [ ] **P1-03** Add CI jobs for web lint/typecheck/test and API lint/typecheck/test/migration replay.
@@ -74,7 +74,7 @@
 - [ ] **P2-02** Generate and publish the typed TypeScript API client from OpenAPI.
   - Depends on: P2-01.
   - Accept when: client generation is deterministic and CI fails on an uncommitted schema diff.
-- [ ] **P2-03** Implement private storage adapter for Supabase Storage and MinIO with signed upload/download URLs.
+- [ ] **P2-03** Implement private storage adapter for Supabase Storage and LocalStack S3 with signed upload/download URLs.
   - Depends on: P1-08, P2-01.
   - Accept when: objects are private, URLs expire in 10 minutes, and unauthorized users cannot mint URLs.
 
@@ -205,3 +205,5 @@
 |---|---|---|---|
 | 2026-10-27 | Context pack created | n/a | Architecture baseline only; implementation not started |
 | 2026-10-27 | P1-01 | n/a | Created monorepo skeleton, Node/Python pins, `.gitignore`, `.editorconfig`, `.env.example`, root/workspace manifests, and all TRD directories. Verified with directory listing and config inspection. |
+| 2026-10-27 | P1-02 | n/a | Compose stack built and started successfully. `docker compose ps` reports API, web, worker, PostgreSQL, Redis, and LocalStack healthy; `/health/live` and LocalStack S3 health endpoints returned 200. LocalStack replaces unavailable MinIO only for local development; hosted storage remains Supabase Storage. |
+| 2026-10-27 | Docker diagnosis | n/a | Confirmed Docker Desktop 29.1.3, `desktop-linux` context, healthy daemon, correct `docker-users` membership, and successful `hello-world` container. Restarted Docker Desktop and WSL2; pinned PostgreSQL image pulls still fail with registry socket-buffer/direct-connection errors. |

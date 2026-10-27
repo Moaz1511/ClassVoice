@@ -37,8 +37,8 @@ The browser never talks directly to the GPU worker. The API is the authority for
 | Python runtime | CPython `3.13.14` | Stable GPU/library compatibility baseline |
 | Database | PostgreSQL `17.11` | RLS, JSONB, UUID, full-text primitives |
 | Cache/queue | Redis `7.4.2` | Short-lived queue state and rate limits; database remains source of truth |
-| Containers | Docker Compose spec `2.29` | Local parity for web, API, worker, Postgres, Redis, MinIO |
-| Object storage (dev) | MinIO `RELEASE.2025-09-07T16-13-09Z` | S3-compatible private bucket locally |
+| Containers | Docker Compose spec `2.29` | Local parity for web, API, worker, Postgres, Redis, and LocalStack S3 |
+| Object storage (dev) | LocalStack `4.10.0` (S3 service) | S3-compatible private bucket locally; selected because the official MinIO image is unavailable from the current registry |
 | Object storage (hosted) | Supabase Storage `v1` | Signed URLs and Postgres-backed access policies |
 
 ### 2.2 Web application
@@ -246,7 +246,7 @@ Every endpoint has an explicit scope, request schema, response schema, error tab
 
 ### Local development
 
-Docker Compose runs web, API, worker, Postgres, Redis, and MinIO. A `WORKER_DEVICE=cpu|cuda` flag selects the inference image. Seed data is synthetic and never contains real voice samples.
+Docker Compose runs web, API, worker, Postgres, Redis, and LocalStack S3. A `WORKER_DEVICE=cpu|cuda` flag selects the inference image. Seed data is synthetic and never contains real voice samples.
 
 ### Kaggle GPU evaluation
 
