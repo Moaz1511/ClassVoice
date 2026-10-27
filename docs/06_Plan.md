@@ -17,11 +17,11 @@
 
 ### 1.1 Repository and local environment
 
-- [ ] **P1-01** Create the monorepo directories from `04_TRD.md` and baseline `.gitignore`, `.editorconfig`, `.nvmrc`, Python tool configuration, and `.env.example`.
+- [x] **P1-01** Create the monorepo directories from `04_TRD.md` and baseline `.gitignore`, `.editorconfig`, `.nvmrc`, Python tool configuration, and `.env.example`.
   - Depends on: none.
   - Accept when: `apps/web`, `apps/api`, `packages`, `db`, `infra`, `scripts`, and `docs` exist; no secret is committed.
   - Verify: clean install/lint bootstrap in CI.
-- [ ] **P1-02** Add Docker Compose for Postgres 17.11, Redis 7.4.2, MinIO, API, worker, and web health checks.
+- [~] **P1-02** Add Docker Compose for Postgres 17.11, Redis 7.4.2, MinIO, API, worker, and web health checks.
   - Depends on: P1-01.
   - Accept when: `docker compose up` reaches healthy state from an empty machine with documented commands.
 - [ ] **P1-03** Add CI jobs for web lint/typecheck/test and API lint/typecheck/test/migration replay.
@@ -204,3 +204,4 @@
 | Date | Step | Commit/PR | Evidence / notes |
 |---|---|---|---|
 | 2026-10-27 | Context pack created | n/a | Architecture baseline only; implementation not started |
+| 2026-10-27 | P1-01 | n/a | Created monorepo skeleton, Node/Python pins, `.gitignore`, `.editorconfig`, `.env.example`, root/workspace manifests, and all TRD directories. Verified with directory listing and config inspection. |

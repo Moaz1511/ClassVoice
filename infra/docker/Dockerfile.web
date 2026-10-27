@@ -1,0 +1,8 @@
+FROM node:24.22.1-alpine
+
+WORKDIR /opt/classvoice
+COPY infra/docker/health_server.mjs /opt/classvoice/health_server.mjs
+
+EXPOSE 3000
+
+CMD ["node", "/opt/classvoice/health_server.mjs", "--port", "3000"]

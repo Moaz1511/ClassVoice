@@ -1,0 +1,53 @@
+# Node / Next.js
+node_modules/
+.next/
+out/
+coverage/
+playwright-report/
+test-results/
+npm-debug.log*
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.crt
+
+# Local infrastructure state
+infra/.data/
+db/.data/
+minio-data/
+postgres-data/
+redis-data/
+
+# ML artifacts and audio (never commit real voice data)
+models/
+checkpoints/
+*.ckpt
+*.safetensors
+*.pt
+*.pth
+*.wav
+*.mp3
+*.m4a
+*.flac
+*.ogg
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/

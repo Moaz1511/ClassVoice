@@ -1,0 +1,11 @@
+FROM python:3.13.14-slim
+
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
+
+WORKDIR /opt/classvoice
+COPY infra/docker/health_server.py /opt/classvoice/health_server.py
+
+EXPOSE 8000 8001
+
+CMD ["python", "/opt/classvoice/health_server.py", "--port", "8000"]
