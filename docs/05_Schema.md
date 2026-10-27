@@ -88,7 +88,7 @@ create table public.voice_profiles (
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   created_by uuid not null references auth.users(id) on delete restrict,
   name text not null check (length(name) between 1 and 120),
-  language_code text not null default 'en-US' check (language_code ~ '^[a-z]{2,3}(-[A-Z][a-z]{2,4})?$'),
+  language_code text not null default 'en-US' check (language_code ~ '^[a-z]{2,3}(-[A-Z]{2}|-[A-Z][a-z]{2,4})?$'),
   status public.voice_status not null default 'draft',
   consent_status public.consent_status not null default 'accepted',
   active_model_version_id uuid,
