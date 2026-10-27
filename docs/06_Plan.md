@@ -27,11 +27,11 @@
 - [x] **P1-03** Add CI jobs for web lint/typecheck/test and API lint/typecheck/test/migration replay.
   - Depends on: P1-01.
   - Accept when: CI fails on a deliberate type error and passes on baseline.
-  - Baseline note: the web workspace has pinned ESLint `9.38.0` and TypeScript `5.9.3` gates over the current placeholder files; the Next.js/React rules are added by P3-01. The migration-replay job is a conditional gate that stays green while `db/migrations` is empty and becomes an active replay in P1-04.
+  - Baseline note: the web workspace has pinned ESLint `9.38.0` and TypeScript `5.9.3` gates over the current placeholder files; the Next.js/React rules are added by P3-01. The migration-replay job becomes active once the first migration lands in P1-04.
 
 ### 1.2 Database schema and RLS
 
-- [ ] **P1-04** Configure Alembic and create the extensions/enums from `05_Schema.md`.
+- [x] **P1-04** Configure Alembic and create the extensions/enums from `05_Schema.md`.
   - Depends on: P1-02.
   - Accept when: migration applies to an empty Postgres 17.11 database and downgrades in development.
 - [ ] **P1-05** Implement identity/workspace tables, profile trigger, onboarding transaction, and seed only synthetic data.
@@ -209,3 +209,4 @@
 | 2026-10-27 | P1-02 | n/a | Compose stack built and started successfully. `docker compose ps` reports API, web, worker, PostgreSQL, Redis, and LocalStack healthy; `/health/live` and LocalStack S3 health endpoints returned 200. LocalStack replaces unavailable MinIO only for local development; hosted storage remains Supabase Storage. |
 | 2026-10-27 | Docker diagnosis | n/a | Confirmed Docker Desktop 29.1.3, `desktop-linux` context, healthy daemon, correct `docker-users` membership, and successful `hello-world` container. Restarted Docker Desktop and WSL2; pinned PostgreSQL image pulls still fail with registry socket-buffer/direct-connection errors. |
 | 2026-10-28 | P1-03 | n/a | Added root npm scripts and lockfile, workspace package manifests, pinned ESLint `9.38.0`/TypeScript `5.9.3` and Python CI tools, baseline web/API tests, and GitHub Actions jobs for web, API, Compose validation, and the migration replay gate. Baseline web lint/typecheck/test, Ruff, mypy, pytest (1 passed), and `docker compose config --quiet` passed; a temporary invalid TypeScript assignment failed the typecheck as required and was restored. |
+| 2026-10-28 | P1-04 | n/a | Added pinned Alembic `1.17.1`, SQLAlchemy `2.1.6`, asyncpg `0.30.0`, and greenlet support; configured `db/alembic.ini`, async `env.py`, migration template, and revision `0001_extensions_enums` for pgcrypto, citext, and all 14 enums in `05_Schema.md`. Offline SQL generation, Ruff, mypy, and pytest passed. Live PostgreSQL 17.11 verification upgraded to `0001_extensions_enums`, downgraded to base, and completed successfully on an isolated host port. CI migration replay now runs upgrade → downgrade → upgrade, and triggers cover both `Moaz_Workspace` and `main`. |
