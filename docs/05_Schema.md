@@ -83,6 +83,18 @@ The onboarding transaction creates `profiles`, one `workspaces` row, and an `own
 ## 4. Consent, voices, models, and assets
 
 ```sql
+create table public.consent_statements (
+  version text primary key check (length(version) between 1 and 64),
+  statement_text text not null check (length(statement_text) between 1 and 10000),
+  statement_text_hash text not null check (
+    statement_text_hash = encode(digest(statement_text, 'sha256'), 'hex')
+  ),
+  published_at timestamptz not null default now(),
+  retired_at timestamptz,
+  created_at timestamptz not null default now(),
+  check (retired_at is null or retired_at >= published_at)
+);
+
 create table public.voice_profiles (
   id uuid primary key default gen_random_uuid(),
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
@@ -107,6 +119,7 @@ create table public.voice_consent_records (
   voice_profile_id uuid not null references public.voice_profiles(id) on delete cascade,
   workspace_id uuid not null references public.workspaces(id) on delete cascade,
   subject_user_id uuid references auth.users(id) on delete set null,
+  accepted_by_user_id uuid references auth.users(id) on delete set null,
   consent_statement_version text not null,
   status public.consent_status not null default 'accepted',
   attestation_text_hash text not null check (length(attestation_text_hash) = 64),
@@ -176,14 +189,21 @@ alter table public.voice_consent_records
   add constraint voice_consent_evidence_fk
   foreign key (evidence_asset_id) references public.audio_assets(id) on delete set null;
 
+alter table public.voice_consent_records
+  add constraint voice_consent_statement_fk
+  foreign key (consent_statement_version) references public.consent_statements(version);
+
 create index voice_profiles_workspace_status_idx on public.voice_profiles(workspace_id, status, updated_at desc);
 create index voice_profiles_creator_idx on public.voice_profiles(created_by, created_at desc);
 create index voice_consent_voice_status_idx on public.voice_consent_records(voice_profile_id, status, accepted_at desc);
+create unique index voice_consent_one_active_idx
+  on public.voice_consent_records(voice_profile_id)
+  where status = 'accepted' and revoked_at is null;
 create index audio_assets_workspace_kind_idx on public.audio_assets(workspace_id, kind, created_at desc);
 create index voice_samples_voice_idx on public.voice_samples(voice_profile_id, is_primary desc);
 ```
 
-Invariant: a voice may transition to `ready` only when it has a primary available `audio_asset`, an approved `model_versions` row, and one non-revoked `voice_consent_records` row.
+Invariant: a voice may transition to `ready` only when it has a primary available `audio_asset`, an approved `model_versions` row, and one non-revoked `voice_consent_records` row. An accepted consent must reference a published canonical statement, use that statement's SHA-256 text hash, and record the accepting actor. Accepted evidence is immutable; a revoked or expired consent record cannot transition back to accepted. Each acceptance appends an `audit_events` row with action `consent.accepted`, actor, statement version, hash, and timestamp.
 
 ## 5. Projects and generation tables
 
@@ -374,6 +394,8 @@ create index moderation_flags_status_idx on public.moderation_flags(status, crea
 create index data_exports_requester_idx on public.data_exports(requested_by, created_at desc);
 ```
 
+Audit rows are append-only for application mutations. The append-only trigger permits only PostgreSQL referential-action maintenance (for example, nulling `workspace_id` or actor IDs after a parent is deleted); it still rejects direct client or worker `UPDATE` and `DELETE` statements.
+
 ## 8. RLS model
 
 ### 8.1 Helper functions
@@ -478,6 +500,7 @@ The migration must create named policies for every row below; this matrix is the
 
 | Table | Member read | Editor write | Admin/owner write | Client direct insert |
 |---|---|---|---|---|
+| `consent_statements` | published/history | no | deployment role | no |
 | `profiles` | own row | own safe profile fields | no role escalation | no |
 | `workspaces` | member | no | owner/admin | no |
 | `workspace_members` | member | no | owner/admin | invite transaction only |
@@ -519,3 +542,4 @@ The `profiles` update policy must be paired with a column privilege/trigger rule
 - A duplicate `(workspace_id, idempotency_key)` returns the original job, never a second job.
 - Deleting a voice eventually deletes its samples, consent evidence, embeddings, and derived outputs while preserving a minimal audit tombstone.
 - `anon` cannot read any private table.
+- An accepted consent must use a published statement version and matching text hash, records the accepting actor, emits one `consent.accepted` audit event, and cannot be changed back to accepted after revocation/expiry.

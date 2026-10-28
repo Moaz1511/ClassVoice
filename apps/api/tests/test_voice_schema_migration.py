@@ -100,6 +100,13 @@ async def test_voice_schema_rejects_invalid_constraints(
             user_id,
             model_id,
         )
+        statement_hash = await database.fetchval(
+            """
+            SELECT statement_text_hash
+            FROM public.consent_statements
+            WHERE version = 'consent-v1'
+            """
+        )
         await database.execute(
             """
             INSERT INTO public.voice_consent_records (
@@ -112,7 +119,7 @@ async def test_voice_schema_rejects_invalid_constraints(
             voice_id,
             workspace["id"],
             user_id,
-            "c" * 64,
+            statement_hash,
             asset_id,
         )
         await database.execute(

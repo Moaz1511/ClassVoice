@@ -142,9 +142,16 @@ async def test_voice_readiness_and_consent_revocation_invariants(
             async with database.transaction():
                 await database.execute(
                     "UPDATE public.voice_profiles SET status = 'ready' WHERE id = $1",
-                    voice_id,
-                )
+                voice_id,
+            )
 
+        statement_hash = await database.fetchval(
+            """
+            SELECT statement_text_hash
+            FROM public.consent_statements
+            WHERE version = 'consent-v1'
+            """
+        )
         consent_id = await database.fetchval(
             """
             INSERT INTO public.voice_consent_records (
@@ -158,7 +165,7 @@ async def test_voice_readiness_and_consent_revocation_invariants(
             voice_id,
             workspace["id"],
             user_id,
-            "d" * 64,
+            statement_hash,
             asset_id,
         )
         await database.execute(
