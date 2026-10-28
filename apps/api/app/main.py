@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import os
+from pathlib import Path
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +24,7 @@ from .core.errors import (
 from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
+from .inference.model_registry import ModelRegistry
 from .storage import build_storage_adapter
 
 
@@ -42,6 +46,14 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     except AuthConfigurationError:
         app.state.jwt_verifier = None
     app.state.storage_adapter = build_storage_adapter(runtime_settings)
+    registry_path = Path(
+        os.getenv("MODEL_REGISTRY_PATH", "infra/model-registry/manifest.json")
+    )
+    app.state.model_registry = (
+        ModelRegistry.from_path(registry_path)
+        if registry_path.is_file()
+        else ModelRegistry.empty()
+    )
     configure_upload_state(app)
     app.add_middleware(
         CORSMiddleware,

@@ -107,6 +107,13 @@ API conventions:
   repository is connected.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
+- Model execution is gated by the repository-controlled `infra/model-registry/manifest.json`.
+  Each entry includes model key/version, relative checkpoint path, lowercase SHA-256,
+  runtime, supported languages, configuration, and license-review status. Only
+  `enabled: true` entries with `license_review_status: approved` can resolve.
+  The checkpoint loader rejects unknown identities, path escapes, missing files,
+  and SHA mismatches before invoking a runtime loader; no request-time downloads
+  are permitted. Model provenance returned by the registry is copied to jobs.
 
 ### 2.4 Audio and inference baseline
 

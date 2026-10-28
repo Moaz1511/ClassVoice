@@ -55,6 +55,7 @@ services:
       dockerfile: infra/docker/Dockerfile.api
     environment:
       APP_ENV: ${APP_ENV:-local}
+      MODEL_REGISTRY_PATH: /opt/classvoice/model-registry/manifest.json
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-classvoice}:${POSTGRES_PASSWORD:-change-me-local-only}@postgres:5432/${POSTGRES_DB:-classvoice}
       REDIS_URL: redis://redis:6379/0
       STORAGE_PROVIDER: s3
@@ -89,6 +90,7 @@ services:
     command: ["python", "/opt/classvoice/health_server.py", "--port", "8001"]
     environment:
       APP_ENV: ${APP_ENV:-local}
+      MODEL_REGISTRY_PATH: /opt/classvoice/model-registry/manifest.json
       WORKER_DEVICE: ${WORKER_DEVICE:-cpu}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-classvoice}:${POSTGRES_PASSWORD:-change-me-local-only}@postgres:5432/${POSTGRES_DB:-classvoice}
       REDIS_URL: redis://redis:6379/0
