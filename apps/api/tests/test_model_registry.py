@@ -33,10 +33,17 @@ def write_manifest(path: Path, **overrides: object) -> str:
     return checkpoint_sha
 
 
-def test_empty_repository_manifest_is_valid() -> None:
+def test_repository_manifest_registers_reviewed_openvoice_checkpoint() -> None:
     manifest = load_manifest(Path("infra/model-registry/manifest.json"))
     assert manifest.schema_version == 1
-    assert manifest.models == ()
+    assert len(manifest.models) == 1
+    entry = manifest.models[0]
+    assert entry.model_key == "openvoice-v2"
+    assert entry.checkpoint_sha256 == (
+        "9652c27e92b6b2a91632590ac9962ef7ae2b712e5c5b7f4c34ec55ee2b37ab9e"
+    )
+    assert entry.license_review_status == "approved"
+    assert entry.enabled is False
 
 
 def test_allowlisted_loader_verifies_sha_and_returns_immutable_metadata(tmp_path: Path) -> None:

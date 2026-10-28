@@ -1,4 +1,21 @@
 {
   "schema_version": 1,
-  "models": []
+  "models": [
+    {
+      "model_key": "openvoice-v2",
+      "version": "2.0.0",
+      "checkpoint_sha256": "9652c27e92b6b2a91632590ac9962ef7ae2b712e5c5b7f4c34ec55ee2b37ab9e",
+      "checkpoint_path": "converter/checkpoint.pth",
+      "runtime": "openvoice",
+      "license_name": "MIT",
+      "license_url": "https://github.com/myshell-ai/OpenVoice",
+      "license_review_status": "approved",
+      "supported_languages": ["en-US", "es", "fr", "zh", "ja", "ko"],
+      "config": {
+        "sample_rate_hz": 24000,
+        "source": "https://huggingface.co/myshell-ai/OpenVoiceV2"
+      },
+      "enabled": false
+    }
+  ]
 }
