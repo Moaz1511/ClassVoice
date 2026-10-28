@@ -1,0 +1,14 @@
+# Local validation lock for OpenVoice V2 (weights remain outside git).
+# The API environment must not install these packages; use a dedicated worker.
+python=3.11.5
+torch=2.2.2+cpu
+torchaudio=2.2.2+cpu
+numpy=1.26.4
+faster-whisper=1.2.1
+librosa=0.10.2.post1
+openai-whisper=20231117
+whisper-timestamped=1.14.2
+MeloTTS=0.1.2
+OpenVoice=74a1d147b17a8c3092dd5430504bd83ef6c7eb23
+MeloTTS_source=209145371cff8fc3bd60d7be902ea69cbdb7965a
+checkpoint_sha256=9652c27e92b6b2a91632590ac9962ef7ae2b712e5c5b7f4c34ec55ee2b37ab9e
