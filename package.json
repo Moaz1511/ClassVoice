@@ -15,6 +15,9 @@
   "scripts": {
     "lint": "npm --workspace @classvoice/web run lint",
     "typecheck": "npm --workspace @classvoice/web run typecheck",
-    "test": "npm --workspace @classvoice/web run test"
+    "test": "npm --workspace @classvoice/web run test",
+    "api-client:generate": "python scripts/export_openapi.py && npm --workspace @classvoice/api-client run generate",
+    "api-client:typecheck": "npm --workspace @classvoice/api-client run typecheck",
+    "api-client:check": "npm run api-client:generate && git diff --exit-code -- packages/api-client/openapi.json packages/api-client/src/schema.ts"
   }
 }

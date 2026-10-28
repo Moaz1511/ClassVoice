@@ -62,6 +62,10 @@ Rules:
 - Use Server Components by default; use Client Components only for interactive/editor/audio behavior.
 - Do not put service-role credentials in the browser or Next.js public environment variables.
 - API schemas are generated from FastAPI OpenAPI and checked into `packages/api-client`.
+- `packages/api-client/openapi.json` is exported from `app.main:app.openapi()` by
+  `scripts/export_openapi.py`; `openapi-typescript@7.13.0` generates
+  `packages/api-client/src/schema.ts`, and `openapi-fetch@0.17.0` provides the
+  typed runtime transport. Never hand-edit generated files.
 
 ### 2.3 API and worker
 
@@ -85,6 +89,9 @@ API conventions:
 
 - REST under `/v1`; JSON responses use an envelope `{data, error, request_id}`.
 - OpenAPI is the contract; generated TypeScript client is not handwritten.
+- `npm run api-client:check` regenerates the snapshot and client, then fails if
+  either checked-in artifact differs. The API CI job runs this gate on every push
+  and pull request.
 - Every mutation accepts `Idempotency-Key` where duplicate work is possible.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
