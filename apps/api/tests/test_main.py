@@ -113,3 +113,23 @@ async def test_framework_http_errors_use_the_same_envelope() -> None:
         "message": "Not Found",
         "details": None,
     }
+
+
+async def test_upload_intent_rejects_unauthenticated_callers() -> None:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=make_app(), raise_app_exceptions=False),
+        base_url="http://test",
+    ) as client:
+        response = await client.post(
+            "/v1/voices/upload-url",
+            headers={"Idempotency-Key": "upload-intent-0001"},
+            json={
+                "workspace_id": "00000000-0000-0000-0000-000000000001",
+                "filename": "lecture.wav",
+                "content_type": "audio/wav",
+                "size_bytes": 1024,
+            },
+        )
+
+    assert response.status_code == 503
+    assert response.json()["error"]["code"] == "AUTH_NOT_CONFIGURED"

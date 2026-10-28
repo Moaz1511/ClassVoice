@@ -94,6 +94,10 @@ API conventions:
   either checked-in artifact differs. The API CI job runs this gate on every push
   and pull request.
 - Every mutation accepts `Idempotency-Key` where duplicate work is possible.
+- `POST /v1/voices/upload-url` accepts only 1–25,000,000-byte WAV/MP3/M4A
+  metadata, requires an editor-level `voices:write` authorization, and returns a
+  quarantine-bucket signed PUT URL. Remote URLs, path traversal, MIME/extension
+  mismatches, and missing or reused idempotency keys are rejected.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 

@@ -7,6 +7,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from .api.v1.voices import configure_upload_state
+from .api.v1.voices import router as voices_router
+from .core.auth_config import AuthConfigurationError
 from .core.errors import (
     APIError,
     api_error_handler,
@@ -15,8 +18,10 @@ from .core.errors import (
     unexpected_error_handler,
     validation_error_handler,
 )
+from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
+from .storage import build_storage_adapter
 
 
 def create_app(settings: APISettings | None = None) -> FastAPI:
@@ -32,6 +37,12 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         redoc_url="/redoc" if runtime_settings.app_env != "production" else None,
     )
     app.state.settings = runtime_settings
+    try:
+        app.state.jwt_verifier = JWTVerifier.from_config(runtime_settings.auth)
+    except AuthConfigurationError:
+        app.state.jwt_verifier = None
+    app.state.storage_adapter = build_storage_adapter(runtime_settings)
+    configure_upload_state(app)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(runtime_settings.cors_origins),
@@ -50,6 +61,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.add_exception_handler(StarletteHTTPException, http_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(Exception, unexpected_error_handler)
+    app.include_router(voices_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])
     async def live(request: Request) -> dict[str, object]:
