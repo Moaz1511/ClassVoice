@@ -2123,3 +2123,500 @@ Verification passed:
 - `git diff --check`
 
 The next step is P2‑04: implement the authenticated upload-intent endpoint with MIME/type limits, quarantine keys, size validation, and idempotency.
+
+> Now please proceed next.
+
+<details><summary>4 previous messages</summary>
+
+> I’m proceeding to P2‑04: I’ll add the authenticated upload-intent contract, validate object type/size and quarantine keys, enforce idempotency at the service boundary, expose it under `/v1/voices/upload-url`, and add focused tests plus OpenAPI regeneration and plan updates.
+>
+> <details><summary>Created 5 files, edited 4 files, ran 11 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py && type apps\\api\\app\\core\\authorization.py && type apps\\api\\app\\core\\jwt.py | more && type apps\\api\\app\\core\\settings.py | more"`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+102 -0)
+> - Wrote `./apps/api/app/domains/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/domains/voices/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/domains/voices/upload_intent.py` (+177 -0)
+> - Wrote `./apps/api/app/main.py` (+11 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\voices.py | more && type apps\\api\\app\\domains\\voices\\upload_intent.py | more"`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+3 -8)
+> - Wrote `./apps/api/app/domains/voices/upload_intent.py` (+28 -8)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+2 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/tests/test_upload_intent.py` (+94 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Wrote `./apps/api/tests/test_upload_intent.py` (+4 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api && apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Wrote `./apps/api/tests/test_upload_intent.py` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate && npm run api-client:typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"upload-url voices\" packages\\api-client\\openapi.json packages\\api-client\\src\\schema.ts"`
+>
+> </details>
+>
+> The upload-intent service is now passing its validation/idempotency tests, and the generated OpenAPI client includes the new route. I’m rebuilding the API image once more so the endpoint wiring is verified in the running container, then I’ll run the final regression checks and update P2‑04.
+>
+> <details><summary>Edited 4 files, ran 16 commands</summary>
+>
+> - Ran `docker compose build api && docker compose up -d api && docker compose ps api`
+> - Ran `powershell.exe -NoProfile -Command "Start-Sleep -Seconds 8; docker compose ps api; curl.exe -sS -i -X POST http://localhost:8000/v1/voices/upload-url -H 'Content-Type: application/json' -H 'Idempotency-Key: upload-intent-0001' --data '{\"workspace_id\":\"00000000-0000-0000-0000-000000000001\",\"filename\":\"lecture.wav\",\"content_type\":\"audio/wav\",\"size_bytes\":1024}'"`
+> - Ran `curl.exe -sS -i -X POST http://localhost:8000/v1/voices/upload-url -H "Content-Type: application/json" -H "Idempotency-Key: upload-intent-0001" --data-raw "{\"workspace_id\":\"00000000-0000-0000-0000-000000000001\",\"filename\":\"lecture.wav\",\"content_type\":\"audio/wav\",\"size_bytes\":1024}"`
+> - Ran `curl.exe -sS -i -X POST http://localhost:8000/v1/voices/upload-url -H 'Content-Type: application/json' -H 'Idempotency-Key: upload-intent-0001' --data-raw '{"workspace_id":"00000000-0000-0000-0000-000000000001","filename":"lecture.wav","content_type":"audio/wav","size_bytes":1024}'`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+4 -1)
+> - Wrote `./apps/api/app/api/v1/voices.py` (+0 -6)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate && npm run api-client:typecheck'`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Wrote `./docs/04_TRD.md` (+6 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n upload-url packages\\api-client\\openapi.json"`
+> - Ran `docker compose build api && docker compose up -d api && docker compose ps api`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && npm run api-client:typecheck && npm run lint && npm run typecheck && npm test && docker compose config --quiet && git -c safe.directory=* diff --check"`
+> - Ran `powershell.exe -NoProfile -Command "Start-Sleep -Seconds 8; docker compose ps api; curl.exe -sS http://localhost:8000/health/live"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short && git -c safe.directory=* diff --stat'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_main.py"`
+> - Wrote `./apps/api/tests/test_main.py` (+20 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate && npm run api-client:typecheck && git -c safe.directory=* diff --check && docker compose config --quiet'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+>
+> </details>
+</details>
+
+P2‑04 is complete.
+
+Implemented:
+
+- Authenticated `POST /v1/voices/upload-url`
+- Workspace membership, editor-role, and `voices:write` authorization checks
+- Required bounded `Idempotency-Key`
+- WAV, MP3, and M4A validation
+- MIME/extension mismatch rejection
+- 25 MB upload limit
+- Remote URL, path traversal, control-character, and unsafe filename rejection
+- Quarantine object keys under `voice-inputs`
+- Idempotent upload-intent service and response reuse
+- Stable API error codes and envelope responses
+- Regenerated OpenAPI snapshot and TypeScript client
+
+Main files:
+
+- [voices.py](<./apps/api/app/api/v1/voices.py>)
+- [upload_intent.py](<./apps/api/app/domains/voices/upload_intent.py>)
+- [test_upload_intent.py](<./apps/api/tests/test_upload_intent.py>)
+- [schema.ts](<./packages/api-client/src/schema.ts>)
+
+Verification passed:
+
+- 20 focused API tests
+- Ruff
+- Mypy
+- OpenAPI/client generation and typecheck
+- Web lint/typecheck/tests
+- Docker rebuild
+- Healthy API container
+- Live unauthenticated request correctly returns `AUTH_NOT_CONFIGURED`
+- Compose validation and `git diff --check`
+
+P2‑05 is next: implement the audio validation worker with magic-byte checks, FFmpeg decoding, duration, silence, clipping, channel, and speaker-quality validation.
+
+> Now please proceed next.
+
+<details><summary>18 previous messages</summary>
+
+> I’m proceeding to P2‑05: I’ll add the audio-validation domain and worker pipeline with magic-byte/container checks, FFmpeg probing, duration/silence/clipping/channel checks, deterministic quality outcomes, fixture-oriented tests, and update the plan. I’ll first inspect the current worker and audio runtime setup so the implementation fits the existing Compose image.
+>
+> <details><summary>Created 3 files, edited 5 files, ran 8 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\workers /s /b && type infra\\docker\\Dockerfile.api && type docker-compose.yml && type apps\\api\\requirements.txt && type docs\\04_TRD.md | findstr /i \"FFmpeg audio duration silence clipping channels speaker\""`
+> - Wrote `./apps/api/app/workers/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+254 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api && apps\\api\\.venv\\Scripts\\ruff.exe format apps/api"`
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+35 -9)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+1 -1)
+> - Wrote `./apps/api/tests/test_audio_validation.py` (+107 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api && apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py -q"`
+> - Wrote `./apps/api/tests/test_audio_validation.py` (+6 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py -q"`
+> - Wrote `./infra/docker/Dockerfile.api` (+3 -0)
+> - Wrote `./docs/04_TRD.md` (+6 -2)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+>
+> </details>
+>
+> The validator is now implemented and its fixture suite passes, including spoofed containers, size, duration boundaries, silence, clipping, channel limits, and speaker warnings. I’ve also added FFmpeg to the API/worker image; I’m validating the binary inside the rebuilt container and then running the final checks before closing P2‑05.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker compose build api && docker compose up -d api worker && docker compose ps api worker`
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> The API/worker images rebuilt successfully with FFmpeg installed, and both containers have restarted. I’m doing the final runtime and regression checks now, then I’ll hand off P2-05 and the next dependency.
+>
+> <details><summary>Edited 4 files, ran 24 commands</summary>
+>
+> - Ran `docker compose exec -T api ffprobe -version`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Ran `docker compose ps api worker`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n \"P2-05|Progress Log|P2-06\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P2-05\" /c:\"P2-06\" /c:\"Progress Log\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff -- docs/06_Plan.md docs/04_TRD.md infra/docker/Dockerfile.api'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_audio_validation.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\audio_validation.py"`
+> - Wrote `./apps/api/tests/test_audio_validation.py` (+25 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py -q"`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"FFmpeg 7.1\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i ffmpeg docs\\04_TRD.md"`
+> - Wrote `./docs/04_TRD.md` (+1 -1)
+> - Wrote `./infra/docker/Dockerfile.api` (+1 -1)
+>
+> </details>
+>
+> One reproducibility detail surfaced during verification: Debian resolved FFmpeg `7.1.5`, while the architecture table listed `7.1.1`. I’ve aligned the locked TRD version to the verified Debian package and pinned that exact package in the API image before the final rebuild.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker compose build api`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting 5/5
+> stream disconnected before completion: An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full. (os error 10055)
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker compose build api`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `docker compose ps api worker`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+>
+> </details>
+</details>
+
+P2-05 is complete: audio validation worker implemented and documented.
+
+Implemented:
+
+- Magic-byte/container validation for WAV, MP3, and M4A
+- FFprobe metadata inspection and FFmpeg PCM decoding
+- 6–30 second duration enforcement
+- Channel validation
+- Silence and clipping detection
+- Multi-speaker warning metadata
+- Corrupt, spoofed, oversized, and boundary-case handling
+- No audio bytes written to logs or validation results
+- Exact FFmpeg package pin added to the API image
+
+Files:
+
+- [audio_validation.py](<./apps/api/app/workers/audio_validation.py>)
+- [test_audio_validation.py](<./apps/api/tests/test_audio_validation.py>)
+- [Dockerfile.api](<./infra/docker/Dockerfile.api>)
+- [04_TRD.md](<./docs/04_TRD.md>)
+- [06_Plan.md](<./docs/06_Plan.md>)
+
+Verification passed:
+
+- 11 audio validation tests
+- Ruff
+- mypy
+- API-focused tests
+- API client generation/typecheck
+- Web lint/typecheck/tests
+- Compose configuration validation
+- `git diff --check`
+- API and worker containers healthy
+- FFprobe runtime verified as `7.1.5-0+deb13u1`
+
+One Docker note: after pinning the exact FFmpeg package, Docker Desktop reached the package installation stage but failed while committing BuildKit metadata with a read-only filesystem error. The already-running API and worker containers remain healthy. If the next rebuild repeats this, restart Docker Desktop or its BuildKit builder.
+
+The next planned dependency is P2-06: voice create/read/update/archive/revoke/delete endpoints and state transitions.
+
+> Now please proceed next.
+
+<details><summary>38 previous messages</summary>
+
+> I’m proceeding with P2-06: implementing the voice lifecycle endpoints and state-transition rules on top of the existing upload-intent and auth foundations. I’ll first align the endpoint contract with the schema and current API patterns, then add tests, regenerate OpenAPI, and update the plan.
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\api\\v1 && dir apps\\api\\app\\domains\\voices && type apps\\api\\app\\api\\v1\\voices.py && type apps\\api\\app\\domains\\voices\\upload_intent.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"voice\" docs\\05_Schema.md | more && type db\\migrations\\versions\\0003_voice_assets.py && type db\\migrations\\versions\\0007_voice_invariants.py && type db\\migrations\\versions\\0006_rls_policies.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0001_extensions_enums.py && type apps\\api\\app\\core\\authorization.py && type apps\\api\\app\\core\\errors.py && type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"voice\" docs\\02_AppFlow.md docs\\05_Schema.md docs\\04_TRD.md | more"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_upload_intent.py && type apps\\api\\tests\\test_main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\jwt.py && type apps\\api\\tests\\test_jwt.py | more"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"POST /v1\\|voices/\\|Voice\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\tests && type apps\\api\\tests\\test_authorization.py"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\settings.py"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file</summary>
+>
+> - Wrote `./apps/api/app/domains/voices/lifecycle.py` (+465 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file</summary>
+>
+> - Wrote `./apps/api/app/api/v1/voices.py` (+181 -2)
+> - Wrote `./apps/api/app/api/v1/voices.py` (+2 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 2 files, ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+11 -10)
+> - Wrote `./apps/api/app/domains/voices/lifecycle.py` (+49 -12)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file, ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api/app/api/v1/voices.py"`
+> - Wrote `./apps/api/tests/test_voice_lifecycle.py` (+118 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file</summary>
+>
+> - Wrote `./apps/api/tests/test_voice_routes.py` (+154 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/tests/test_voice_lifecycle.py` (+1 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py -q"`
+> - Wrote `./docs/04_TRD.md` (+6 -0)
+> - Wrote `./docs/04_TRD.md` (+2 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"/v1/voices\" packages\\api-client\\openapi.json | more"`
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+</details>

@@ -98,6 +98,13 @@ API conventions:
   metadata, requires an editor-level `voices:write` authorization, and returns a
   quarantine-bucket signed PUT URL. Remote URLs, path traversal, MIME/extension
   mismatches, and missing or reused idempotency keys are rejected.
+- Voice lifecycle routes require a consent statement version and SHA-256
+  attestation hash at creation,
+  expose workspace-scoped reads, restrict updates/archive/revocation to editors,
+  restrict permanent deletion to admins/owners, enforce explicit status
+  transitions, append redacted audit events, and enqueue asynchronous cascade
+  deletion intents. Local API state is an in-memory adapter until the SQL
+  repository is connected.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 
