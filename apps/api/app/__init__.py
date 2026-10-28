@@ -1,1 +1,1 @@
-"""ClassVoice API package placeholder for the initial CI baseline."""
+"""ClassVoice FastAPI control-plane application."""

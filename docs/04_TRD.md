@@ -209,6 +209,16 @@ verified subject is resolved to a workspace membership in the database; JWT role
 claims are never treated as workspace roles. Each protected operation then checks
 the requested workspace, minimum membership role, and explicit scope dependency.
 
+### API runtime contract
+
+The FastAPI process validates `APP_ENV`, `API_HOST`, `API_PORT`, `DATABASE_URL`,
+`REDIS_URL`, `STORAGE_PROVIDER`, `S3_ENDPOINT`, `CORS_ORIGINS`, and the request-ID
+header before serving traffic. Local defaults target the Compose services; production
+must use a non-local PostgreSQL URL and an explicit, non-wildcard CORS origin list.
+Every response uses `{data, error, request_id}`, every request receives a bounded
+`X-Request-ID` correlation value, and `/health/live` plus `/health/ready` are always
+available (interactive API docs are disabled in production).
+
 ### Optional/operational
 
 - **Sentry `10.28.0`:** error reporting with text/audio payloads redacted.
