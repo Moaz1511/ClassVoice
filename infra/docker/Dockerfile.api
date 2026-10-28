@@ -4,6 +4,9 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
 
 WORKDIR /opt/classvoice
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends ffmpeg=7:7.1.5-0+deb13u1 \
+    && rm -rf /var/lib/apt/lists/*
 COPY apps/api/requirements.txt /opt/classvoice/requirements.txt
 RUN pip install --no-cache-dir -r /opt/classvoice/requirements.txt
 COPY apps/api/app /opt/classvoice/app

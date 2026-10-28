@@ -108,7 +108,7 @@ API conventions:
 | PyTorch | `2.7.1` | CUDA-enabled build in GPU image; CPU fallback in dev |
 | CUDA runtime | `12.6` | NVIDIA 1660 Ti uses compute capability 7.5 |
 | torchaudio | `2.7.1` | Audio tensor utilities |
-| FFmpeg | `7.1.1` | Sandboxed transcode/normalization |
+| FFmpeg | `7.1.5-0+deb13u1` | Sandboxed transcode/normalization |
 | librosa | `0.11.0` | Quality metrics and silence/clipping checks |
 | soundfile | `0.13.1` | WAV I/O |
 | Model adapter | OpenVoice V2 adapter, checkpoint pinned by SHA | Provider-neutral interface; checkpoint license must be reviewed |
@@ -116,6 +116,10 @@ API conventions:
 Inference constraints for the MVP:
 
 - Reference audio: 6–30 seconds, one speaker, clear speech, max 25 MB.
+- The validation worker first checks magic bytes/container identity, then probes
+  metadata and decodes bounded PCM through `ffprobe`/`ffmpeg`; it classifies
+  duration, channel count, silence, clipping, and multi-speaker warnings without
+  logging audio bytes. The API image installs the FFmpeg runtime for the worker.
 - Text: max 10,000 Unicode characters per job.
 - Default output: WAV 24 kHz mono; MP3 is a post-process derivative.
 - 16-bit inference and CPU fallback are supported; no training/fine-tuning in the product path.
