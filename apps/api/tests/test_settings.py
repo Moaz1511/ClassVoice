@@ -21,6 +21,14 @@ def test_local_settings_have_safe_defaults_and_redacted_diagnostics() -> None:
         "cors_origins": ("http://localhost:3000",),
         "storage_provider": "s3",
         "s3_endpoint": "http://localhost:4566",
+        "s3_region": "us-east-1",
+        "storage_buckets": {
+            "voice_inputs": "voice-inputs",
+            "voice_derived": "voice-derived",
+            "generated_audio": "generated-audio",
+            "exports": "exports",
+        },
+        "storage_signed_url_ttl_seconds": 600,
         "request_id_header": "X-Request-ID",
         "auth": {
             "provider": "local",

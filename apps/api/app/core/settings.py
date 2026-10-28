@@ -16,6 +16,7 @@ class SettingsError(ValueError):
 
 _APP_ENVS = frozenset({"local", "test", "staging", "production"})
 _STORAGE_PROVIDERS = frozenset({"s3", "supabase"})
+_BUCKET_NAMES = frozenset({"voice-inputs", "voice-derived", "generated-audio", "exports"})
 
 
 def _split_csv(value: str) -> tuple[str, ...]:
@@ -46,6 +47,16 @@ class APISettings:
     cors_origins: tuple[str, ...] = ("http://localhost:3000",)
     storage_provider: str = "s3"
     s3_endpoint: str = "http://localhost:4566"
+    s3_region: str = "us-east-1"
+    s3_access_key_id: str = "test"
+    s3_secret_access_key: str = "change-me-local-only"
+    s3_bucket_voice_inputs: str = "voice-inputs"
+    s3_bucket_voice_derived: str = "voice-derived"
+    s3_bucket_generated_audio: str = "generated-audio"
+    s3_bucket_exports: str = "exports"
+    supabase_url: str = ""
+    supabase_service_role_key: str = ""
+    storage_signed_url_ttl_seconds: int = 600
     request_id_header: str = "X-Request-ID"
     auth: AuthConfig = AuthConfig()
 
@@ -69,6 +80,27 @@ class APISettings:
             ),
             storage_provider=values.get("STORAGE_PROVIDER", "s3").strip().lower(),
             s3_endpoint=values.get("S3_ENDPOINT", "http://localhost:4566").strip(),
+            s3_region=values.get("S3_REGION", "us-east-1").strip(),
+            s3_access_key_id=values.get("S3_ACCESS_KEY_ID", "test").strip(),
+            s3_secret_access_key=values.get(
+                "S3_SECRET_ACCESS_KEY", "change-me-local-only"
+            ).strip(),
+            s3_bucket_voice_inputs=values.get(
+                "S3_BUCKET_VOICE_INPUTS", "voice-inputs"
+            ).strip(),
+            s3_bucket_voice_derived=values.get(
+                "S3_BUCKET_VOICE_DERIVED", "voice-derived"
+            ).strip(),
+            s3_bucket_generated_audio=values.get(
+                "S3_BUCKET_GENERATED_AUDIO", "generated-audio"
+            ).strip(),
+            s3_bucket_exports=values.get("S3_BUCKET_EXPORTS", "exports").strip(),
+            supabase_url=values.get("NEXT_PUBLIC_SUPABASE_URL", "").strip().rstrip("/"),
+            supabase_service_role_key=values.get("SUPABASE_SERVICE_ROLE_KEY", "").strip(),
+            storage_signed_url_ttl_seconds=_positive_int(
+                values.get("STORAGE_SIGNED_URL_TTL_SECONDS", "600"),
+                "STORAGE_SIGNED_URL_TTL_SECONDS",
+            ),
             request_id_header=values.get("REQUEST_ID_HEADER", "X-Request-ID").strip(),
             auth=auth,
         )
@@ -84,6 +116,8 @@ class APISettings:
             raise SettingsError("API_HOST and API_PORT are invalid")
         if not self.database_url.startswith("postgresql+asyncpg://"):
             raise SettingsError("DATABASE_URL must use the postgresql+asyncpg scheme")
+        if self.app_env == "production" and "localhost" in self.database_url:
+            raise SettingsError("production DATABASE_URL cannot target localhost")
         if not self.redis_url.startswith("redis://"):
             raise SettingsError("REDIS_URL must use the redis scheme")
         if self.storage_provider not in _STORAGE_PROVIDERS:
@@ -91,6 +125,31 @@ class APISettings:
         parsed_s3 = urlsplit(self.s3_endpoint)
         if parsed_s3.scheme not in {"http", "https"} or not parsed_s3.netloc:
             raise SettingsError("S3_ENDPOINT must be an absolute HTTP(S) URL")
+        if not self.s3_region or not self.s3_access_key_id or not self.s3_secret_access_key:
+            raise SettingsError("S3_REGION and S3 credentials cannot be empty")
+        bucket_names = {
+            self.s3_bucket_voice_inputs,
+            self.s3_bucket_voice_derived,
+            self.s3_bucket_generated_audio,
+            self.s3_bucket_exports,
+        }
+        if bucket_names != _BUCKET_NAMES:
+            raise SettingsError("storage bucket names must be the four documented private buckets")
+        if self.storage_signed_url_ttl_seconds != 600:
+            raise SettingsError("STORAGE_SIGNED_URL_TTL_SECONDS must be exactly 600")
+        if self.storage_provider == "supabase":
+            parsed_supabase = urlsplit(self.supabase_url)
+            if parsed_supabase.scheme != "https" or not parsed_supabase.netloc:
+                raise SettingsError("NEXT_PUBLIC_SUPABASE_URL must be an absolute HTTPS URL")
+            if not self.supabase_service_role_key or self.supabase_service_role_key.startswith(
+                "replace-with-"
+            ):
+                raise SettingsError("SUPABASE_SERVICE_ROLE_KEY is required for Supabase Storage")
+        if self.app_env == "production" and self.storage_provider == "s3" and (
+            self.s3_access_key_id == "test"
+            or self.s3_secret_access_key.startswith("change-me-")
+        ):
+            raise SettingsError("production S3 credentials must not use local defaults")
         if not self.cors_origins:
             raise SettingsError("CORS_ORIGINS cannot be empty")
         if any(origin == "*" for origin in self.cors_origins):
@@ -101,8 +160,6 @@ class APISettings:
             self.auth.validate()
         except AuthConfigurationError as error:
             raise SettingsError(str(error)) from error
-        if self.app_env == "production" and "localhost" in self.database_url:
-            raise SettingsError("production DATABASE_URL cannot target localhost")
 
     def redacted(self) -> dict[str, object]:
         """Return startup diagnostics without credentials or connection secrets."""
@@ -118,6 +175,14 @@ class APISettings:
             "cors_origins": self.cors_origins,
             "storage_provider": self.storage_provider,
             "s3_endpoint": self.s3_endpoint,
+            "s3_region": self.s3_region,
+            "storage_buckets": {
+                "voice_inputs": self.s3_bucket_voice_inputs,
+                "voice_derived": self.s3_bucket_voice_derived,
+                "generated_audio": self.s3_bucket_generated_audio,
+                "exports": self.s3_bucket_exports,
+            },
+            "storage_signed_url_ttl_seconds": self.storage_signed_url_ttl_seconds,
             "request_id_header": self.request_id_header,
             "auth": self.auth.redacted(),
         }

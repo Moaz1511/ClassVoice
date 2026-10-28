@@ -81,6 +81,7 @@ Rules:
 | arq | `0.27.2` | Async job queue worker |
 | httpx | `0.28.1` | Outbound HTTP with timeouts |
 | structlog | `25.4.0` | JSON structured logs |
+| boto3 | `1.43.120` | SigV4 presigned URLs for private S3-compatible storage |
 | pytest | `8.4.2` | Unit/integration tests |
 | ruff | `0.14.2` | Formatting/linting |
 | mypy | `1.18.2` | Type checking |
@@ -247,6 +248,10 @@ No external TTS API is required. If a provider adapter is added later, it must d
 ### Audio/data protection
 
 - Storage buckets are private. Download URLs expire in 10 minutes and are minted only after authorization.
+- Storage uses the `StorageAdapter` port: LocalStack/S3 uses boto3 SigV4 presigning;
+  Supabase uses server-only Storage signed-object endpoints. Upload and download
+  URLs are always short-lived (exactly 600 seconds), and object keys are rejected
+  when they contain traversal, absolute paths, control characters, or unknown buckets.
 - Uploads are streamed to quarantine, checked by magic bytes and FFmpeg, then promoted to the private bucket.
 - Max upload 25 MB; reject path traversal, polyglot files, unsupported codecs, and remote URLs.
 - Encrypt in transit with TLS 1.2+ and at rest through the provider; do not log raw audio, transcripts, tokens, or embeddings.

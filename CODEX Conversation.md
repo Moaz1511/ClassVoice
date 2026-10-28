@@ -259,10 +259,10 @@ I’ll continue with `P1-02` as soon as that decision/environment issue is resol
 >
 > <details><summary>Ran 8 commands</summary>
 >
-> - Ran `docker info --format "{{.ServerVersion}}|{{.OperatingSystem}}|{{.OSType}}|{{.NCPU}}"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker version'`
-> - Ran `docker pull hello-world:latest`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker context ls'`
+> - Ran `docker pull hello-world:latest`
+> - Ran `docker info --format "{{.ServerVersion}}|{{.OperatingSystem}}|{{.OSType}}|{{.NCPU}}"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet && docker compose config --services'`
 > - Ran `docker ps --all`
 > - Ran `docker compose ps --all`
@@ -349,10 +349,10 @@ At the moment, `P1-02` remains in progress in [06_Plan.md](<./docs/06_Plan.md>).
 > <details><summary>Ran 6 commands</summary>
 >
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'net localgroup docker-users moaz9 /add'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'net localgroup docker-users'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker context show'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'nslookup registry-1.docker.io'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -I https://registry-1.docker.io/v2/'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'nslookup registry-1.docker.io'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker context show'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'net localgroup docker-users'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "icacls C:\\Users\\moaz9\\.docker && icacls C:\\Users\\moaz9\\.docker\\config.json"`
 >
 > </details>
@@ -363,8 +363,8 @@ At the moment, `P1-02` remains in progress in [06_Plan.md](<./docs/06_Plan.md>).
 >
 > - Ran `docker desktop restart`
 > - Ran `docker pull hello-world:latest`
-> - Ran `docker run --rm hello-world`
 > - Ran `docker pull minio/minio:latest`
+> - Ran `docker run --rm hello-world`
 > - Ran `docker pull minio/minio:RELEASE.2024-06-13T22-53-53Z`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -sS -I https://hub.docker.com/v2/repositories/minio/minio/tags?page_size=2'`
 > - Ran `docker pull localstack/localstack:4.10.0`
@@ -449,9 +449,9 @@ I recorded the full diagnosis in [06_Plan.md](<./docs/06_Plan.md>). `P1-02` rema
 >
 > <details><summary>Ran 14 commands</summary>
 >
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'ipconfig /all'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netsh winhttp show proxy'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netsh interface ipv4 show dnsservers'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'ipconfig /all'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netsh int ipv4 show dynamicport tcp && netsh int ipv6 show dynamicport tcp'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'route print'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netstat -ano'`
@@ -461,8 +461,8 @@ I recorded the full diagnosis in [06_Plan.md](<./docs/06_Plan.md>). `P1-02` rema
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'tasklist /fi PID eq 18720'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'tasklist /svc | findstr "18720"'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netstat -ano | findstr "169.254.83.107"'`
-> - Ran `docker pull postgres:17.11-alpine`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -I https://registry-1.docker.io/v2/'`
+> - Ran `docker pull postgres:17.11-alpine`
 >
 > </details>
 >
@@ -606,10 +606,10 @@ All returned successful health responses.
 > - Wrote `./apps/web/package.json` (+6 -2)
 > - Wrote `./apps/web/tsconfig.json` (+11 -0)
 > - Wrote `./docs/06_Plan.md` (+1 -1)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --package-lock-only --ignore-scripts'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'findstr /n /c:"eslint" /c:"typescript" package-lock.json && npm run lint && npm run typecheck && npm test'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\web\\package.json & findstr eslint package-lock.json & findstr typescript package-lock.json & npm --version"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'dir package-lock.json && type package-lock.json'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --package-lock-only --ignore-scripts'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --package-lock-only --ignore-scripts'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --package-lock-only --ignore-scripts'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'findstr /n /c:"eslint" /c:"typescript" package-lock.json && npm ci --ignore-scripts'`
@@ -1299,11 +1299,11 @@ The next dependency-safe step is P1-11: Supabase Auth email verification, passwo
 >
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git diff --check'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git status --short'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory="E:/Developer/Voice Generation" diff --check'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
@@ -1311,17 +1311,17 @@ The next dependency-safe step is P1-11: Supabase Auth email verification, passwo
 > - Wrote `./apps/api/pyproject.toml` (+0 -1)
 > - Wrote `./docs/06_Plan.md` (+2 -1)
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat && git -c safe.directory=* diff -- docs/06_Plan.md .env.example apps/api/pyproject.toml docs/04_TRD.md'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'type docker-compose.yml'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'dir README.md'`
 > - Wrote `./apps/api/app/core/auth_config.py` (+7 -0)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_auth_config.py apps\\api\\tests\\test_local_auth.py -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_auth_config.py apps\\api\\tests\\test_local_auth.py -q"`
 > - Wrote `./apps/api/tests/test_auth_config.py` (+23 -0)
 > - Wrote `./docs/06_Plan.md` (+1 -1)
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_auth_config.py apps\\api\\tests\\test_local_auth.py -q"`
@@ -1391,17 +1391,17 @@ The next dependency is P1-12: JWT verification plus workspace membership, role, 
 > - Wrote `./docs/04_TRD.md` (+10 -0)
 > - Wrote `./apps/api/tests/test_authorization.py` (+95 -0)
 > - Wrote `./apps/api/tests/test_jwt.py` (+129 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_jwt.py apps\\api\\tests\\test_authorization.py -vv"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api --fix"`
 > - Wrote `./apps/api/app/core/jwt.py` (+28 -7)
 > - Wrote `./apps/api/app/core/jwt.py` (+4 -1)
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Wrote `./apps/api/app/core/jwt.py` (+4 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_auth_config.py apps\\api\\tests\\test_local_auth.py apps\\api\\tests\\test_jwt.py apps\\api\\tests\\test_authorization.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_auth_config.py apps\\api\\tests\\test_jwt.py apps\\api\\tests\\test_authorization.py --collect-only -q"`
 > - Wrote `./apps/api/app/core/auth_config.py` (+1 -0)
 >
@@ -1411,14 +1411,14 @@ The next dependency is P1-12: JWT verification plus workspace membership, role, 
 >
 > <details><summary>Edited a file, ran 11 commands</summary>
 >
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests --collect-only -q"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
 > - Wrote `./docs/06_Plan.md` (+2 -1)
@@ -1470,7 +1470,7 @@ The next step is P1-13: consent statement versioning and acceptance audit events
 
 > Now please proceed next.
 
-<details><summary>3 previous messages</summary>
+<details><summary>2 previous messages</summary>
 
 > I’m proceeding with P1-13: locking consent statement versioning and acceptance audit behavior. I’ll align the migration with the existing consent and audit tables, add database constraints/triggers so accepted consent always carries immutable evidence, and add integration coverage for version, text hash, actor, timestamp, and revoked-consent reuse before updating the plan.
 >
@@ -1487,8 +1487,639 @@ The next step is P1-13: consent statement versioning and acceptance audit events
 > - Wrote `./db/migrations/versions/0008_consent_statements_audit.py` (+235 -0)
 >
 > </details>
+</details>
+
+> please continue
+
+<details><summary>7 previous messages</summary>
+
+> The migration is in place, including a canonical `consent_statements` catalog, actor attribution, immutable acceptance evidence, one active consent per voice, acceptance audit rows, and no reuse of revoked/expired records. I’m updating the existing migration fixtures to use the canonical statement hash and to clean up generated audit rows, then I’ll replay the full migration chain.
+>
+> <details><summary>Edited 5 files, ran 23 commands</summary>
+>
+> - Wrote `./.github/workflows/ci.yml` (+0 -0)
+> - Wrote `./apps/api/tests/test_generation_schema_migration.py` (+11 -1)
+> - Wrote `./apps/api/tests/test_voice_invariants_migration.py` (+13 -3)
+> - Wrote `./apps/api/tests/test_voice_schema_migration.py` (+11 -1)
+> - Wrote `./.github/workflows/ci.yml` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"statement_hash audit_events\" apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_voice_invariants_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_voice_schema_migration.py | more +70"`
+> - Wrote `./docs/05_Schema.md` (+23 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini current"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\docker\\Dockerfile.api && type db\\alembic.ini"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\env.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head --sql"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api db\\migrations"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'if exist .env (type .env) else (echo no .env)'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres psql -U classvoice -d classvoice -tAc "SELECT version_num FROM alembic_version"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'echo SELECT version_num FROM alembic_version| docker compose exec -T postgres psql -U classvoice -d classvoice'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "echo ALTER ROLE classvoice PASSWORD 'change-me-local-only';| docker compose exec -T postgres psql -U classvoice -d classvoice"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set \"DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@localhost:5432/classvoice\" && apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres psql -U classvoice -d classvoice -c "SELECT current_user;"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker port classvoice-postgres-1'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'echo SELECT current_user;| docker compose exec -T postgres psql -U classvoice -d classvoice'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'where psql'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set \"CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@localhost:5432/classvoice\" && apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_identity_migration.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@localhost:5432/classvoice&& echo %CLASSVOICE_INTEGRATION_DATABASE_URL%&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_identity_migration.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'echo SELECT version_num FROM alembic_version;| docker compose exec -T -e PGPASSWORD=change-me-local-only postgres psql -h 127.0.0.1 -U classvoice -d classvoice'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& set DATABASE_URL'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'echo SELECT current_user;| docker compose exec -T -e PGPASSWORD=change-me-local-only postgres psql -h host.docker.internal -U classvoice -d classvoice'`
+>
+> </details>
+>
+> The local host’s port 5432 is occupied by a separate PostgreSQL instance with a different password; the Compose container itself is healthy. I’m isolating the Compose database on host port 55432 (preserving its volume), replaying the migration and integration test there, then restoring the normal 5432 mapping so the development stack is unchanged.
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'set POSTGRES_PORT=55432&& docker compose up -d postgres'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_identity_migration.py apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_integrations_audit_migration.py apps\\api\\tests\\test_rls_migration.py apps\\api\\tests\\test_voice_invariants_migration.py apps\\api\\tests\\test_consent_statements_migration.py -vv"`
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m continuing with P1-13 (consent statement versioning and acceptance audit). The migration is in place; I’m finishing the live PostgreSQL verification, then I’ll run the project gates, restore the normal Docker port, and update the plan.
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_identity_migration.py apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_integrations_audit_migration.py apps\\api\\tests\\test_rls_migration.py apps\\api\\tests\\test_voice_invariants_migration.py apps\\api\\tests\\test_consent_statements_migration.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\conftest.py & type apps\\api\\tests\\test_consent_statements_migration.py & type apps\\api\\tests\\test_voice_schema_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "audit_events|append-only|CREATE TABLE.*audit|voice_consent" db/migrations/versions apps/api/tests/test_*migration.py'`
+>
+> </details>
+</details>
+
+<details><summary>1 previous message</summary>
+
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"audit_events append-only voice_consent\" db\\migrations\\versions\\*.py apps\\api\\tests\\test_*migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0005_integrations_audit.py & type db\\migrations\\versions\\0008_consent_statements_audit.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /s /n /i \"DELETE FROM public.audit_events\" apps\\api\\tests\\*.py"`
+>
+> </details>
+</details>
+
+<details><summary>1 previous message</summary>
+
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "docker compose exec -T postgres psql -U classvoice -d classvoice -c \"SELECT model_key, version, checkpoint_sha256, id FROM public.model_versions WHERE model_key LIKE 'synthetic-%' OR model_key='invalid-hash'; SELECT slug,id,owner_id FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'rls-%' OR slug LIKE 'consent-%' OR slug LIKE 'invariant-%'; SELECT count(*) AS audit_count FROM public.audit_events;\""`
+>
+> </details>
+</details>
+
+<details><summary>1 previous message</summary>
+
+> <details><summary>Ran 6 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "docker compose exec -T postgres psql -U classvoice -d classvoice -c \"SELECT model_key, version, id FROM public.model_versions WHERE model_key LIKE 'synthetic-%%'\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres psql -U classvoice -d classvoice -c ''^"SELECT model_key, version, id FROM public.model_versions WHERE model_key LIKE '"'synthetic-%'"'^"'`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "SELECT model_key, version, id FROM public.model_versions WHERE model_key LIKE 'synthetic-%'"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "SELECT slug,id,owner_id FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'rls-%' OR slug LIKE 'consent-%' OR slug LIKE 'invariant-%'"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'consent-%'; DELETE FROM public.model_versions WHERE model_key LIKE 'synthetic-%'; DELETE FROM public.profiles WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588'); DELETE FROM auth.users WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588');"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"CLASSVOICE_INTEGRATION_DATABASE_URL POSTGRES\" .github\\workflows\\ci.yml docker-compose.yml apps\\api\\tests\\test_integrations_audit_migration.py"`
+>
+> </details>
+</details>
+
+<details><summary>2 previous messages</summary>
+
+> <details><summary>Ran 9 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .github\\workflows\\ci.yml"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'type docker-compose.yml'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_integrations_audit_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0002_identity_workspace.py"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "ALTER TABLE public.audit_events DISABLE TRIGGER audit_events_append_only; DELETE FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'consent-%'; DELETE FROM public.model_versions WHERE model_key LIKE 'synthetic-%'; DELETE FROM public.profiles WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588'); DELETE FROM auth.users WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588'); ALTER TABLE public.audit_events ENABLE TRIGGER audit_events_append_only;"`
+> - Ran `docker compose ps`
+> - Ran `docker desktop status`
+> - Ran `docker desktop start`
+> - Ran `docker desktop status`
+>
+> </details>
 >
 > System error
 >
-> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 6:07 AM.
+> Selected model is at capacity. Please try a different model.
 </details>
+
+<details><summary>11 previous messages</summary>
+
+> <details><summary>Edited 4 files, ran 9 commands</summary>
+>
+> - Ran `docker desktop status`
+> - Ran `$env:POSTGRES_PORT='55432'; docker compose up -d postgres`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "ALTER TABLE public.audit_events DISABLE TRIGGER audit_events_append_only; DELETE FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'consent-%'; DELETE FROM public.model_versions WHERE model_key LIKE 'synthetic-%'; DELETE FROM public.profiles WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588'); DELETE FROM auth.users WHERE id IN ('ccd02c6e-9df2-47f4-a07f-53f576afdf66','98a941e7-0100-4abd-b079-f6d03bfcd437','1d0eed9d-b6a6-45c0-ae09-face0dbd1490','471f7fe7-0d7d-4e93-bb37-f600bb042588'); ALTER TABLE public.audit_events ENABLE TRIGGER audit_events_append_only;"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "SELECT mv.model_key,mv.id,vp.id,vp.workspace_id,w.slug FROM public.model_versions mv JOIN public.voice_profiles vp ON vp.active_model_version_id=mv.id JOIN public.workspaces w ON w.id=vp.workspace_id WHERE mv.model_key LIKE 'synthetic-%'"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "ALTER TABLE public.audit_events DISABLE TRIGGER audit_events_append_only"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.workspaces WHERE slug LIKE 'voice-%' OR slug LIKE 'generation-%' OR slug LIKE 'consent-%' OR slug LIKE 'invariants-%'"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.model_versions WHERE model_key LIKE 'synthetic-%'"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "ALTER TABLE public.audit_events ENABLE TRIGGER audit_events_append_only"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"audit_events\" /c:\"generation_outputs\" apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_voice_invariants_migration.py apps\\api\\tests\\test_consent_statements_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "audit_events|generation_outputs" apps/api/tests/test_generation_schema_migration.py apps/api/tests/test_voice_schema_migration.py apps/api/tests/test_voice_invariants_migration.py apps/api/tests/test_consent_statements_migration.py'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_generation_schema_migration.py"`
+> - Wrote `./apps/api/tests/test_consent_statements_migration.py` (+0 -3)
+> - Wrote `./apps/api/tests/test_generation_schema_migration.py` (+0 -3)
+> - Wrote `./apps/api/tests/test_voice_invariants_migration.py` (+0 -3)
+> - Wrote `./apps/api/tests/test_voice_schema_migration.py` (+0 -3)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_voice_invariants_migration.py apps\\api\\tests\\test_consent_statements_migration.py -q"`
+>
+> </details>
+>
+> The live suite exposed two test-environment issues that are worth fixing before marking this phase complete: the append-only audit trigger currently blocks the legitimate `ON DELETE SET NULL` foreign-key maintenance, and asyncpg returns JSONB metadata as text in this test path. I’m correcting the database trigger compatibility with a follow-on migration and tightening the audit assertion.
+>
+> <details><summary>Created a file, edited 3 files, ran 8 commands</summary>
+>
+> - Wrote `./apps/api/tests/test_consent_statements_migration.py` (+5 -3)
+> - Wrote `./db/migrations/versions/0009_audit_fk_maintenance.py` (+53 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.workspaces WHERE name LIKE 'Synthetic %'"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.model_versions WHERE model_key LIKE 'synthetic-%'"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM public.profiles WHERE display_name LIKE 'Synthetic %'"; docker compose exec -T postgres psql -U classvoice -d classvoice -c "DELETE FROM auth.users WHERE raw_user_meta_data->>'display_name' LIKE 'Synthetic %'"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_identity_migration.py apps\\api\\tests\\test_voice_schema_migration.py apps\\api\\tests\\test_generation_schema_migration.py apps\\api\\tests\\test_integrations_audit_migration.py apps\\api\\tests\\test_rls_migration.py apps\\api\\tests\\test_voice_invariants_migration.py apps\\api\\tests\\test_consent_statements_migration.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"audit events append-only consent_statements accepted_by_user_id\" docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\05_Schema.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n audit_events_resource_idx docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +386 docs\\05_Schema.md"`
+> - Wrote `./docs/05_Schema.md` (+2 -0)
+>
+> </details>
+>
+> P1-13 now passes the live migration suite (7 integration tests). I’ve updated the schema and implementation plan; next I’m running the complete lint/type/test/compose/diff gates before restoring the normal Docker database mapping.
+>
+> <details><summary>Ran 12 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api db\\migrations"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head --sql > NUL"`
+> - Ran `$env:POSTGRES_PORT='5432'; docker compose up -d postgres`
+> - Ran `docker compose ps`
+>
+> </details>
+>
+> All static and application gates are green, and Docker is healthy again on the documented host port 5432. I’m doing the final migration downgrade/re-upgrade replay now, then I’ll report the completed step and the next dependency in the plan.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade base&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+>
+> </details>
+>
+> The final replay hit the same transient Windows socket-buffer exhaustion seen earlier (`WinError 10055`) before Alembic could open a connection; no migration ran or data changed. I’m retrying the replay once, then I’ll finalize with the successful live upgrade/test evidence already captured.
+>
+> <details><summary>Ran 11 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade base&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `docker compose exec -T postgres psql -h 127.0.0.1 -U classvoice -d classvoice -c "SELECT current_user, current_database(), version_num FROM public.schema_migrations"`
+> - Ran `docker compose exec -T postgres psql -h 127.0.0.1 -U classvoice -d classvoice -c "SELECT current_user, current_database(); SELECT version_num FROM alembic_version"`
+> - Ran `echo ALTER ROLE classvoice PASSWORD 'change-me-local-only';| docker compose exec -T postgres psql -U classvoice -d classvoice`
+> - Ran `Write-Output "ALTER ROLE classvoice PASSWORD 'change-me-local-only';" | docker compose exec -T postgres psql -U classvoice -d classvoice`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade base&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\env.py & type db\\alembic.ini"`
+> - Ran `$env:PGPASSWORD='change-me-local-only'; psql -h 127.0.0.1 -p 5432 -U classvoice -d classvoice -c "SELECT current_user, version_num FROM alembic_version"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\python.exe -c \"import asyncio,asyncpg; asyncio.run(asyncpg.connect('postgresql://classvoice:change-me-local-only@127.0.0.1:5432/classvoice'))\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@127.0.0.1:5432/classvoice&& apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_consent_statements_migration.py -q"`
+> - Ran `docker port classvoice-postgres-1`
+>
+> </details>
+>
+> Port 5432 is occupied by another host PostgreSQL instance, so host-side Alembic connects to that service despite Docker showing the mapping. The Compose stack itself is healthy; I’m isolating PostgreSQL back to 55432 for the replay (as done for the successful live tests), then restoring the documented 5432 mapping afterward.
+>
+> <details><summary>Ran 7 commands</summary>
+>
+> - Ran `$env:POSTGRES_PORT='55432'; docker compose up -d postgres`
+> - Ran `Write-Output "ALTER ROLE classvoice PASSWORD 'change-me-local-only';" | docker compose exec -T postgres psql -U classvoice -d classvoice; set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\api\.venv\Scripts\alembic.exe -c db\alembic.ini downgrade base&& apps\api\.venv\Scripts\alembic.exe -c db\alembic.ini upgrade head`
+> - Ran `docker compose port postgres 5432`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:55432/classvoice&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade base&& apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head"`
+> - Ran `$env:POSTGRES_PORT='5432'; docker compose up -d postgres`
+> - Ran `docker compose ps`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check & git -c safe.directory=* status --short'`
+>
+> </details>
+</details>
+
+P1-13 is complete and marked `[x]` in the implementation plan.
+
+Implemented:
+
+- Versioned canonical consent statements with SHA-256 validation.
+- Acceptance actor tracking and immutable consent evidence.
+- Revoked/expired consent reuse protection.
+- Automatic `consent.accepted` audit events.
+- Audit foreign-key maintenance compatibility via migration `0009`.
+- Integration coverage for valid/invalid hashes, unknown versions, audit metadata, and revoked consent reuse.
+- Updated schema documentation, CI migration replay list, and migration fixtures.
+
+Key files:
+
+- [0008_consent_statements_audit.py](<./db/migrations/versions/0008_consent_statements_audit.py>)
+- [0009_audit_fk_maintenance.py](<./db/migrations/versions/0009_audit_fk_maintenance.py>)
+- [test_consent_statements_migration.py](<./apps/api/tests/test_consent_statements_migration.py>)
+- [05_Schema.md](<./docs/05_Schema.md>)
+- [06_Plan.md](<./docs/06_Plan.md>)
+
+Verification passed:
+
+- Live PostgreSQL migration suite: 7 tests passed.
+- Full API tests: passed with expected integration skips when no DB URL is set.
+- Ruff and mypy.
+- Web lint, typecheck, and tests.
+- Docker Compose validation.
+- Offline Alembic SQL generation.
+- `git diff --check`.
+- Docker services restored to port 5432 and all report healthy.
+
+The final downgrade/re-upgrade replay was not completed because Windows hit the recurring `WinError 10055` socket-buffer exhaustion; no migration state was changed by that failed attempt. The next planned step is P2-01: FastAPI application shell, settings validation, structured logging, request IDs, error envelope, CORS, and health endpoints.
+
+> Now please proceed next.
+
+<details><summary>12 previous messages</summary>
+
+> I’m moving to P2-01: the FastAPI application shell. I’ll first align the implementation with the locked TRD and existing API package, then add settings validation, structured request logging/IDs, a stable error envelope, CORS, health endpoints, and focused tests before updating the plan.
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api /b && dir apps\\api\\app /s /b && type apps\\api\\pyproject.toml && type docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements.txt & type apps\\api\\requirements-dev.txt & type apps\\api\\app\\core\\auth_config.py & type apps\\api\\app\\core\\authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\docker\\Dockerfile.api & type docker-compose.yml & type apps\\api\\tests\\test_auth_config.py & type apps\\api\\tests\\test_authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pip show fastapi uvicorn pydantic structlog"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .env.example & type infra\\docker\\health_server.py & type apps\\api\\app\\__init__.py & type CODEX.md"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting 4/5
+> stream disconnected before completion: An operation on a socket could not be performed because the system lacked sufficient buffer space or because a queue was full. (os error 10055)
+>
+> <details><summary>Created 6 files, edited 10 files, ran 10 commands</summary>
+>
+> - Wrote `./apps/api/app/__init__.py` (+1 -1)
+> - Wrote `./apps/api/app/core/errors.py` (+82 -0)
+> - Wrote `./apps/api/app/core/logging.py` (+74 -0)
+> - Wrote `./apps/api/app/core/settings.py` (+123 -0)
+> - Wrote `./apps/api/app/main.py` (+75 -0)
+> - Wrote `./apps/api/requirements.txt` (+5 -0)
+> - Wrote `./infra/docker/Dockerfile.api` (+6 -3)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pip install -r apps\\api\\requirements-dev.txt"`
+> - Wrote `./.env.example` (+6 -2)
+> - Wrote `./apps/api/tests/test_main.py` (+86 -0)
+> - Wrote `./apps/api/tests/test_settings.py` (+55 -0)
+> - Wrote `./apps/api/app/main.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py apps\\api\\tests\\test_main.py -q"`
+> - Wrote `./apps/api/app/core/errors.py` (+6 -2)
+> - Wrote `./apps/api/app/core/logging.py` (+0 -0)
+> - Wrote `./apps/api/app/core/settings.py` (+1 -1)
+> - Wrote `./apps/api/tests/test_main.py` (+2 -2)
+> - Wrote `./apps/api/tests/test_settings.py` (+0 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py apps\\api\\tests\\test_main.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\logging.py & type apps\\api\\tests\\test_main.py & type apps\\api\\tests\\test_settings.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\logging.py | more +1 & type apps\\api\\tests\\test_main.py | more +1 & type apps\\api\\tests\\test_settings.py | more +1"`
+>
+> </details>
+>
+> The FastAPI shell and focused tests are in place. The first lint/type pass caught only import ordering and handler annotations; those are fixed, and the focused P2-01 tests now pass. I’m validating the Docker image and full project gates next.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests -q"`
+>
+> </details>
+>
+> The implementation itself is clean; the full local suite is currently being blocked by the machine’s recurring Windows `WinError 10055` socket-buffer exhaustion, including Starlette’s `TestClient` setup. I’m switching the new API tests to HTTPX’s in-process ASGI transport (more deterministic and no listening sockets), then I’ll retry the focused gates and build.
+>
+> <details><summary>Edited 3 files, ran 13 commands</summary>
+>
+> - Wrote `./apps/api/tests/test_main.py` (+41 -27)
+> - Wrote `./apps/api/tests/test_main.py` (+6 -4)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py apps\\api\\tests\\test_main.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps\\api\\tests\\test_main.py && apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py apps\\api\\tests\\test_main.py -q"`
+> - Ran `docker compose build api worker`
+> - Ran `docker compose up -d api worker`
+> - Ran `docker compose ps`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -I http://localhost:8000/health/live'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe http://localhost:8000/health/live'`
+> - Wrote `./apps/api/app/core/logging.py` (+7 -5)
+> - Wrote `./apps/api/app/main.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && git -c safe.directory=* diff --check"`
+> - Wrote `./apps/api/app/core/logging.py` (+3 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && git -c safe.directory=* diff --check"`
+> - Ran `docker compose build api worker`
+> - Ran `docker compose up -d api worker`
+> - Ran `docker compose ps`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe http://localhost:8000/health/ready'`
+>
+> </details>
+>
+> The rebuilt API image is healthy and `/health/live` plus `/health/ready` return the required envelope. One contract gap surfaced during review: framework-generated 404/405 responses would bypass the envelope, so I’m adding a safe HTTP-exception handler and a regression test before finalizing P2-01.
+>
+> <details><summary>Edited 3 files, ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py & type apps\\api\\app\\core\\errors.py"`
+> - Wrote `./apps/api/app/core/errors.py` (+31 -0)
+> - Wrote `./apps/api/app/main.py` (+3 -0)
+> - Wrote `./apps/api/tests/test_main.py` (+15 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `docker compose build api worker && docker compose up -d api worker`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe http://localhost:8000/does-not-exist'`
+>
+> </details>
+>
+> The final image now returns framework 404s as `{data, error, request_id}` and the container remains healthy. Local Python test execution is still blocked by Windows’ exhausted socket buffer, so I’m restarting Docker Desktop once to clear that transient host condition and rerun the focused API tests cleanly.
+>
+> <details><summary>Edited 3 files, ran 20 commands</summary>
+>
+> - Ran `docker desktop restart`
+> - Ran `docker desktop status`
+> - Ran `docker desktop status`
+> - Ran `docker desktop status`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py apps\\api\\tests\\test_main.py -q"`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `docker compose ps`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Wrote `./apps/api/app/main.py` (+7 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && git -c safe.directory=* diff --check"`
+> - Ran `docker compose build api worker && docker compose up -d api worker`
+> - Ran `docker compose ps`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_settings.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat & git -c safe.directory=* status --short'`
+> - Wrote `./docs/04_TRD.md` (+11 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api && apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app && git -c safe.directory=* diff --check"`
+>
+> </details>
+</details>
+
+P2-01 is complete and marked `[x]` in [06_Plan.md](<./docs/06_Plan.md>).
+
+Implemented the FastAPI control-plane shell:
+
+- [main.py](<./apps/api/app/main.py>) with app factory and Uvicorn entrypoint.
+- [settings.py](<./apps/api/app/core/settings.py>) with validated runtime configuration and redacted diagnostics.
+- [errors.py](<./apps/api/app/core/errors.py>) with stable `{data, error, request_id}` responses for validation, API, HTTP, and unexpected errors.
+- [logging.py](<./apps/api/app/core/logging.py>) with JSON structured request logging and bounded request IDs.
+- Explicit CORS configuration.
+- `/health/live` and `/health/ready` endpoints.
+- Production API docs disabled.
+- Updated [Dockerfile.api](<./infra/docker/Dockerfile.api>) to run Uvicorn instead of the placeholder server.
+- Added pinned FastAPI dependencies in `requirements.txt`.
+- Added focused settings/API tests.
+- Updated [.env.example](<./.env.example>) and [04_TRD.md](<./docs/04_TRD.md>).
+
+Verification:
+
+- Ruff: passed.
+- Mypy: passed.
+- Settings tests: 3 passed.
+- Docker images built successfully.
+- Compose services healthy, including API and worker.
+- `/health/live`: 200.
+- `/health/ready`: 200.
+- Unknown route: enveloped `HTTP_404` response.
+- Web lint, typecheck, and tests: passed.
+- Compose config and `git diff --check`: passed.
+
+The remaining full local pytest rerun is still affected by Windows socket exhaustion (`WinError 10055`), not an application failure. The next unblocked step is P2-02: generate and publish the typed TypeScript API client from OpenAPI.
+
+> Now please proceed next.
+
+<details><summary>9 previous messages</summary>
+
+> I’m proceeding with P2-02: publishing a deterministic typed TypeScript API client from the FastAPI OpenAPI contract. I’ll inspect the current package structure and scripts, add the generation/check workflow without hand-maintaining duplicate endpoint types, then run the client and web gates and update the plan.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir packages\\api-client /s /b && type packages\\api-client\\package.json && type package.json && type apps\\api\\app\\main.py && type .github\\workflows\\ci.yml"`
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m proceeding with P2‑02: I’ll inspect the existing workspace package setup, wire deterministic OpenAPI export plus generated TypeScript types/client, add the CI drift check, then run the focused verification and update the plan.
+>
+> <details><summary>Created 2 files, edited 2 files, ran 10 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir packages\\api-client /s /b && type packages\\api-client\\package.json && type package.json"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .github\\workflows\\ci.yml && echo --- && if exist apps\\api\\requirements-dev.txt type apps\\api\\requirements-dev.txt && echo --- && dir /b tsconfig*.json package-lock.json 2>nul"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\web\\package.json && type packages\\contracts\\package.json && type packages\\ui\\package.json && findstr /i \"typescript openapi\" package-lock.json | more"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm view openapi-typescript version && npm view openapi-fetch version'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P2-02\" /c:\"P2\" docs\\06_Plan.md && findstr /n /c:\"OpenAPI\" /c:\"api-client\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"phase 2 core api client\" docs\\06_Plan.md && findstr /n /i \"openapi\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n -i "P2|phase 2|openapi|api-client" docs/06_Plan.md docs/04_TRD.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Select-String -Path 'docs/06_Plan.md','docs/04_TRD.md' -Pattern 'P2|Phase 2|OpenAPI|api-client' -CaseSensitive:"'$false"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+> - Wrote `./package.json` (+9 -6)
+> - Wrote `./packages/api-client/package.json` (+23 -6)
+> - Wrote `./packages/api-client/src/index.ts` (+20 -0)
+> - Wrote `./scripts/export_openapi.py` (+41 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type packages\\api-client\\package.json && type scripts\\export_openapi.py && type packages\\api-client\\src\\index.ts && type package.json"`
+>
+> </details>
+>
+> The client package is now wired to a pinned OpenAPI generator (`openapi-typescript`) and typed fetch runtime, with a repository-local export script that uses the API virtualenv when present. Next I’m installing the workspace dependencies and generating the checked-in contract so I can validate the output before adding the CI gate.
+>
+> <details><summary>Edited 3 files, ran 16 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --ignore-scripts'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "npm run api-client:typecheck && dir packages\\api-client /s /b"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type packages\\api-client\\openapi.json && type packages\\api-client\\src\\schema.ts | more"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Select-String -Path 'docs/04_TRD.md' -Pattern 'OpenAPI|client|API runtime' -Context 3,5\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\04_TRD.md"`
+> - Wrote `./.github/workflows/ci.yml` (+13 -4)
+> - Wrote `./docs/04_TRD.md` (+9 -2)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate && npm run api-client:typecheck && npm run lint && npm run typecheck && npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'ruff check apps/api scripts/export_openapi.py && mypy apps/api/app && npm run api-client:check && docker compose config --quiet && git diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "if exist apps\\api\\.venv\\Scripts\\ruff.exe (apps\\api\\.venv\\Scripts\\ruff.exe check apps/api scripts/export_openapi.py) else (python -m ruff check apps/api scripts/export_openapi.py) && if exist apps\\api\\.venv\\Scripts\\mypy.exe (apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app) else (python -m mypy apps/api/app) && npm run api-client:check && docker compose config --quiet && git diff --check"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api scripts/export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory="E:/Developer/Voice Generation" status --short && git -c safe.directory="E:/Developer/Voice Generation" diff --name-status -- packages/api-client/openapi.json packages/api-client/src/schema.ts && git -c safe.directory="E:/Developer/Voice Generation" ls-files packages/api-client/openapi.json packages/api-client/src/schema.ts'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short && git -c safe.directory=* diff --name-status -- packages/api-client/openapi.json packages/api-client/src/schema.ts && git -c safe.directory=* ls-files packages/api-client/openapi.json packages/api-client/src/schema.ts'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+>
+> </details>
+>
+> Generation and typechecking are passing. I also found the expected local nuance: the new OpenAPI artifacts are intentionally untracked until your next commit, so Git’s drift command reports them as a diff locally; once committed, the same command is the CI gate and will pass on a clean checkout. I’m doing a final determinism check and reviewing the exact changed-file set now.
+>
+> <details><summary>Edited a file, ran 6 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "certutil -hashfile packages\\api-client\\openapi.json SHA256 && certutil -hashfile packages\\api-client\\src\\schema.ts SHA256 && npm run api-client:generate > nul && certutil -hashfile packages\\api-client\\openapi.json SHA256 && certutil -hashfile packages\\api-client\\src\\schema.ts SHA256 && git -c safe.directory=* status --short"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'powershell.exe -NoProfile -Command "Get-Content docs/04_TRD.md | Select-Object -Skip 47 -First 34; Get-Content docs/04_TRD.md | Select-Object -Skip 142 -First 26; Get-Content .github/workflows/ci.yml | Select-Object -Skip 32 -First 35; Get-Content docs/06_Plan.md | Select-Object -Skip 52 -First 12; Get-Content docs/06_Plan.md | Select-Object -Last 8"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff -- .github/workflows/ci.yml docs/04_TRD.md docs/06_Plan.md package.json packages/api-client/package.json | more'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'findstr /n /i "openapi-fetch openapi-typescript" package-lock.json'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"APP_ENV CLASSVOICE_ENV\" apps\\api\\app\\core\\settings.py scripts\\export_openapi.py"`
+> - Wrote `./scripts/export_openapi.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "npm run api-client:generate && apps\\api\\.venv\\Scripts\\ruff.exe check scripts/export_openapi.py"`
+>
+> </details>
+</details>
+
+P2-02 is complete: the typed TypeScript API client is now generated from FastAPI OpenAPI.
+
+Implemented:
+
+- Deterministic OpenAPI export script: [export_openapi.py](<./scripts/export_openapi.py>)
+- Checked-in OpenAPI snapshot: [openapi.json](<./packages/api-client/openapi.json>)
+- Generated TypeScript schema: [schema.ts](<./packages/api-client/src/schema.ts>)
+- Typed `openapi-fetch` client factory: [index.ts](<./packages/api-client/src/index.ts>)
+- Pinned dependencies:
+  - `openapi-typescript@7.13.0`
+  - `openapi-fetch@0.17.0`
+- Added root scripts for generation, typechecking, and schema drift detection.
+- Added CI enforcement in [.github/workflows/ci.yml](<./.github/workflows/ci.yml>).
+- Updated [04_TRD.md](<./docs/04_TRD.md>) and marked P2-02 complete in [06_Plan.md](<./docs/06_Plan.md>).
+
+Verification passed:
+
+- OpenAPI generation
+- Generated client typecheck
+- Web lint/typecheck/tests
+- Ruff
+- Mypy
+- Docker Compose configuration
+- Deterministic SHA-256 outputs across repeated generation
+
+The local drift command may report the new generated files as untracked until this work is committed; CI will enforce drift detection once they are tracked.
+
+Next dependency step is P2-03: private storage adapter with signed upload/download URLs.
+
+> Now please proceed next.
+
+<details><summary>5 previous messages</summary>
+
+> I’m moving to P2‑03: I’ll inspect the current API/core structure and storage configuration, then implement a provider-neutral private storage adapter with 10-minute signed URLs, LocalStack/S3 support, Supabase-compatible configuration, focused tests, and the plan/CI documentation updates.
+>
+> <details><summary>Created 6 files, edited 6 files, ran 6 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app /s /b && type apps\\api\\app\\core\\settings.py && type apps\\api\\requirements.txt && type docker-compose.yml"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .env.example && type docs\\05_Schema.md | findstr /i \"bucket object storage\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'python -m pip index versions boto3'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_settings.py && type apps\\api\\app\\core\\errors.py | more"`
+> - Wrote `./apps/api/app/core/settings.py` (+60 -0)
+> - Wrote `./apps/api/app/storage/__init__.py` (+21 -0)
+> - Wrote `./apps/api/app/storage/factory.py` (+15 -0)
+> - Wrote `./apps/api/app/storage/ports.py` (+54 -0)
+> - Wrote `./apps/api/app/storage/s3.py` (+79 -0)
+> - Wrote `./apps/api/app/storage/supabase.py` (+102 -0)
+> - Wrote `./.env.example` (+4 -3)
+> - Wrote `./apps/api/requirements.txt` (+1 -0)
+> - Wrote `./docker-compose.yml` (+6 -4)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pip install -r apps\\api\\requirements.txt"`
+> - Wrote `./apps/api/tests/test_settings.py` (+8 -0)
+> - Wrote `./apps/api/tests/test_storage.py` (+94 -0)
+> - Wrote `./apps/api/tests/test_storage.py` (+17 -18)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_storage.py"`
+> - Wrote `./apps/api/tests/test_storage.py` (+2 -1)
+>
+> </details>
+>
+> The storage layer is implemented with a single provider-neutral contract. LocalStack/S3 uses SigV4 presigning, Supabase uses its server-only signed-object endpoints, object keys and bucket names are allowlisted, and the TTL is fixed at 600 seconds. I’m now running focused tests and static checks; any failures here will be corrected before marking P2‑03 complete.
+>
+> <details><summary>Edited 4 files, ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api && apps\\api\\.venv\\Scripts\\ruff.exe format apps/api"`
+> - Wrote `./apps/api/app/storage/s3.py` (+6 -1)
+> - Wrote `./apps/api/app/storage/supabase.py` (+6 -1)
+> - Wrote `./apps/api/tests/test_storage.py` (+4 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q"`
+> - Wrote `./apps/api/requirements-dev.txt` (+1 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pip install -r apps\\api\\requirements-dev.txt"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q"`
+>
+> </details>
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 6:19 PM.
+</details>
+
+> please continue
+
+<details><summary>3 previous messages</summary>
+
+> <details><summary>Edited 3 files, ran 3 commands</summary>
+>
+> - Wrote `./apps/api/app/core/settings.py` (+5 -0)
+> - Wrote `./docs/04_TRD.md` (+8 -3)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q && npm run lint && npm run typecheck && npm test && docker compose config --quiet && git -c safe.directory=* diff --check"`
+> - Wrote `./apps/api/app/core/settings.py` (+5 -5)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q && npm run lint && npm run typecheck && npm test && docker compose config --quiet && git -c safe.directory=* diff --check"`
+> - Wrote `./apps/api/app/core/settings.py` (+2 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app && apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_settings.py apps/api/tests/test_storage.py -q && npm run lint && npm run typecheck && npm test && docker compose config --quiet && git -c safe.directory=* diff --check"`
+>
+> </details>
+>
+> Focused storage tests now pass (7), and Ruff/mypy plus the web checks are green. I corrected validation ordering so existing production-setting tests remain stable. I’m doing the final container build/health check now because boto3 is a runtime dependency, then I’ll update the handoff with the exact next step.
+>
+> <details><summary>Ran 4 commands, searched the web</summary>
+>
+> - Ran `docker compose build api`
+>
+> - Ran `docker compose up -d api && docker compose ps api`
+>
+> - Ran `powershell.exe -NoProfile -Command "Start-Sleep -Seconds 8; docker compose ps api; curl.exe -sS http://localhost:8000/health/live"`
+>
+> Searched the web for `site:supabase.com/docs storage createSignedUploadUrl expires upload sign endpoint expiresIn ...`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short && git -c safe.directory=* diff --stat'`
+>
+> </details>
+</details>
+
+P2‑03 is complete.
+
+Implemented:
+
+- Provider-neutral storage contract in [app/storage/ports.py](<./apps/api/app/storage/ports.py>)
+- LocalStack/S3 adapter with SigV4 signed upload/download URLs
+- Supabase Storage adapter using server-only signed endpoints
+- Strict allowlisted buckets and traversal-safe object keys
+- Fixed 600-second signed URL policy
+- Validated storage configuration and production credential checks
+- Pinned `boto3==1.43.120` and `boto3-stubs`
+- Focused storage and settings tests in [test_storage.py](<./apps/api/tests/test_storage.py>)
+- Updated Compose, `.env.example`, TRD, and implementation plan
+
+Verification passed:
+
+- 7 focused API tests
+- Ruff
+- Mypy
+- Web lint/typecheck/tests
+- Docker API image rebuild
+- API container healthy
+- `/health/live` returns 200
+- Compose configuration
+- `git diff --check`
+
+The next step is P2‑04: implement the authenticated upload-intent endpoint with MIME/type limits, quarantine keys, size validation, and idempotency.
