@@ -89,7 +89,7 @@ class SmokeCpuAdapter:
                 "INFERENCE_FORMAT_UNSUPPORTED",
                 "The CPU smoke adapter only produces WAV output.",
             )
-        audio = _deterministic_wav(request)
+        audio = deterministic_wav_for_request(request)
         return InferenceResult(
             audio_bytes=audio,
             content_type="audio/wav",
@@ -107,7 +107,7 @@ class SmokeCpuAdapter:
         )
 
 
-def _deterministic_wav(request: InferenceRequest) -> bytes:
+def deterministic_wav_for_request(request: InferenceRequest) -> bytes:
     seed_material = "|".join(
         (
             request.input_text,

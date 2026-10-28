@@ -126,6 +126,13 @@ API conventions:
   production quality. Provider adapters return bytes plus content type,
   duration, checksum, and redacted provenance metadata. MP3 conversion and
   private object persistence remain later pipeline stages.
+- OpenVoice V2 uses the same adapter with `WORKER_DEVICE=cpu|cuda`. The
+  runtime factory receives only a registry-approved manifest entry and device;
+  it must never fetch weights at request time. Output is bounded to 25 MB and
+  120 seconds, normalized to mono 16-bit WAV, and records model key/version,
+  checkpoint SHA, device, settings, and output checksum. The repository keeps
+  no model weights; adding a production checkpoint requires a reviewed
+  manifest entry and license ADR.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 - Model execution is gated by the repository-controlled `infra/model-registry/manifest.json`.
