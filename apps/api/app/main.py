@@ -10,6 +10,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from .api.v1.generations import router as generations_router
 from .api.v1.voices import configure_upload_state
 from .api.v1.voices import router as voices_router
 from .core.auth_config import AuthConfigurationError
@@ -24,6 +25,7 @@ from .core.errors import (
 from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
+from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
 from .inference.model_registry import ModelRegistry
 from .storage import build_storage_adapter
 
@@ -55,6 +57,12 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         else ModelRegistry.empty()
     )
     configure_upload_state(app)
+    app.state.generation_store = InMemoryGenerationStore()
+    app.state.generation_service = GenerationService(
+        app.state.generation_store,
+        app.state.voice_service,
+        app.state.model_registry,
+    )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(runtime_settings.cors_origins),
@@ -74,6 +82,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(Exception, unexpected_error_handler)
     app.include_router(voices_router, prefix="/v1")
+    app.include_router(generations_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])
     async def live(request: Request) -> dict[str, object]:

@@ -1,0 +1,1 @@
+"""Generation job domain services."""

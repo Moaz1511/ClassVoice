@@ -105,6 +105,14 @@ API conventions:
   transitions, append redacted audit events, and enqueue asynchronous cascade
   deletion intents. Local API state is an in-memory adapter until the SQL
   repository is connected.
+- Generation routes require a ready, consent-accepted voice in the requested
+  workspace, an exact language match, an enabled model with approved license
+  and SHA-pinned checkpoint, bounded text/settings, and a visible
+  `Idempotency-Key`. `POST /v1/generations` returns `202 Accepted`; repeated
+  requests with the same workspace/key and metadata return the original job,
+  while metadata reuse is rejected. Reads omit raw text from list responses;
+  cancel and retry are role/scope-protected and preserve explicit lifecycle
+  state transitions with safe error codes.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 - Model execution is gated by the repository-controlled `infra/model-registry/manifest.json`.
