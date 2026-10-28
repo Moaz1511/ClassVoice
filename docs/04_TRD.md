@@ -113,6 +113,13 @@ API conventions:
   while metadata reuse is rejected. Reads omit raw text from list responses;
   cancel and retry are role/scope-protected and preserve explicit lifecycle
   state transitions with safe error codes.
+- Generation dispatch uses Redis/ARQ at-least-once delivery with deterministic
+  job IDs (`generation:{job_id}:{attempt}`), bounded worker attempts, and
+  expiring leases. A worker claims a queued job before processing, renews its
+  lease while active, persists safe terminal/error state, and requeues only
+  retryable failures or expired leases. The local API uses the same queue and
+  lease ports with an in-memory adapter until the SQL/Redis runtime wiring is
+  enabled; duplicate deliveries are harmless.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 - Model execution is gated by the repository-controlled `infra/model-registry/manifest.json`.

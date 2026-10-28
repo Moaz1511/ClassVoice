@@ -15,6 +15,7 @@ from app.domains.generations.jobs import GenerationService
 from app.domains.voices.lifecycle import VoiceReadiness
 from app.inference.model_registry import ModelManifest, ModelManifestEntry, ModelRegistry
 from app.main import create_app
+from app.workers.generation_queue import GenerationWorker, InMemoryGenerationQueue
 
 pytestmark = pytest.mark.asyncio
 
@@ -80,6 +81,11 @@ def make_app() -> tuple[object, UUID]:
         app.state.generation_store,
         app.state.voice_service,
         app.state.model_registry,
+    )
+    app.state.generation_queue = InMemoryGenerationQueue()
+    app.state.generation_worker = GenerationWorker(
+        app.state.generation_service,
+        app.state.generation_queue,
     )
     return app, user_id
 
@@ -159,7 +165,7 @@ async def test_generation_routes_are_idempotent_and_support_cancel_retry() -> No
     assert canceled.status_code == 200
     assert canceled.json()["data"]["status"] == "cancel_requested"
     assert retried.status_code == 200
-    assert retried.json()["data"]["status"] == "created"
+    assert retried.json()["data"]["status"] == "queued"
     assert retried.json()["data"]["queue_attempts"] == 1
 
 

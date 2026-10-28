@@ -28,6 +28,7 @@ from .core.settings import APISettings
 from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
 from .inference.model_registry import ModelRegistry
 from .storage import build_storage_adapter
+from .workers.generation_queue import GenerationWorker, InMemoryGenerationQueue
 
 
 def create_app(settings: APISettings | None = None) -> FastAPI:
@@ -62,6 +63,11 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         app.state.generation_store,
         app.state.voice_service,
         app.state.model_registry,
+    )
+    app.state.generation_queue = InMemoryGenerationQueue()
+    app.state.generation_worker = GenerationWorker(
+        app.state.generation_service,
+        app.state.generation_queue,
     )
     app.add_middleware(
         CORSMiddleware,

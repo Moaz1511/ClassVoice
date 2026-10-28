@@ -49,6 +49,10 @@ def _generation_service(request: Request) -> GenerationService:
     return request.app.state.generation_service
 
 
+def _generation_worker(request: Request):
+    return request.app.state.generation_worker
+
+
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
     verifier: JWTVerifier | None = request.app.state.jwt_verifier
     if verifier is None:
@@ -137,6 +141,7 @@ async def create_generation(
     except GenerationError as error:
         status = 409 if error.code == "IDEMPOTENCY_KEY_REUSED" else 400
         raise APIError(status, error.code, str(error)) from error
+    job = await _generation_worker(request).publish(job.id, claims.subject)
     return envelope(request, data=job.as_dict())
 
 
@@ -211,6 +216,7 @@ async def retry_generation(
     )
     try:
         job = await _generation_service(request).retry(job_id, claims.subject)
+        job = await _generation_worker(request).publish(job.id, claims.subject)
     except GenerationError as error:
         status = 404 if error.code == "GENERATION_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
