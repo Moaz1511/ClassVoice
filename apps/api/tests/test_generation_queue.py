@@ -6,10 +6,12 @@ from uuid import UUID
 import pytest
 from app.domains.generations.jobs import GenerationService, InMemoryGenerationStore
 from app.domains.voices.lifecycle import InMemoryVoiceStore, VoiceLifecycleService, VoiceReadiness
+from app.inference.adapter import SmokeCpuAdapter
 from app.inference.model_registry import ModelManifest, ModelManifestEntry, ModelRegistry
 from app.workers.generation_queue import (
     GenerationWorker,
     InMemoryGenerationLeaseStore,
+    InMemoryGenerationOutputStore,
     InMemoryGenerationQueue,
 )
 
@@ -131,3 +133,21 @@ async def test_expired_lease_is_requeued_and_audit_is_recorded() -> None:
     assert recovered[0].status == "queued"
     assert recovered[0].error_code is None
     assert await queue.size() == 1
+
+
+async def test_worker_executes_smoke_adapter_and_persists_waveform() -> None:
+    service, voice_id = await service_fixture()
+    job_id = await create_job(service, voice_id, "queue-smoke-create-01")
+    queue = InMemoryGenerationQueue()
+    outputs = InMemoryGenerationOutputStore()
+    worker = GenerationWorker(service, queue, lease_seconds=5)
+    await worker.publish(job_id, ACTOR_ID)
+    lease = await worker.claim_next(ACTOR_ID)
+    assert lease is not None
+
+    completed, result = await worker.execute(lease.lease_id, ACTOR_ID, SmokeCpuAdapter(), outputs)
+
+    assert completed.status == "succeeded"
+    assert result is not None
+    assert result.audio_bytes.startswith(b"RIFF")
+    assert (await outputs.get(job_id)) == result

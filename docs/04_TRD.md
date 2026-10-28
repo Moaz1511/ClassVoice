@@ -120,6 +120,12 @@ API conventions:
   retryable failures or expired leases. The local API uses the same queue and
   lease ports with an in-memory adapter until the SQL/Redis runtime wiring is
   enabled; duplicate deliveries are harmless.
+- Inference is called only through the `InferenceAdapter` contract. The local
+  `SmokeCpuAdapter` produces a deterministic 24 kHz mono WAV for bounded input
+  and is used for lifecycle smoke tests; it does not load checkpoints or claim
+  production quality. Provider adapters return bytes plus content type,
+  duration, checksum, and redacted provenance metadata. MP3 conversion and
+  private object persistence remain later pipeline stages.
 - Async generation returns `202 Accepted` with a job resource.
 - Timeouts: browser 30 s for normal API calls; worker outbound calls 15 s; storage signed URLs 10 minutes.
 - Model execution is gated by the repository-controlled `infra/model-registry/manifest.json`.

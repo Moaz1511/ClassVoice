@@ -2620,3 +2620,909 @@ The next planned dependency is P2-06: voice create/read/update/archive/revoke/de
 >
 > Selected model is at capacity. Please try a different model.
 </details>
+
+<details><summary>17 previous messages</summary>
+
+> The lifecycle service and routes are now implemented with consent metadata, workspace-scoped authorization, explicit archive/restore/revoke transitions, admin-only asynchronous deletion, idempotent creation, and audit/cascade records. The generated OpenAPI client has been refreshed; I’m running the full focused regression set now.
+>
+> <details><summary>Edited a file, ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Wrote `./apps/api/tests/test_voice_lifecycle.py` (+1 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_audio_validation.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Ran `docker compose ps api worker`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type packages\\contracts\\src\\index.ts 2>nul"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\voices.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat'`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+</details>
+
+P2-06 is complete: voice lifecycle API and state transitions are implemented.
+
+Added endpoints:
+
+- `GET /v1/voices`
+- `POST /v1/voices`
+- `GET /v1/voices/{voice_id}`
+- `PATCH /v1/voices/{voice_id}`
+- `POST /v1/voices/{voice_id}/revoke`
+- `DELETE /v1/voices/{voice_id}`
+
+Implemented controls:
+
+- Consent statement version and SHA-256 attestation capture
+- Idempotent voice creation
+- Workspace-scoped reads
+- Editor-only update/archive/restore/revoke
+- Admin/owner-only permanent deletion
+- Explicit lifecycle transition validation
+- Readiness prerequisite checks
+- Audit event creation
+- Asynchronous cascade-deletion queue intents
+- Generated OpenAPI and TypeScript client updates
+
+Files:
+
+- [lifecycle.py](<./apps/api/app/domains/voices/lifecycle.py>)
+- [voices.py](<./apps/api/app/api/v1/voices.py>)
+- [test_voice_lifecycle.py](<./apps/api/tests/test_voice_lifecycle.py>)
+- [test_voice_routes.py](<./apps/api/tests/test_voice_routes.py>)
+- [04_TRD.md](<./docs/04_TRD.md>)
+- [06_Plan.md](<./docs/06_Plan.md>)
+
+Verification passed:
+
+- 37 focused API tests
+- Ruff
+- mypy
+- API client typecheck
+- Web lint/typecheck/tests
+- Compose configuration validation
+- `git diff --check`
+
+The local implementation currently uses an in-memory voice repository and cascade queue. The SQL repository integration remains a future persistence step.
+
+Next planned step: P2-07 — model registry manifest, license-review gate, and allowlisted checkpoint loader.
+
+> Now please proceed next.
+
+<details><summary>24 previous messages</summary>
+
+> I’m proceeding with P2-07: adding the model registry manifest, license-approval gate, immutable checkpoint metadata, and an allowlisted loader interface. I’ll keep model loading provider-neutral and deterministic so the later inference adapter can consume only approved, SHA-pinned checkpoints.
+>
+> <details><summary>Created 3 files, ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir infra\\model-registry && dir apps\\api\\app && findstr /n /i \"model\" docs\\04_TRD.md docs\\05_Schema.md docs\\06_Plan.md | more"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\inference && dir apps\\api\\app\\db && type db\\seed\\local_identity.sql && findstr /n /i \"model_versions\" db\\migrations\\versions\\*.py"`
+> - Wrote `./apps/api/app/inference/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/inference/model_registry.py` (+243 -0)
+> - Wrote `./infra/model-registry/manifest.json` (+4 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps/api/app/inference/model_registry.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe format apps/api/app/inference/model_registry.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api/app/inference/model_registry.py"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/tests/test_model_registry.py` (+110 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_model_registry.py -q"`
+> - Wrote `./apps/api/tests/test_model_registry.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_model_registry.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\docker\\Dockerfile.api && type infra\\docker\\Dockerfile.worker && type docker-compose.yml"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 3 files, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir infra\\docker && type docker-compose.yml"`
+> - Wrote `./apps/api/app/main.py` (+12 -0)
+> - Wrote `./docker-compose.yml` (+4 -2)
+> - Wrote `./infra/docker/Dockerfile.api` (+1 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"MODEL_REGISTRY_PATH\" docker-compose.yml && apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'findstr /n MODEL_REGISTRY_PATH docker-compose.yml'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 2 files, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_model_registry.py apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py apps/api/tests/test_audio_validation.py -q"`
+> - Wrote `./docs/04_TRD.md` (+9 -2)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 10 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps/api/tests/test_model_registry.py apps/api/tests/test_voice_lifecycle.py apps/api/tests/test_voice_routes.py apps/api/tests/test_main.py apps/api/tests/test_settings.py apps/api/tests/test_storage.py apps/api/tests/test_upload_intent.py apps/api/tests/test_audio_validation.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+>
+> </details>
+</details>
+
+P2-07 is complete: model registry and checkpoint safety gates are implemented.
+
+Implemented:
+
+- Versioned registry manifest at [manifest.json](<./infra/model-registry/manifest.json>)
+- Strict model entry validation
+- License-review gate requiring `approved`
+- Explicit `enabled` gate
+- SHA-256-pinned checkpoint identities
+- Checkpoint path containment protection
+- Streaming checkpoint hash verification
+- Unknown, disabled, rejected, pending, missing, and tampered models rejected
+- Immutable model provenance metadata for generation jobs
+- Runtime-loader callback without coupling to PyTorch
+- API/worker app-state wiring for the registry
+- Manifest copied into the container image
+
+Files:
+
+- [model_registry.py](<./apps/api/app/inference/model_registry.py>)
+- [test_model_registry.py](<./apps/api/tests/test_model_registry.py>)
+- [main.py](<./apps/api/app/main.py>)
+- [Dockerfile.api](<./infra/docker/Dockerfile.api>)
+- [docker-compose.yml](<./docker-compose.yml>)
+- [04_TRD.md](<./docs/04_TRD.md>)
+- [06_Plan.md](<./docs/06_Plan.md>)
+
+The baseline manifest is intentionally empty. No checkpoint can execute until it has been reviewed, SHA-pinned, and explicitly enabled.
+
+Verification passed:
+
+- 42 focused API/registry tests
+- Ruff
+- mypy
+- API client typecheck
+- Web lint/typecheck/tests
+- Compose configuration validation
+- `git diff --check`
+
+The Docker image wiring is committed, but image rebuild remains deferred because Docker Desktop previously failed during BuildKit metadata commit with a read-only filesystem error.
+
+Next planned step: P2-08 — generation create/read/list/cancel/retry endpoints with validation and idempotency.
+
+> Now please proceed next.
+
+<details><summary>47 previous messages</summary>
+
+> I’m proceeding with P2-08: generation job create/read/list/cancel/retry APIs with validation, consent/model gates, and idempotency. I’ll build this against the existing voice and model-registry contracts, then add authenticated route coverage and regenerate the API contract if the surface changes.
+>
+> <details><summary>Created 3 files, edited 3 files, ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0004_generation.py && type docs\\05_Schema.md && type apps\\api\\app\\inference\\model_registry.py | more"`
+> - Wrote `./apps/api/app/domains/generations/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+421 -0)
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+3 -3)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+51 -12)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+218 -0)
+> - Wrote `./apps/api/app/main.py` (+9 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+2 -3)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file</summary>
+>
+> - Wrote `./apps/api/tests/test_generation_jobs.py` (+216 -0)
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m continuing P2-08 now. I’m tightening the generation service tests first, then I’ll verify the authenticated routes, regenerate the client contract, and update the implementation plan.
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short & rg -n "service_fixture|create_job|GenerationService|generations" apps/api/tests/test_generation_jobs.py apps/api/app/api/v1/generations.py apps/api/app/domains/generations/jobs.py apps/api/app/main.py'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Get-Content -Path 'apps/api/tests/test_generation_jobs.py'\""`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, explored a file, ran 2 commands</summary>
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./apps/api/tests/test_generation_jobs.py`
+>
+> </details>
+>
+> - Ran `Get-Content -Path 'apps/api/app/api/v1/generations.py'; Get-Content -Path 'apps/api/app/domains/generations/jobs.py'`
+>
+> - Wrote `./apps/api/tests/test_generation_jobs.py` (+24 -24)
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n \"VOICE_ID|create_job\\(|service_fixture\" apps/api/tests/test_generation_jobs.py"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"VOICE_ID\" /c:\"create_job(\" /c:\"service_fixture\" apps\\api\\tests\\test_generation_jobs.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_jobs.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_voice_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\inference\\model_registry.py & type apps\\api\\app\\domains\\voices\\lifecycle.py | more"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file, edited a file, ran 3 commands</summary>
+>
+> - Wrote `./apps/api/tests/test_generation_routes.py` (+200 -0)
+> - Wrote `./apps/api/tests/test_generation_routes.py` (+13 -3)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_jobs.py apps/api/tests/test_generation_routes.py -q"`
+> - Wrote `./apps/api/tests/test_generation_routes.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_jobs.py apps/api/tests/test_generation_routes.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"P2-08\" /c:\"Generation\" docs\\06_Plan.md & findstr /n /i /c:\"generation\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python -c \"from pathlib import Path; p=Path('docs/06_Plan.md'); print('\\n'.join(f'{i+1}: {line}' for i,line in enumerate(p.read_text(encoding='utf-8').splitlines()) if 'P2-' in line or 'Generation' in line))\""`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 2 files, ran 4 commands</summary>
+>
+> - Ran `Get-Content -Path 'docs/06_Plan.md' | Select-Object -First 260`
+> - Ran `Get-Content -Path 'docs/04_TRD.md' | Select-Object -First 260`
+> - Wrote `./docs/04_TRD.md` (+8 -0)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck && npm run lint && npm run typecheck && npm test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests -q"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran 3 commands</summary>
+>
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"model_registry\" /c:\"generation_service\" /c:\"include_router\" apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /i /c:\"/v1/generations\" packages\\api-client\\openapi.json"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat & git -c safe.directory=* status --short'`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran a command</summary>
+>
+> - Wrote `./apps/api/tests/test_generation_jobs.py` (+26 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_jobs.py apps/api/tests/test_generation_routes.py -q && apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited a file, ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api"`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "git -c safe.directory=* diff --check & apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+</details>
+
+P2-08 is complete.
+
+Implemented:
+
+- Generation job domain service with:
+  - Create, read, list, cancel, retry
+  - Workspace isolation and role/scope authorization
+  - Ready voice and consent checks
+  - Model license, enabled-state, language, and SHA validation
+  - Text/settings bounds
+  - Idempotency-key protection
+  - Safe lifecycle transitions and audit events
+  - Model provenance copied to each job
+  - Raw text excluded from list responses
+
+- API routes in [generations.py](<./apps/api/app/api/v1/generations.py>)
+
+- Domain logic in [jobs.py](<./apps/api/app/domains/generations/jobs.py>)
+
+- Service and authenticated route tests:
+  - [test_generation_jobs.py](<./apps/api/tests/test_generation_jobs.py>)
+  - [test_generation_routes.py](<./apps/api/tests/test_generation_routes.py>)
+
+- Regenerated:
+  - [openapi.json](<./packages/api-client/openapi.json>)
+  - [schema.ts](<./packages/api-client/src/schema.ts>)
+
+- Updated:
+  - [04_TRD.md](<./docs/04_TRD.md>)
+  - [06_Plan.md](<./docs/06_Plan.md>)
+
+Verification completed:
+
+- Ruff passed
+- Mypy passed
+- API client typecheck passed
+- Web lint/typecheck/tests passed
+- Docker Compose configuration passed
+- `git diff --check` passed
+- Full API suite passed before the final test-only additions; a subsequent local rerun was blocked by the known Windows `WinError 10055` socket-buffer exhaustion.
+
+The model registry is intentionally empty, so generation requests will remain blocked with `MODEL_NOT_ALLOWLISTED` until a reviewed checkpoint is added to `infra/model-registry/manifest.json`.
+
+The next dependency step is P2-09: Redis/arq job publishing, worker claiming, lease timeout, retry policy, and terminal-state persistence.
+
+> Now please proceed next.
+
+<details><summary>21 previous messages</summary>
+
+> I’m moving to P2-09: durable queue publishing and worker lifecycle control. I’ll first inspect the existing Redis/arq and database contracts, then add a bounded claim/lease/retry implementation with tests and update the plan only after verification.
+>
+> <details><summary>Created 2 files, edited a file, ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app /s /b | findstr /i \"worker queue generation jobs\" & type apps\\api\\requirements.txt & type docker-compose.yml"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\workers /b 2>nul & dir apps\\api\\app\\queue /b 2>nul & type apps\\api\\pyproject.toml & type infra\\docker\\Dockerfile.api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\generations\\jobs.py | more +1 & type apps\\api\\app\\core\\settings.py | more +1"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+270 -0)
+> - Wrote `./apps/api/app/workers/arq_worker.py` (+39 -0)
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+7 -2)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Created a file, edited 2 files, ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\generation_queue.py | findstr /n /c:\"claim_next\" /c:\"claim(\" /c:\"message\" & type apps\\api\\app\\workers\\arq_worker.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Select-String -Path 'apps/api/app/workers/generation_queue.py' -Pattern 'claim_next|async def claim|message.job_id|message.attempt' -Context 0,8\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\generation_queue.py"`
+> - Wrote `./apps/api/requirements.txt` (+2 -0)
+> - Wrote `./apps/api/tests/test_generation_queue.py` (+133 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+2 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 5 files, ran 5 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_queue.py -q"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+2 -4)
+> - Wrote `./apps/api/tests/test_generation_queue.py` (+2 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_queue.py -q"`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+6 -0)
+> - Wrote `./apps/api/app/main.py` (+6 -0)
+> - Wrote `./apps/api/tests/test_generation_routes.py` (+7 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps/api && apps\\api\\.venv\\Scripts\\mypy.exe apps/api/app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_queue.py apps/api/tests/test_generation_routes.py -q"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests/test_generation_jobs.py -q"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Edited 2 files, ran a command</summary>
+>
+> - Wrote `./docs/04_TRD.md` (+7 -0)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps/api/tests -q"`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run api-client:typecheck && npm run lint && npm run typecheck && npm test'`
+> - Ran `docker compose config --quiet`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check & git -c safe.directory=* status --short'`
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\generations.py | more +30"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m compileall -q apps/api/app"`
+>
+> </details>
+</details>
+
+P2-09 is complete.
+
+Implemented:
+
+- At-least-once generation queue publishing
+- Deterministic ARQ job IDs
+- Worker claiming and processing leases
+- Lease heartbeat renewal
+- Expired-lease recovery
+- Bounded retry policy
+- Safe terminal/error persistence
+- Duplicate delivery protection
+- ARQ worker entrypoint
+- API create/retry integration with the dispatcher
+- Redis and ARQ dependencies in [requirements.txt](<./apps/api/requirements.txt>)
+
+Main files:
+
+- [generation_queue.py](<./apps/api/app/workers/generation_queue.py>)
+- [arq_worker.py](<./apps/api/app/workers/arq_worker.py>)
+- [test_generation_queue.py](<./apps/api/tests/test_generation_queue.py>)
+
+Also updated:
+
+- [04_TRD.md](<./docs/04_TRD.md>)
+- [06_Plan.md](<./docs/06_Plan.md>)
+- [main.py](<./apps/api/app/main.py>)
+- [generations.py](<./apps/api/app/api/v1/generations.py>)
+
+Verification:
+
+- Queue/worker tests: 2 passed
+- Generation route tests: 2 passed
+- Generation service tests: 4 passed
+- Ruff passed
+- Mypy passed
+- Python compilation passed
+- API client typecheck passed
+- Web lint/typecheck/tests passed
+- Docker Compose config passed
+- `git diff --check` passed
+
+The full API suite remains locally affected by the recurring Windows `WinError 10055` socket-buffer exhaustion, not by application assertion failures.
+
+Next dependency: P2-10, the inference adapter interface and deterministic CPU smoke adapter.
+
+> Now please proceed next.
+
+<details><summary>4 previous messages</summary>
+
+> I’m proceeding with P2-10: defining the provider-neutral inference adapter contract and adding a deterministic CPU smoke adapter. I’ll connect it to the worker callback boundary, test deterministic waveform output and limits, then update the plan.
+>
+> <details><summary>Created a file, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\inference /b & type apps\\api\\app\\inference\\__init__.py & type apps\\api\\app\\workers\\arq_worker.py & type docs\\06_Plan.md | findstr /i \"P2-10\""`
+> - Wrote `./apps/api/app/inference/adapter.py` (+141 -0)
+>
+> </details>
+>
+> Stream error
+>
+> Reconnecting... waiting for network
+> Connection failed: error sending request
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 11:23 PM.
+</details>

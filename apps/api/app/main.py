@@ -26,6 +26,7 @@ from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
 from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
+from .inference.adapter import SmokeCpuAdapter
 from .inference.model_registry import ModelRegistry
 from .storage import build_storage_adapter
 from .workers.generation_queue import GenerationWorker, InMemoryGenerationQueue
@@ -57,6 +58,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         if registry_path.is_file()
         else ModelRegistry.empty()
     )
+    app.state.inference_adapter = SmokeCpuAdapter()
     configure_upload_state(app)
     app.state.generation_store = InMemoryGenerationStore()
     app.state.generation_service = GenerationService(

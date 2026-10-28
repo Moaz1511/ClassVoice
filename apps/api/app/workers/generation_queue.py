@@ -16,6 +16,12 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 from app.domains.generations.jobs import GenerationError, GenerationJob, GenerationService
+from app.inference.adapter import (
+    InferenceAdapter,
+    InferenceError,
+    InferenceRequest,
+    InferenceResult,
+)
 
 
 @dataclass(frozen=True, slots=True)
@@ -47,6 +53,26 @@ class GenerationLeaseStore(Protocol):
     async def remove(self, job_id: UUID) -> GenerationLease | None: ...
 
     async def list(self) -> tuple[GenerationLease, ...]: ...
+
+
+class GenerationOutputStore(Protocol):
+    async def put(self, job: GenerationJob, result: InferenceResult) -> None: ...
+
+    async def get(self, job_id: UUID) -> InferenceResult | None: ...
+
+
+class InMemoryGenerationOutputStore(GenerationOutputStore):
+    def __init__(self) -> None:
+        self._outputs: dict[UUID, InferenceResult] = {}
+        self._lock = asyncio.Lock()
+
+    async def put(self, job: GenerationJob, result: InferenceResult) -> None:
+        async with self._lock:
+            self._outputs[job.id] = result
+
+    async def get(self, job_id: UUID) -> InferenceResult | None:
+        async with self._lock:
+            return self._outputs.get(job_id)
 
 
 class InMemoryGenerationQueue(GenerationPublisher):
@@ -180,6 +206,33 @@ class GenerationWorker:
         job = await self._service.transition(lease.job_id, actor_id, "succeeded")
         await self._leases.remove(lease.job_id)
         return job
+
+    async def execute(
+        self,
+        lease_id: UUID,
+        actor_id: UUID,
+        adapter: InferenceAdapter,
+        outputs: GenerationOutputStore,
+    ) -> tuple[GenerationJob, InferenceResult | None]:
+        lease = await self._find_lease(lease_id)
+        job = await self._service.get(lease.job_id)
+        if job is None:
+            await self._leases.remove(lease.job_id)
+            raise GenerationError("GENERATION_NOT_FOUND", "Generation was not found.")
+        try:
+            result = await adapter.generate(InferenceRequest.from_job(job))
+            await outputs.put(job, result)
+        except InferenceError as error:
+            failed = await self.fail(
+                lease.lease_id,
+                actor_id,
+                error_code=error.code,
+                error_message_safe=str(error),
+                retryable=error.retryable,
+            )
+            return failed, None
+        completed = await self.succeed(lease.lease_id, actor_id)
+        return completed, result
 
     async def fail(
         self,
