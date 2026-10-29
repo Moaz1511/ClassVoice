@@ -17,6 +17,8 @@ from .api.v1.projects import configure_project_state
 from .api.v1.projects import router as projects_router
 from .api.v1.voices import configure_upload_state
 from .api.v1.voices import router as voices_router
+from .api.v1.webhooks import configure_webhook_state
+from .api.v1.webhooks import router as webhooks_router
 from .core.auth_config import AuthConfigurationError
 from .core.errors import (
     APIError,
@@ -66,6 +68,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.state.inference_adapter = SmokeCpuAdapter()
     configure_upload_state(app)
     configure_api_key_state(app)
+    configure_webhook_state(app)
     configure_project_state(app)
     app.state.generation_store = InMemoryGenerationStore()
     app.state.generation_service = GenerationService(
@@ -102,6 +105,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.include_router(projects_router, prefix="/v1")
     app.include_router(generations_router, prefix="/v1")
     app.include_router(api_keys_router, prefix="/v1")
+    app.include_router(webhooks_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])
     async def live(request: Request) -> dict[str, object]:

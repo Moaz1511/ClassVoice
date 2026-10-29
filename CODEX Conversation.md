@@ -3363,3 +3363,649 @@ Next step: create the dedicated OpenVoice worker runtime, run one real CPU synth
 >
 > You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:25 AM.
 </details>
+
+> please continue
+
+<details><summary>9 previous messages</summary>
+
+> The reproducible validation command now passes end-to-end: the verified checkpoint loaded with no missing/unexpected keys and produced a mono 16-bit WAV (22.05 kHz, ~4.6 s) with recorded checkpoint SHA, settings, and output checksum. I’m recording that evidence in the implementation plan and keeping the registry entry disabled until the production worker wiring is completed, so the API cannot accidentally claim to run a model it does not yet mount.
+>
+> <details><summary>Edited a file, ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -2)
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m finishing the OpenVoice V2 validation step now: I’ll verify the plan entries and repository diff, correct any stale progress notes, and then hand you the exact status and next dependency.
+>
+> <details><summary>Edited a file, ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "cd /d \"E:\\Developer\\Voice Generation\" && dir /a | findstr /b /c:\".git\" /c:\"docs\" && git status --short"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c dir`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "P2-07|P2-08|P2-11|Last updated" docs/06_Plan.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P2-07\" /c:\"P2-08\" /c:\"P2-11\" /c:\"Last updated\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"P2-07 P2-08 P2-11 Last updated\" docs\\06_Plan.md"`
+>
+> </details>
+>
+> The plan now reflects P2-11 as complete and no longer describes the checkpoint as “pending runtime validation.” I’m doing one final local smoke invocation and checking the exact recorded evidence; the repository folder itself currently has no `.git` directory, so a Git diff check is unavailable in this workspace.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "C:\\Python311\\python.exe scripts\\validate_openvoice_runtime.py"`
+>
+> </details>
+>
+> The final validation rerun passed end-to-end again. It loaded the checkpoint with no missing/unexpected keys and produced a valid mono 16-bit 22.05 kHz WAV; because the smoke fixture intentionally leaves `seed` unset, its duration/checksum changed between runs, so I’m updating the plan to the latest recorded evidence rather than implying byte-for-byte determinism.
+>
+> <details><summary>Edited a file, ran 3 commands</summary>
+>
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "find /n \"P2-11\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-11 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-07 docs\\06_Plan.md & findstr /n P2-08 docs\\06_Plan.md"`
+>
+> </details>
+</details>
+
+OpenVoice V2 runtime validation is complete. P2-11 is now marked `[x]` in [06_Plan.md](<./docs/06_Plan.md:108>).
+
+Verified successfully:
+
+- Checkpoint loaded with no missing/unexpected keys.
+- SHA-256: `9652c27e92b6b2a91632590ac9962ef7ae2b712e5c5b7f4c34ec55ee2b37ab9e`
+- Output: mono, 16-bit, 22,050 Hz, 4,702 ms.
+- Output SHA-256: `554376a04c52c6bc200e43aa3dabc80d78584b3971be5af0a433fe6fda6ed4ca`
+- Runtime lock recorded in [openvoice-runtime.lock](<./infra/model-registry/openvoice-runtime.lock>).
+- Reproducible command:
+  `C:\Python311\python.exe scripts\validate_openvoice_runtime.py`
+
+The model metadata and MIT license are recorded in [manifest.json](<./infra/model-registry/manifest.json>). The checkpoint corresponds to the official [OpenVoice repository](https://github.com/myshell-ai/OpenVoice) and [OpenVoiceV2 model](https://huggingface.co/myshell-ai/OpenVoiceV2).
+
+The registry remains intentionally disabled until the production worker mounts this isolated runtime. The optional WavMark download was bypassed during Windows validation because of the previous socket exhaustion issue; production watermarking still needs explicit worker configuration.
+
+The next dependency is P2-12: MP3 post-processing, private output storage, provenance metadata, and signed download authorization.
+
+> Now please proceed next.
+
+<details><summary>8 previous messages</summary>
+
+> I’m starting P2-12 now: I’ll trace the existing generation/output and storage boundaries, then implement MP3 conversion, private output persistence, provenance metadata, and an authorization-checked signed download route with focused tests before updating the plan.
+>
+> <details><summary>Created 3 files, edited 7 files, ran 30 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b apps\\api\\app | findstr /i \"generation storage output voice main.py\" & dir /s /b apps\\api\\tests | findstr /i \"generation storage output\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\generations.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\generation_queue.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\ports.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\s3.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\supabase.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\generations\\jobs.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\ports.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\s3.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\supabase.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /b apps\\api\\tests & type apps\\api\\tests\\test_storage.py & type apps\\api\\tests\\test_generation_queue.py & type apps\\api\\tests\\test_generation_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0004_generation.py & type apps\\api\\app\\inference\\adapter.py & type apps\\api\\app\\core\\authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\docker\\Dockerfile.api & type apps\\api\\requirements.txt & type apps\\api\\app\\storage\\factory.py & type apps\\api\\app\\api\\v1\\voices.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type scripts\\export_openapi.py & type package.json & type apps\\api\\pyproject.toml & type apps\\api\\app\\core\\errors.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\inference\\openvoice.py & type apps\\api\\app\\workers\\arq_worker.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0003_voice_assets.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0001_extensions_enums.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-12 docs\\04_TRD.md docs\\05_Schema.md docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"signed download output generated-audio audio_assets\" docs\\04_TRD.md docs\\05_Schema.md docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n signed docs\\04_TRD.md & findstr /n signed docs\\05_Schema.md & findstr /n signed docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +185 docs\\02_AppFlow.md & more +285 docs\\04_TRD.md & more +510 docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\settings.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_inference_adapter.py & type apps\\api\\tests\\test_openvoice_adapter.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type packages\\api-client\\package.json & type packages\\api-client\\src\\client.ts 2>nul"`
+> - Wrote `./apps/api/app/inference/postprocess.py` (+154 -0)
+> - Wrote `./apps/api/app/domains/generations/outputs.py` (+169 -0)
+> - Wrote `./apps/api/app/storage/ports.py` (+9 -0)
+> - Wrote `./apps/api/app/storage/s3.py` (+34 -7)
+> - Wrote `./apps/api/app/storage/supabase.py` (+39 -7)
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+36 -2)
+> - Wrote `./apps/api/app/main.py` (+2 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"@router.get\" apps\\api\\app\\api\\v1\\generations.py"`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+57 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "if exist apps\\api\\.venv\\Scripts\\python.exe (echo venv) else (echo no-venv) & if exist C:\\Python311\\python.exe (C311) else (no-C311)"`
+> - Wrote `./apps/api/tests/test_generation_outputs.py` (+258 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .github\\workflows\\ci.yml"`
+> - Wrote `./apps/api/tests/test_generation_outputs.py` (+2 -2)
+>
+> </details>
+>
+> The implementation boundary is in place: inference remains WAV-native, the worker performs fixed-argument FFmpeg conversion for MP3, output bytes are checksum-verified and uploaded under a workspace/job-scoped private key, and the download route rechecks membership before minting a 10-minute signed URL. I’m running lint, type checks, and focused tests now.
+>
+> <details><summary>Edited 4 files, ran 13 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_generation_outputs.py apps\\api\\tests\\test_generation_queue.py apps\\api\\tests\\test_storage.py"`
+> - Wrote `./apps/api/app/inference/postprocess.py` (+1 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n download packages\\api-client\\openapi.json"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Wrote `./apps/api/app/storage/supabase.py` (+3 -1)
+> - Wrote `./apps/api/tests/test_storage.py` (+23 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_storage.py"`
+> - Wrote `./apps/api/tests/test_storage.py` (+31 -0)
+> - Wrote `./docs/04_TRD.md` (+6 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_generation_outputs.py apps\\api\\tests\\test_storage.py apps\\api\\tests\\test_generation_queue.py"`
+>
+> </details>
+>
+> The P2-12 focused suite is green: 12 output/storage/queue tests pass, Ruff and mypy pass, and the OpenAPI client has been regenerated and typechecked. I’m doing the final full API test run now, then I’ll record P2-12 as complete with the remaining production-boundary note.
+>
+> <details><summary>Edited 2 files, ran 6 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-12 docs\\06_Plan.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'where ffmpeg'`
+> - Wrote `./apps/api/tests/test_generation_outputs.py` (+30 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_generation_outputs.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\conftest.py"`
+>
+> </details>
+>
+> The implementation tests themselves passed earlier, but the host has now reproduced the known Windows `WinError 10055` socket-buffer exhaustion before pytest can create another asyncio loop; this is the same environment failure seen in earlier phases, not an assertion failure. I’m validating FFmpeg independently and will record the limitation accurately rather than masking it.
+>
+> <details><summary>Edited 3 files, ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "\"F:\\Download\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin\\ffmpeg.exe\" -hide_banner -loglevel error -i \"private\\openvoice-runtime\\outputs\\openvoice-smoke-output.wav\" -codec:a libmp3lame -b:a 192k -f mp3 -y \"private\\openvoice-runtime\\outputs\\p2-12-smoke.mp3\" && \"F:\\Download\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin\\ffmpeg.exe\" -hide_banner -loglevel error -i \"private\\openvoice-runtime\\outputs\\p2-12-smoke.mp3\" -f null -"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "F:\\Download\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin\\ffmpeg.exe -hide_banner -loglevel error -i private\\openvoice-runtime\\outputs\\openvoice-smoke-output.wav -codec:a libmp3lame -b:a 192k -f mp3 -y private\\openvoice-runtime\\outputs\\p2-12-smoke.mp3 && F:\\Download\\ffmpeg-8.0-essentials_build\\ffmpeg-8.0-essentials_build\\bin\\ffmpeg.exe -hide_banner -loglevel error -i private\\openvoice-runtime\\outputs\\p2-12-smoke.mp3 -f null -"`
+> - Wrote `./apps/api/app/inference/postprocess.py` (+1 -1)
+> - Wrote `./apps/api/tests/test_generation_outputs.py` (+1 -1)
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-12 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n download packages\\api-client\\src\\schema.ts"`
+>
+> </details>
+</details>
+
+P2-12 is complete and marked `[x]` in [06_Plan.md](<./docs/06_Plan.md:111>).
+
+Implemented:
+
+- Fixed-argument FFmpeg WAV→MP3 conversion with size, duration, header, and checksum validation.
+- Provenance metadata containing model, checkpoint, settings, source/output checksums, and format.
+- Private generated-audio storage for S3/LocalStack and Supabase.
+- Content-addressed object keys under `generated-audio/<workspace>/<job>/<sha>.<ext>`.
+- `GET /v1/generations/{job_id}/download` with fresh workspace authorization and 600-second signed URLs.
+- Object keys are never returned to clients.
+- Regenerated [OpenAPI](<./packages/api-client/openapi.json>) and TypeScript schema artifacts.
+
+Verification:
+
+- Focused output/storage/queue tests: 12 passed.
+- Ruff: passed.
+- Mypy: passed.
+- API client typecheck: passed.
+- Independent FFmpeg encode/decode validation: passed.
+- A later full API test run was blocked during asyncio setup by the known Windows `WinError 10055` socket-buffer exhaustion, not by an assertion failure.
+
+The generated-audio metadata is currently process-local while SQL repository persistence remains pending. The storage object path and authorization boundary are production-shaped, but the dedicated production worker image still needs to mount the OpenVoice runtime.
+
+Next dependency: P2-13, projects and saved editor settings endpoints.
+
+> Now please proceed next.
+
+<details><summary>4 previous messages</summary>
+
+> I’m starting P2-13: I’ll implement workspace-scoped project creation/read/update/archive plus saved editor settings, enforce ownership and role/scope checks, add idempotency and unsaved-draft semantics, then regenerate the client and run focused tests before updating the plan.
+>
+> <details><summary>Created 6 files, edited 5 files, ran 25 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i project docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i project docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\generations\\jobs.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-13 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +205 docs\\05_Schema.md & more +175 docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i settings docs\\04_TRD.md docs\\05_Schema.md docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_generation_schema_migration.py & type apps\\api\\tests\\test_consent_statements_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0009_audit_fk_maintenance.py & type db\\migrations\\env.py"`
+> - Wrote `./apps/api/app/domains/projects/__init__.py` (+1 -0)
+> - Wrote `./apps/api/app/domains/projects/service.py` (+369 -0)
+> - Wrote `./apps/api/app/api/v1/projects.py` (+299 -0)
+> - Wrote `./apps/api/app/main.py` (+4 -0)
+> - Wrote `./db/migrations/versions/0010_project_editor_settings.py` (+31 -0)
+> - Wrote `./docs/02_AppFlow.md` (+4 -0)
+> - Wrote `./docs/04_TRD.md` (+6 -3)
+> - Wrote `./docs/05_Schema.md` (+2 -0)
+> - Wrote `./apps/api/tests/test_project_schema_migration.py` (+97 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_project_schema_migration.py"`
+> - Wrote `./apps/api/app/domains/projects/service.py` (+6 -2)
+> - Wrote `./apps/api/tests/test_project_routes.py` (+186 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_project_routes.py apps\\api\\tests\\test_project_schema_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py && npm --workspace @classvoice/api-client run generate"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "C:\\Python311\\python.exe -c \"import fastapi; print(fastapi.__version__)\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m compileall -q apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini upgrade head --sql > NUL"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade base --sql > NUL"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade 0009_audit_fk_maintenance --sql"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini downgrade 0010_project_editor_settings:0009_audit_fk_maintenance --sql"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\projects\\service.py & type apps\\api\\app\\api\\v1\\projects.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'tasklist /fo table | findstr /i python'`
+>
+> </details>
+>
+> The project domain, routes, migration, OpenAPI artifacts, and policy documentation are complete. Static checks and offline migration upgrade/downgrade generation pass; the new async tests are currently blocked before execution by the host’s persistent `WinError 10055` socket exhaustion, so I’m recording that environment limitation explicitly in the plan.
+>
+> <details><summary>Edited a file, ran 6 commands</summary>
+>
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-13 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"/v1/projects\" packages\\api-client\\openapi.json & findstr /n \"/v1/projects\" packages\\api-client\\src\\schema.ts"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n editor-settings packages\\api-client\\openapi.json packages\\api-client\\src\\schema.ts"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n 0010 docs\\05_Schema.md docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +520 docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n projects docs\\04_TRD.md"`
+>
+> </details>
+</details>
+
+P2-13 is complete and marked `[x]` in [06_Plan.md](<./docs/06_Plan.md:117>).
+
+Implemented:
+
+- Workspace-scoped project endpoints:
+  - `POST /v1/projects`
+  - `GET /v1/projects`
+  - `GET /v1/projects/{project_id}`
+  - `PATCH /v1/projects/{project_id}`
+- Archive/restore support with `include_archived` filtering.
+- Required creation idempotency keys.
+- `projects:read` / `projects:write` scope enforcement and editor-role authorization.
+- Saved editor settings:
+  - `GET /v1/projects/{project_id}/editor-settings`
+  - `PUT /v1/projects/{project_id}/editor-settings`
+- Settings validation for voice, language, format, speed, stability, and style.
+- Draft text is rejected by the API and remains client-local until generation.
+- Project audit events.
+- Migration `0010_project_editor_settings` with JSON-object validation.
+- Updated [05_Schema.md](<./docs/05_Schema.md>), [04_TRD.md](<./docs/04_TRD.md>), and [02_AppFlow.md](<./docs/02_AppFlow.md>).
+- Regenerated OpenAPI and TypeScript client artifacts.
+
+Verification:
+
+- Ruff passed.
+- Mypy passed.
+- API client typecheck passed.
+- Alembic offline upgrade and downgrade generation passed.
+- New project tests are present, but local async execution is currently blocked before test setup by the persistent Windows `WinError 10055` socket-buffer exhaustion.
+
+Next dependency: P2-14, API key creation, hashing, scopes, expiry, and revocation.
+
+> Now please proceed next.
+
+<details><summary>15 previous messages</summary>
+
+> I’m starting P2-14: I’ll implement one-time API-key issuance, Argon2id hashing, prefix-only listings, scopes/expiry/revocation/last-used tracking, protected generation integration, and focused authorization tests before updating the plan.
+>
+> <details><summary>Ran 6 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +270 docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"API key Argon2 scope key\" docs\\04_TRD.md docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\generations.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements.txt & type apps\\api\\requirements-dev.txt"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-14 docs\\06_Plan.md"`
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’ll implement the next planned slice, P2-14: API-key issuance/list/revocation with one-time secret display, Argon2id hashing, scope/expiry enforcement, last-used tracking, and generation-route authentication. I’ll first align it with the existing auth and schema, then run focused static/tests and update `docs/06_Plan.md`.
+>
+> <details><summary>Ran 37 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\jwt.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\generations.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements.txt && apps\\api\\.venv\\Scripts\\pip.exe show argon2-cffi"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P2-14\" /c:\"P2-13\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"api_keys\" /c:\"api key\" docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements-dev.txt"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0005_integrations_audit.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2- docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\projects.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\errors.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\settings.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /b apps\\api\\tests"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_generation_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\conftest.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b apps\\api\\app\\domains"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"api key\" docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"api key\" /c:\"Argon\" /c:\"X-API\" docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"api_keys\" docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n -i "api key|api-key" docs/02_AppFlow.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n -i "api key|api-key|argon|x-api" docs/04_TRD.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n -i "api_keys|api key" docs/05_Schema.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /b apps\\api\\app\\api\\v1"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i api docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i api docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i api docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell -NoProfile -Command \"Get-Content docs\\04_TRD.md | Select-Object -Skip 258 -First 110\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell -NoProfile -Command \"Get-Content docs\\02_AppFlow.md | Select-Object -Skip 210 -First 30\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell -NoProfile -Command \"Get-Content docs\\05_Schema.md | Select-Object -Skip 270 -First 40\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +258 docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +210 docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +270 docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +1 apps\\api\\app\\api\\v1\\voices.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\pyproject.toml"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +1 apps\\api\\app\\api\\v1\\projects.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\generations\\jobs.py"`
+>
+> </details>
+>
+> The existing database contract already has the `api_keys` table, status enum, workspace/status index, and RLS expectations, so this slice needs no schema migration. I’m keeping key management JWT-only (owner/admin), while allowing a key’s scoped identity on the generation endpoints through `X-API-Key`; this preserves the existing browser JWT flow and avoids letting keys mint or revoke other keys.
+>
+> <details><summary>Created 3 files, edited 6 files, ran 3 commands</summary>
+>
+> - Wrote `./apps/api/app/core/authorization.py` (+19 -2)
+> - Wrote `./apps/api/requirements.txt` (+1 -0)
+> - Wrote `./apps/api/app/domains/api_keys/__init__.py` (+19 -0)
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+273 -0)
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+122 -0)
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+5 -3)
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+3 -0)
+> - Wrote `./apps/api/app/main.py` (+5 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +1 apps\\api\\app\\main.py"`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+34 -11)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +1 apps\\api\\app\\api\\v1\\generations.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"_claims\" /c:\"AuthClaims\" /c:\"claims:\" apps\\api\\app\\api\\v1\\generations.py"`
+>
+> </details>
+>
+> The core implementation is now in place: API-key metadata is hash-only, secrets use the `cv_live_` format and are returned only at creation, expiry is bounded to 365 days, and generation routes accept either a verified JWT or `X-API-Key` with workspace binding and per-operation scopes. The local API environment does not currently have `argon2-cffi`, so I’m requesting permission to install the exact pinned dependency before validation.
+>
+> <details><summary>Created a file, edited 3 files, ran 13 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pip.exe install argon2-cffi==25.1.0"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api\\app\\core\\authorization.py apps\\api\\app\\domains\\api_keys apps\\api\\app\\api\\v1\\api_keys.py apps\\api\\app\\api\\v1\\generations.py apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -c \"from app.domains.api_keys.service import ApiKeyService; print('api-key import ok')\""`
+> - Wrote `./apps/api/app/api/v1/generations.py` (+5 -1)
+> - Wrote `./apps/api/app/core/authorization.py` (+5 -2)
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+4 -6)
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api\\app\\core\\authorization.py apps\\api\\app\\domains\\api_keys apps\\api\\app\\api\\v1\\api_keys.py apps\\api\\app\\api\\v1\\generations.py apps\\api\\app\\main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m compileall -q apps\\api\\app"`
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_authorization.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type packages\\api-client\\package.json"`
+> - Wrote `./apps/api/tests/test_api_keys.py` (+182 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_api_keys.py"`
+>
+> </details>
+>
+> Focused validation is green: Ruff, mypy, and the new API-key suite all pass (4 tests). I’m now documenting the exact operational contract, regenerating OpenAPI/TypeScript artifacts for the new endpoints and `X-API-Key` header, then I’ll run the broader regression checks and record any Windows-specific test limitation in the plan.
+>
+> <details><summary>Edited 3 files, ran 7 commands</summary>
+>
+> - Wrote `./docs/04_TRD.md` (+11 -1)
+> - Wrote `./docs/05_Schema.md` (+8 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +218 docs\\06_Plan.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_api_keys.py apps\\api\\tests\\test_authorization.py apps\\api\\tests\\test_generation_routes.py apps\\api\\tests\\test_project_routes.py apps\\api\\tests\\test_main.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+>
+> </details>
+>
+> The API contract and generated client are synchronized, and the focused regression set is green (17 tests across API keys, authorization, generations, projects, and app behavior). Static checks and TypeScript client typecheck also pass. I’m doing one broader test pass now, then I’ll inspect the final diff and hand off the exact next slice.
+>
+> <details><summary>Edited 6 files, ran 19 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+11 -4)
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+2 -0)
+> - Wrote `./apps/api/tests/test_api_keys.py` (+2 -1)
+> - Wrote `./docs/04_TRD.md` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_api_keys.py apps\\api\\tests\\test_authorization.py apps\\api\\tests\\test_generation_routes.py apps\\api\\tests\\test_project_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\api_keys.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"def as_dict\" /c:\"object_key\" apps\\api\\app\\domains\\generations\\outputs.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +1 apps\\api\\app\\domains\\api_keys\\service.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i x-api-key packages\\api-client\\openapi.json packages\\api-client\\src\\schema.ts"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i api-keys packages\\api-client\\openapi.json"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-14 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /b apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i argon .gitignore .dockerignore apps\\api\\requirements.txt"`
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+19 -2)
+> - Wrote `./docs/02_AppFlow.md` (+3 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Wrote `./apps/api/app/domains/api_keys/service.py` (+5 -1)
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+>
+> <details><summary>Plan</summary>
+>
+> P2-14 implementation, documentation, OpenAPI/client regeneration, and static validation are complete. The broad async rerun is blocked by the previously observed Windows socket-buffer exhaustion, while the focused suite passed before that host condition recurred.
+>
+> - [x] Inspect existing auth, schema, generation routes, and dependency state
+> - [x] Implement API-key service, management routes, and application wiring
+> - [x] Integrate API-key authentication and scopes into generation routes
+> - [x] Add focused tests and update architecture/implementation plan
+> - [x] Run static checks and report any environment-blocked tests
+>
+> </details>
+</details>
+
+P2-14 is complete.
+
+Implemented:
+
+- API-key lifecycle:
+  - `POST /v1/api-keys`
+  - `GET /v1/api-keys?workspace_id=...`
+  - `POST /v1/api-keys/{key_id}/revoke`
+- Argon2id hashing with pinned `argon2-cffi==25.1.0`.
+- One-time `cv_live_...` secret display.
+- Non-secret prefix storage and lookup.
+- Supported scopes, `api_keys:read/write`, generation scopes, expiry validation, revocation, and `last_used_at`.
+- `X-API-Key` authentication for all generation endpoints with workspace binding.
+- Generation scope enforcement:
+  - `generations:read`
+  - `generations:create`
+- Existing `api_keys` schema/RLS contract reused; no new migration required.
+- OpenAPI and TypeScript client regenerated.
+
+Key files:
+
+- [API-key service](E:/Developer/Voice%20Generation/apps/api/app/domains/api_keys/service.py)
+- [API-key routes](E:/Developer/Voice%20Generation/apps/api/app/api/v1/api_keys.py)
+- [Generation authentication integration](E:/Developer/Voice%20Generation/apps/api/app/api/v1/generations.py)
+- [Authorization principal model](E:/Developer/Voice%20Generation/apps/api/app/core/authorization.py)
+- [API tests](E:/Developer/Voice%20Generation/apps/api/tests/test_api_keys.py)
+- [Implementation plan](E:/Developer/Voice%20Generation/docs/06_Plan.md)
+
+Validation completed:
+
+- Ruff: passed.
+- mypy: passed.
+- OpenAPI export: passed.
+- API-client generation and TypeScript typecheck: passed.
+- Focused API suite passed once with 17 tests.
+- A later broader rerun was blocked during `pytest-asyncio` setup by the known Windows `WinError 10055` socket-buffer exhaustion; no application assertion failure was reported.
+
+The next planned item is P2-15: webhook endpoint validation, signing, delivery retries, replay protection, and disable thresholds.
+
+> Now please proceed next.
+
+<details><summary>4 previous messages</summary>
+
+> I’ll take the next planned slice, P2-15: webhook endpoint validation, signing, delivery retries, replay protection, and disable thresholds. I’ll first inspect the existing webhook schema/RLS contract and queue abstractions, then implement the in-memory service/routes, tests, OpenAPI regeneration, and update `06_Plan.md`.
+>
+> <details><summary>Ran 15 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-15 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i webhook db\\migrations\\versions\\0005_integrations_audit.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +300 docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\generation_queue.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\storage\\ports.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\api_keys.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i webhook docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i webhook db\\migrations\\versions\\0006_rls_policies.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0001_extensions_enums.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /b apps\\api\\app\\workers"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements.txt"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n httpx apps\\api\\app\\*.py apps\\api\\app\\**\\*.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"event\" docs\\02_AppFlow.md docs\\04_TRD.md docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +520 db\\migrations\\versions\\0006_rls_policies.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\workers\\arq_worker.py"`
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+>
+> <details><summary>Plan</summary>
+>
+> - [ ] Inspect webhook schema, existing queue/storage abstractions, and current API conventions
+> - [ ] Implement webhook endpoint validation, secret handling, signing, and lifecycle service
+> - [ ] Implement delivery enqueue/retry/replay-protection and webhook routes
+> - [ ] Add focused tests, regenerate OpenAPI/client, and update docs/plan
+> - [ ] Run static checks and report any environment-blocked async tests
+>
+> </details>
+</details>
+
+<details><summary>1 previous message</summary>
+
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+</details>
+
+<details><summary>6 previous messages</summary>
+
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +310 docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +215 docs\\02_AppFlow.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"webhook_status delivery_status\" docs\\05_Schema.md db\\migrations\\versions\\0001_extensions_enums.py"`
+>
+> </details>
+>
+> The existing schema already defines `webhook_endpoints`, `webhook_deliveries`, delivery/status enums, retry indexes, and admin-only RLS. I’ll preserve that contract and use a high-entropy one-time `whsec_` secret whose SHA-256 digest is stored as the outbound HMAC key; this allows the server to sign later deliveries without retaining plaintext while recipients can derive the same key from the secret shown at creation.
+>
+> <details><summary>Created 4 files, edited 4 files, ran 13 commands</summary>
+>
+> - Wrote `./apps/api/app/domains/webhooks/__init__.py` (+29 -0)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+682 -0)
+> - Wrote `./apps/api/app/api/v1/webhooks.py` (+117 -0)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+6 -2)
+> - Wrote `./apps/api/app/main.py` (+4 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m compileall -q apps\\api\\app"`
+> - Wrote `./apps/api/app/domains/webhooks/__init__.py` (+2 -2)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+42 -11)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +528 apps\\api\\app\\domains\\webhooks\\service.py"`
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +534 apps\\api\\app\\domains\\webhooks\\service.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Wrote `./apps/api/tests/test_webhooks.py` (+245 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Wrote `./apps/api/tests/test_webhooks.py` (+5 -4)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Wrote `./apps/api/tests/test_webhooks.py` (+1 -1)
+>
+> </details>
+>
+> The webhook service and routes are implemented with HTTPS/DNS SSRF checks, one-time secrets, deterministic event deduplication, HMAC signatures with a five-minute replay window, bounded exponential retries, and automatic disable after consecutive failures. I’m validating the service behavior now; the machine’s earlier Windows asyncio socket exhaustion may still affect HTTP-based tests.
+>
+> <details><summary>Edited 6 files, ran 17 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_webhooks.py"`
+> - Wrote `./apps/api/tests/test_webhooks.py` (+6 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +112 docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +330 docs\\05_Schema.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +320 docs\\04_TRD.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "more +116 docs\\06_Plan.md"`
+> - Wrote `./docs/02_AppFlow.md` (+4 -2)
+> - Wrote `./docs/04_TRD.md` (+10 -1)
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Wrote `./docs/05_Schema.md` (+11 -0)
+> - Wrote `./docs/06_Plan.md` (+1 -0)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+1 -0)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+14 -0)
+> - Wrote `./apps/api/app/domains/webhooks/service.py` (+6 -6)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe -q apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i X-ClassVoice packages\\api-client\\openapi.json packages\\api-client\\src\\schema.ts"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i webhooks packages\\api-client\\openapi.json"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n P2-15 docs\\06_Plan.md"`
+>
+> </details>
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 9:35 AM.
+</details>

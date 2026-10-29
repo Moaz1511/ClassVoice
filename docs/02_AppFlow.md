@@ -226,9 +226,11 @@ The editor must preserve unsaved text through refresh using a local draft keyed 
 
 ### 3.13 Webhooks (`/webhooks`)
 
-- `Add endpoint` validates HTTPS URL and selected events.
+- `Add endpoint` validates the HTTPS URL, DNS result, SSRF/IP policy, and selected events;
+  a server-validated endpoint appears as `active`.
 - Secret is shown once, then only its prefix.
-- Delivery rows show pending, delivered, retrying, failed, disabled.
+- Delivery rows show pending, delivered, retrying, failed, or abandoned; five consecutive
+  failed attempts disable the endpoint and stop new deliveries.
 - `Send test event` is disabled until the endpoint is verified.
 - SSRF protections run server-side; private IP ranges and non-HTTPS endpoints are rejected.
 

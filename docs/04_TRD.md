@@ -329,7 +329,16 @@ No external TTS API is required. If a provider adapter is added later, it must d
 - Block public-figure/celebrity impersonation requests and unsafe prompts using policy checks with an auditable result.
 - Rate limits: sign-in 10/min/IP, uploads 10/hour/user, generation 20/hour/user, API 60/min/key baseline; configure per workspace.
 - Queue concurrency is capped per workspace and globally; payloads include maximum text length and output duration.
-- Webhooks require HTTPS, DNS/IP validation, signing secret, replay window, and exponential retry.
+- Webhooks require HTTPS, DNS/IP validation, no redirect following, a one-time `whsec_`
+  secret, replay-window verification, and bounded exponential retry. Endpoint creation
+  performs DNS resolution and rejects loopback, private, link-local, multicast, reserved,
+  unspecified, and local hostnames; delivery repeats that validation before every request.
+  Deliveries use `X-ClassVoice-Event-Id`, `X-ClassVoice-Event-Type`,
+  `X-ClassVoice-Timestamp`, and `X-ClassVoice-Signature: t=<unix>,v1=<HMAC-SHA256>`
+  over `<timestamp>.<canonical-json-body>`. The receiver derives the HMAC key from the
+  one-time secret's SHA-256 digest. Event IDs are unique per endpoint, timestamps older
+  than five minutes are rejected as replays, retries use 60s/300s/900s/3600s backoff,
+  and five consecutive failed attempts disable the endpoint.
 
 ### Privacy and lifecycle
 

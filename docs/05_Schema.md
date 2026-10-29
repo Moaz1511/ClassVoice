@@ -351,6 +351,17 @@ while an expired key is marked `status = 'expired'` on its next authentication.
 The API enforces the workspace/status index and never exposes `key_hash` through
 metadata responses or generated client types.
 
+Webhook creation performs server-side HTTPS/DNS/SSRF validation and stores the
+endpoint as `active`; `pending_verification` remains available for a future
+remote challenge handshake. The one-time `whsec_` secret is never persisted in
+plaintext. `secret_hash` stores its SHA-256 digest, which is used as the HMAC
+key for signed outbound deliveries so recipients can derive the same key from
+the secret they received once. Delivery rows are idempotent on
+`(webhook_endpoint_id, event_id)`, carry the canonical event payload, record
+attempt/status/response metadata, and use bounded retry timestamps. Five
+consecutive failed attempts disable the endpoint; a successful delivery resets
+`failure_count` and records `last_delivered_at`.
+
 ## 7. Audit, moderation, and export tables
 
 ```sql
