@@ -317,3 +317,7 @@ The voice list implements status/language/owner/search filters, archived inclusi
 # P3-05 Studio implementation notes
 
 The Studio editor is available at `/studio` and `/studio/:projectId`. It persists only draft text in a project-keyed browser draft and keeps saved project metadata/editor settings separate; raw draft text is never sent to the project save contract. The editor exposes project name, language, WAV/MP3, speed, stability, style, and a 10,000-character counter. Voice selection contains only the Ready/active-consent slot; revoked, archived, processing, and not-ready voices are excluded. Save and generation states are explicit, and internal navigation plus browser unload use a Stay/Discard/Save project guard whenever the editor is dirty.
+
+# P3-06 generation screen implementation notes
+
+The generations list provides state and output-format filters, search by job ID, active-job auto-refresh, bounded polling backoff, and retry-safe loading/error/empty states. The detail screen maps `created`, `queued`, `processing`, `succeeded`, `failed`, `cancel_requested`, and `canceled` to distinct status copy and controls. Cancellation and retry are available only for valid lifecycle states; download/playback is available only after `succeeded` and re-authorization. Collection views never render source text, object keys, or signed URLs; output metadata is checksum/provenance-only.

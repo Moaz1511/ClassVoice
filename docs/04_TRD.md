@@ -482,3 +482,7 @@ Voice screens remain inside the protected route group and do not render private 
 # P3-05 Studio implementation contract
 
 `StudioScreen` is a client boundary under the protected route group. It stores only raw draft text in `localStorage` under a project-specific key; project name and editor settings are kept in a separate local metadata record until the authenticated project API is connected. The API-shaped settings match `EditorSettingsBody` (`voice_profile_id`, language, WAV/MP3, speed, stability, style), while generation remains disabled unless a Ready voice with active consent, non-empty text, and a valid character count are present. A capture-phase internal-link guard and `beforeunload` handler provide the documented Stay/Discard/Save project choices without persisting draft text to the server.
+
+# P3-06 generation screen implementation contract
+
+Generation screens use the API `GenerationStatus` union as the only job-state vocabulary and keep list/detail data behind the protected route group. The polling shell uses a bounded 1,000–8,000 ms backoff and never retries a create mutation. `GenerationDetailScreen` treats signed playback/download as an authorized `succeeded`-only capability; it does not render the private object key or signed URL and exposes only safe hashes/provenance. Cancel and retry controls are lifecycle-gated to the same states enforced by the generation API.
