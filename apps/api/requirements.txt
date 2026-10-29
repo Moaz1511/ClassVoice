@@ -10,3 +10,4 @@ greenlet==3.2.4
 boto3==1.43.120
 redis==6.4.0
 arq==0.27.2
+argon2-cffi==25.1.0

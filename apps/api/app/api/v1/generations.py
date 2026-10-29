@@ -7,12 +7,14 @@ from uuid import UUID
 
 from app.core.authorization import (
     AuthorizationError,
+    AuthPrincipal,
     WorkspaceMembershipStore,
     require_authenticated,
     require_workspace_access,
 )
 from app.core.errors import APIError, envelope
-from app.core.jwt import AuthClaims, JWTVerificationError, JWTVerifier
+from app.core.jwt import JWTVerificationError, JWTVerifier
+from app.domains.api_keys.service import ApiKeyError, ApiKeyService
 from app.domains.generations.jobs import (
     GenerationError,
     GenerationJob,
@@ -59,24 +61,49 @@ def _generation_outputs(request: Request) -> PrivateGenerationOutputStore:
     return request.app.state.generation_outputs
 
 
-async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
+async def _principal(
+    request: Request,
+    authorization: str | None = Header(default=None),
+    x_api_key: str | None = Header(default=None, alias="X-API-Key"),
+) -> AuthPrincipal:
+    if authorization is not None and x_api_key is not None:
+        raise APIError(
+            400,
+            "AUTH_MULTIPLE_CREDENTIALS",
+            "Send either an Authorization Bearer token or X-API-Key, not both.",
+        )
+    if x_api_key is not None:
+        service: ApiKeyService | None = getattr(request.app.state, "api_key_service", None)
+        if service is None:
+            raise APIError(
+                503,
+                "API_KEY_NOT_CONFIGURED",
+                "API-key authentication is not configured.",
+            )
+        try:
+            return await service.authenticate(x_api_key)
+        except ApiKeyError as error:
+            raise APIError(401, error.code, str(error)) from error
     verifier: JWTVerifier | None = request.app.state.jwt_verifier
     if verifier is None:
         raise APIError(503, "AUTH_NOT_CONFIGURED", "Authentication is not configured for this API.")
     try:
-        return require_authenticated(authorization, verifier)
+        claims = require_authenticated(authorization, verifier)
     except JWTVerificationError as error:
         raise APIError(401, error.code, str(error)) from error
+    return AuthPrincipal(subject=claims.subject, scopes=claims.scopes)
 
 
 async def _authorize_workspace(
     request: Request,
-    claims: AuthClaims,
+    claims: AuthPrincipal,
     workspace_id: UUID,
     *,
     minimum_role: Literal["viewer", "editor"],
     scope: str,
 ) -> None:
+    if claims.workspace_id is not None and claims.workspace_id != workspace_id:
+        raise APIError(403, "ACCESS_WORKSPACE_FORBIDDEN", "Workspace access is not permitted.")
     try:
         await require_workspace_access(
             claims,
@@ -91,7 +118,7 @@ async def _authorize_workspace(
 
 async def _authorize_job(
     request: Request,
-    claims: AuthClaims,
+    claims: AuthPrincipal,
     job_id: UUID,
     *,
     minimum_role: Literal["viewer", "editor"],
@@ -114,7 +141,7 @@ async def _authorize_job(
 async def create_generation(
     body: CreateGenerationBody,
     request: Request,
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
     idempotency_key: str | None = Header(default=None, alias="Idempotency-Key"),
 ) -> dict[str, object]:
     await _authorize_workspace(
@@ -157,7 +184,7 @@ async def list_generations(
     workspace_id: UUID = Query(...),  # noqa: B008
     status: GenerationStatus | None = Query(default=None),  # noqa: B008
     limit: int = Query(default=50, ge=1, le=100),  # noqa: B008
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
 ) -> dict[str, object]:
     await _authorize_workspace(
         request,
@@ -174,7 +201,7 @@ async def list_generations(
 async def download_generation(
     job_id: UUID,
     request: Request,
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
 ) -> dict[str, object]:
     job = await _authorize_job(
         request,
@@ -225,7 +252,7 @@ async def download_generation(
 async def get_generation(
     job_id: UUID,
     request: Request,
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
 ) -> dict[str, object]:
     job = await _authorize_job(
         request,
@@ -241,7 +268,7 @@ async def get_generation(
 async def cancel_generation(
     job_id: UUID,
     request: Request,
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
 ) -> dict[str, object]:
     await _authorize_job(
         request,
@@ -262,7 +289,7 @@ async def cancel_generation(
 async def retry_generation(
     job_id: UUID,
     request: Request,
-    claims: AuthClaims = Depends(_claims),  # noqa: B008
+    claims: AuthPrincipal = Depends(_principal),  # noqa: B008
 ) -> dict[str, object]:
     await _authorize_job(
         request,

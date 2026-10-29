@@ -343,6 +343,14 @@ create index webhook_deliveries_retry_idx on public.webhook_deliveries(status, n
 create index usage_events_workspace_time_idx on public.usage_events(workspace_id, occurred_at desc);
 ```
 
+`api_keys.key_hash` stores only the Argon2id encoded hash; plaintext `cv_live_`
+secrets are returned once by `POST /v1/api-keys` and are never persisted. The
+`key_prefix` is a non-secret lookup/display value. Successful API-key requests
+update `last_used_at`; revocation sets `status = 'revoked'` and `revoked_at`,
+while an expired key is marked `status = 'expired'` on its next authentication.
+The API enforces the workspace/status index and never exposes `key_hash` through
+metadata responses or generated client types.
+
 ## 7. Audit, moderation, and export tables
 
 ```sql

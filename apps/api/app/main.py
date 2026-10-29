@@ -10,6 +10,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from .api.v1.api_keys import configure_api_key_state
+from .api.v1.api_keys import router as api_keys_router
 from .api.v1.generations import router as generations_router
 from .api.v1.projects import configure_project_state
 from .api.v1.projects import router as projects_router
@@ -63,6 +65,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     )
     app.state.inference_adapter = SmokeCpuAdapter()
     configure_upload_state(app)
+    configure_api_key_state(app)
     configure_project_state(app)
     app.state.generation_store = InMemoryGenerationStore()
     app.state.generation_service = GenerationService(
@@ -83,6 +86,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         allow_methods=["GET", "POST", "PATCH", "DELETE", "OPTIONS"],
         allow_headers=[
             "Authorization",
+            "X-API-Key",
             "Content-Type",
             "Idempotency-Key",
             runtime_settings.request_id_header,
@@ -97,6 +101,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.include_router(voices_router, prefix="/v1")
     app.include_router(projects_router, prefix="/v1")
     app.include_router(generations_router, prefix="/v1")
+    app.include_router(api_keys_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])
     async def live(request: Request) -> dict[str, object]:

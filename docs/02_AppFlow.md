@@ -220,6 +220,9 @@ The editor must preserve unsaved text through refresh using a local draft keyed 
 - `Create key` displays the secret exactly once with `Copy` and download-to-file actions.
 - Subsequent visits show prefix, scopes, last used, expiry, revoked state; never show the secret.
 - `Revoke` requires confirmation and immediately invalidates future requests.
+- Key management uses the signed-in workspace owner/admin session with `api_keys:read` or
+  `api_keys:write`; machine clients send the resulting secret as `X-API-Key` only to
+  generation routes, where `generations:read` and `generations:create` are checked.
 
 ### 3.13 Webhooks (`/webhooks`)
 

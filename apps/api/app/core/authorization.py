@@ -36,6 +36,26 @@ class WorkspaceMembershipStore(Protocol):
     ) -> WorkspaceMembership | None: ...
 
 
+class AuthenticatedPrincipal(Protocol):
+    """Identity fields shared by verified JWTs and scoped API keys."""
+
+    @property
+    def subject(self) -> UUID: ...
+
+    @property
+    def scopes(self) -> frozenset[str]: ...
+
+
+@dataclass(frozen=True, slots=True)
+class AuthPrincipal:
+    """Request identity after either JWT or API-key authentication."""
+
+    subject: UUID
+    scopes: frozenset[str]
+    workspace_id: UUID | None = None
+    api_key_id: UUID | None = None
+
+
 def extract_bearer_token(authorization_header: str | None) -> str:
     if authorization_header is None:
         raise JWTVerificationError("AUTH_TOKEN_MISSING", "Authentication is required.")
@@ -52,7 +72,7 @@ def require_authenticated(
     return verifier.verify(extract_bearer_token(authorization_header))
 
 
-def require_scope(claims: AuthClaims, scope: str) -> None:
+def require_scope(claims: AuthenticatedPrincipal, scope: str) -> None:
     normalized_scope = scope.strip()
     if not normalized_scope:
         raise AuthorizationError("ACCESS_SCOPE_INVALID", "Required scope is not configured.")
@@ -69,7 +89,7 @@ def require_workspace_role(
 
 
 async def require_workspace_access(
-    claims: AuthClaims,
+    claims: AuthenticatedPrincipal,
     workspace_id: UUID | str,
     membership_store: WorkspaceMembershipStore,
     minimum_role: WorkspaceRole = "viewer",

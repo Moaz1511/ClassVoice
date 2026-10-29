@@ -294,6 +294,17 @@ No external TTS API is required. If a provider adapter is added later, it must d
 - Every request resolves `user_id`, workspace membership, role, and required scope before loading a resource.
 - Service-role/database-owner credentials are server-only and never sent to the client.
 - API keys are shown once, stored as Argon2id hashes, and identified by a non-secret prefix.
+  The local implementation uses `argon2-cffi==25.1.0` with Argon2id, time cost 3,
+  memory cost 65,536 KiB, parallelism 2, a 32-byte hash, and a 16-byte salt.
+  Secrets use the `cv_live_` prefix, are accepted through `X-API-Key` only on
+  generation routes, and are never logged or returned by list/revoke responses.
+  Key management remains JWT-only for workspace admins/owners. Supported scopes
+  are `generations:create`, `generations:read`, `voices:read`, `voices:write`,
+  `projects:read`, `projects:write`, `api_keys:read`, `api_keys:write`,
+  `webhooks:read`, and `webhooks:write`.
+  Expiry is optional but, when set, must be future-dated and no more than 365 days;
+  successful authentication updates `last_used_at`, and revoked/expired keys fail
+  before workspace authorization.
 
 ### Audio/data protection
 
