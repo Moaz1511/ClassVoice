@@ -325,3 +325,9 @@ The generations list provides state and output-format filters, search by job ID,
 # P3-07 administration screen implementation notes
 
 The API-key screen uses the supported scope allowlist, bounded expiration choices, metadata-only list rows, one-time secret reveal/copy/dismiss state, and revoke confirmation. The browser never creates a usable key or stores a secret; the authenticated server response remains the only issuance source. The webhook screen requires HTTPS at the client boundary and repeats server-side DNS/private-address/redirect validation messaging, supports the documented event allowlist, shows the one-time signing-secret surface, and exposes pending/delivered/retrying/failed/abandoned delivery states. Test events are enabled only for active, verified endpoints.
+# P3-08 settings, audit, and safety screen implementation notes
+
+- `/settings/profile`, `/settings/workspace`, and `/settings/safety` now have dedicated protected screens instead of generic placeholders. Save actions are explicit handoffs until the settings API is wired; no optimistic server mutation is shown.
+- Profile export explains the asynchronous export-job/notification contract and short-lived authorized archive URL. Account deletion is disabled until the user re-enters a password, types `DELETE MY ACCOUNT`, and acknowledges the workspace/voice/project/output cascade effects.
+- `/admin/audit` contains action, actor, and request/resource filters with loading, error, and empty states. The UI contract is metadata-only: payloads, source text, audio bytes, signed URLs, and secrets are never rendered.
+- `/admin/reports` supports bounded resource/reason/description entry (`2,000` characters) and moderator status filtering. The screen warns users not to paste private content and keeps report submission truthful until the API mutation is connected.

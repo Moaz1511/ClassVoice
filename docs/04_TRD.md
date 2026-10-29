@@ -490,3 +490,9 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
 # P3-07 administration screen implementation contract
 
 `ApiKeysScreen` and `WebhooksScreen` are protected admin surfaces. API-key scope and expiry choices mirror the server allowlist, while `SecretReveal` accepts only a server-issued secret in transient React state, provides clipboard copy, and removes it on dismissal; no browser-generated or persisted secret is valid. Webhook setup performs cheap HTTPS checks in the browser but treats server DNS/SSRF validation as authoritative, keeps signing secrets one-time, and represents the delivery status/retry contract without exposing payloads or signing material.
+# P3-08 settings, audit, and safety implementation contract
+
+- Settings screens remain protected by the existing route guard and must call authenticated API endpoints once available. Until those endpoints exist, buttons display a handoff notice and must not fabricate persistence.
+- Account export is asynchronous and must create a `data_exports` job, notify the requester, and issue only a short-lived, authorization-checked private URL. Account deletion requires recent password re-authentication, typed `DELETE MY ACCOUNT`, explicit cascade acknowledgement, audit emission, and asynchronous cleanup.
+- Audit UI consumes redacted audit metadata only. It must preserve append-only ordering, request correlation, actor/action filters, and never expose `metadata` values that contain source text, audio, embeddings, storage keys/URLs, or secrets.
+- Safety reports use the moderator-safe report contract: workspace/resource authorization, allowlisted reason codes, bounded descriptions, and moderator-only review metadata. Report screens must not fetch or render raw source assets.
