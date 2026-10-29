@@ -155,7 +155,7 @@
 
 ### 3.3 Administration and agent surfaces
 
-- [ ] **P3-07** Implement API key and webhook screens, one-time secret display, scopes, expiry, revoke, delivery status, and copy actions.
+- [x] **P3-07** Implement API key and webhook screens, one-time secret display, scopes, expiry, revoke, delivery status, and copy actions.
   - Depends on: P2-14, P2-15.
   - Accept when: secrets never reappear after navigation and admin-only routes are enforced.
 - [ ] **P3-08** Implement settings, export/delete flows, audit view, and safety/report screens.
@@ -241,3 +241,4 @@
 | 2026-10-29 | P3-04 | n/a | Added protected voice list, filters, consent-gated create flow, keyboard-accessible upload dropzone, documented audio validation feedback, voice detail metadata states, and revoke/delete confirmation dialogs. The UI never fabricates a voice or persists audio while the authenticated upload client is pending; failed handoff explicitly states that no file was sent or stored. Voice source-contract tests (3), web typecheck, ESLint, and production build passed with `/voices`, `/voices/new`, and `/voices/[voiceId]` routes. |
 | 2026-10-29 | P3-05 | n/a | Added protected Studio routes for new and persistent projects, a local project-keyed draft text store, project/settings save states, voice-readiness selector gating, language/format/speed/stability/style controls, a 10,000-character counter, generation prerequisites, and Stay/Discard/Save project navigation protection plus `beforeunload`. Raw draft text is never written to saved project metadata. Studio source-contract tests (3), web typecheck, ESLint, and production build passed with `/studio` and `/studio/[projectId]` routes. |
 | 2026-10-29 | P3-06 | n/a | Added protected generation list/detail routes with every API lifecycle state, status/format/job filters, truthful loading/empty/error handling, bounded 1s→8s polling backoff, cancel/retry controls, private output-player/download states, safe provenance metadata, and no storage-key or signed-URL exposure. Generation source-contract tests (3), web typecheck, ESLint, and production build passed with `/generations` and `/generations/[generationId]` routes. |
+| 2026-10-29 | P3-07 | n/a | Added protected API-key and webhook administration screens with scoped creation forms, expiry/event selection, one-time secret reveal/copy/dismiss state, metadata-only lists, revoke confirmation, HTTPS/SSRF-aware webhook setup, delivery states, and verified-endpoint test-event controls. Browser code never generates or persists secrets; server issuance remains the authenticated API boundary. Admin source-contract tests (3), web typecheck, ESLint, and production build passed with `/api-keys` and `/webhooks` routes. |

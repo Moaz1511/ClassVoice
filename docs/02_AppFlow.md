@@ -321,3 +321,7 @@ The Studio editor is available at `/studio` and `/studio/:projectId`. It persist
 # P3-06 generation screen implementation notes
 
 The generations list provides state and output-format filters, search by job ID, active-job auto-refresh, bounded polling backoff, and retry-safe loading/error/empty states. The detail screen maps `created`, `queued`, `processing`, `succeeded`, `failed`, `cancel_requested`, and `canceled` to distinct status copy and controls. Cancellation and retry are available only for valid lifecycle states; download/playback is available only after `succeeded` and re-authorization. Collection views never render source text, object keys, or signed URLs; output metadata is checksum/provenance-only.
+
+# P3-07 administration screen implementation notes
+
+The API-key screen uses the supported scope allowlist, bounded expiration choices, metadata-only list rows, one-time secret reveal/copy/dismiss state, and revoke confirmation. The browser never creates a usable key or stores a secret; the authenticated server response remains the only issuance source. The webhook screen requires HTTPS at the client boundary and repeats server-side DNS/private-address/redirect validation messaging, supports the documented event allowlist, shows the one-time signing-secret surface, and exposes pending/delivered/retrying/failed/abandoned delivery states. Test events are enabled only for active, verified endpoints.

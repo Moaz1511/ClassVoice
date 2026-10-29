@@ -486,3 +486,7 @@ Voice screens remain inside the protected route group and do not render private 
 # P3-06 generation screen implementation contract
 
 Generation screens use the API `GenerationStatus` union as the only job-state vocabulary and keep list/detail data behind the protected route group. The polling shell uses a bounded 1,000–8,000 ms backoff and never retries a create mutation. `GenerationDetailScreen` treats signed playback/download as an authorized `succeeded`-only capability; it does not render the private object key or signed URL and exposes only safe hashes/provenance. Cancel and retry controls are lifecycle-gated to the same states enforced by the generation API.
+
+# P3-07 administration screen implementation contract
+
+`ApiKeysScreen` and `WebhooksScreen` are protected admin surfaces. API-key scope and expiry choices mirror the server allowlist, while `SecretReveal` accepts only a server-issued secret in transient React state, provides clipboard copy, and removes it on dismissal; no browser-generated or persisted secret is valid. Webhook setup performs cheap HTTPS checks in the browser but treats server DNS/SSRF validation as authoritative, keeps signing secrets one-time, and represents the delivery status/retry contract without exposing payloads or signing material.
