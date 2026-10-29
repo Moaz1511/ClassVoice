@@ -15,6 +15,7 @@ from app.core.authorization import (
 from app.core.errors import APIError, envelope
 from app.core.jwt import JWTVerificationError, JWTVerifier
 from app.domains.api_keys.service import ApiKeyError, ApiKeyService
+from app.domains.audit.service import AuditService
 from app.domains.generations.jobs import (
     GenerationError,
     GenerationJob,
@@ -61,6 +62,10 @@ def _generation_outputs(request: Request) -> PrivateGenerationOutputStore:
     return request.app.state.generation_outputs
 
 
+def _audit(request: Request) -> AuditService:
+    return request.app.state.audit_service
+
+
 async def _principal(
     request: Request,
     authorization: str | None = Header(default=None),
@@ -91,7 +96,11 @@ async def _principal(
         claims = require_authenticated(authorization, verifier)
     except JWTVerificationError as error:
         raise APIError(401, error.code, str(error)) from error
-    return AuthPrincipal(subject=claims.subject, scopes=claims.scopes)
+    return AuthPrincipal(
+        subject=claims.subject,
+        scopes=claims.scopes,
+        profile_role=claims.profile_role,
+    )
 
 
 async def _authorize_workspace(
@@ -175,6 +184,15 @@ async def create_generation(
         status = 409 if error.code == "IDEMPOTENCY_KEY_REUSED" else 400
         raise APIError(status, error.code, str(error)) from error
     job = await _generation_worker(request).publish(job.id, claims.subject)
+    await _audit(request).emit_request(
+        request,
+        action="generation.created",
+        resource_type="generation_job",
+        workspace_id=job.workspace_id,
+        resource_id=job.id,
+        actor=claims,
+        metadata={"model_key": body.model_key, "output_format": body.output_format},
+    )
     return envelope(request, data=job.as_dict())
 
 
@@ -234,6 +252,18 @@ async def download_generation(
             "STORAGE_SIGN_FAILED",
             "A private download URL could not be created.",
         ) from error
+    await _audit(request).emit_request(
+        request,
+        action="generation.downloaded",
+        resource_type="generation_output",
+        workspace_id=job.workspace_id,
+        resource_id=job.id,
+        actor=claims,
+        metadata={
+            "output_format": output.output_format,
+            "expires_at": signed.expires_at.isoformat(),
+        },
+    )
     return envelope(
         request,
         data={
@@ -282,6 +312,14 @@ async def cancel_generation(
     except GenerationError as error:
         status = 404 if error.code == "GENERATION_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="generation.cancelled",
+        resource_type="generation_job",
+        workspace_id=job.workspace_id,
+        resource_id=job.id,
+        actor=claims,
+    )
     return envelope(request, data=job.as_dict())
 
 
@@ -304,4 +342,12 @@ async def retry_generation(
     except GenerationError as error:
         status = 404 if error.code == "GENERATION_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="generation.retried",
+        resource_type="generation_job",
+        workspace_id=job.workspace_id,
+        resource_id=job.id,
+        actor=claims,
+    )
     return envelope(request, data=job.as_dict())

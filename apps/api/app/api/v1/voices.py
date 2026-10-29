@@ -14,6 +14,7 @@ from app.core.authorization import (
 )
 from app.core.errors import APIError, envelope
 from app.core.jwt import AuthClaims, JWTVerificationError, JWTVerifier
+from app.domains.audit.service import AuditService
 from app.domains.voices.lifecycle import (
     InMemoryVoiceStore,
     VoiceLifecycleError,
@@ -62,6 +63,10 @@ def _voice_service(request: Request) -> VoiceLifecycleService:
     return request.app.state.voice_service
 
 
+def _audit(request: Request) -> AuditService:
+    return request.app.state.audit_service
+
+
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
     verifier: JWTVerifier | None = request.app.state.jwt_verifier
     if verifier is None:
@@ -106,6 +111,15 @@ async def create_upload_intent(
     except UploadIntentError as error:
         status = 409 if error.code == "IDEMPOTENCY_KEY_REUSED" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="voice.upload_intent.created",
+        resource_type="audio_asset",
+        workspace_id=body.workspace_id,
+        resource_id=intent.upload_id,
+        actor=claims,
+        metadata={"content_type": body.content_type, "size_bytes": body.size_bytes},
+    )
     return envelope(request, data=intent.as_dict())
 
 
@@ -187,6 +201,15 @@ async def create_voice(
     except VoiceLifecycleError as error:
         status = 409 if error.code == "IDEMPOTENCY_KEY_REUSED" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="voice.created",
+        resource_type="voice_profile",
+        workspace_id=voice.workspace_id,
+        resource_id=voice.id,
+        actor=claims,
+        metadata={"language_code": voice.language_code},
+    )
     return envelope(request, data=voice.as_dict())
 
 
@@ -221,6 +244,15 @@ async def update_voice(
     except VoiceLifecycleError as error:
         status = 404 if error.code == "VOICE_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="voice.updated",
+        resource_type="voice_profile",
+        workspace_id=voice.workspace_id,
+        resource_id=voice.id,
+        actor=claims,
+        metadata={"fields": [key for key, value in body.model_dump().items() if value is not None]},
+    )
     return envelope(request, data=voice.as_dict())
 
 
@@ -236,6 +268,14 @@ async def revoke_voice(
     except VoiceLifecycleError as error:
         status = 404 if error.code == "VOICE_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="voice.consent_revoked",
+        resource_type="voice_profile",
+        workspace_id=voice.workspace_id,
+        resource_id=voice.id,
+        actor=claims,
+    )
     return envelope(request, data=voice.as_dict())
 
 
@@ -245,12 +285,20 @@ async def delete_voice(
     request: Request,
     claims: AuthClaims = Depends(_claims),  # noqa: B008
 ) -> dict[str, object]:
-    await _authorize_voice(request, claims, voice_id, minimum_role="admin")
+    voice = await _authorize_voice(request, claims, voice_id, minimum_role="admin")
     try:
         task = await _voice_service(request).delete(voice_id, claims.subject)
     except VoiceLifecycleError as error:
         status = 404 if error.code == "VOICE_NOT_FOUND" else 409
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="voice.deletion_queued",
+        resource_type="voice_profile",
+        workspace_id=voice.workspace_id,
+        resource_id=task.voice_id,
+        actor=claims,
+    )
     return envelope(
         request,
         data={

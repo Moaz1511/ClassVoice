@@ -54,6 +54,7 @@ class AuthPrincipal:
     scopes: frozenset[str]
     workspace_id: UUID | None = None
     api_key_id: UUID | None = None
+    profile_role: str | None = None
 
 
 def extract_bearer_token(authorization_header: str | None) -> str:
@@ -78,6 +79,11 @@ def require_scope(claims: AuthenticatedPrincipal, scope: str) -> None:
         raise AuthorizationError("ACCESS_SCOPE_INVALID", "Required scope is not configured.")
     if normalized_scope not in claims.scopes:
         raise AuthorizationError("ACCESS_SCOPE_MISSING", "The token does not grant this scope.")
+
+
+def require_moderator(claims: AuthenticatedPrincipal) -> None:
+    if getattr(claims, "profile_role", None) != "moderator":
+        raise AuthorizationError("ACCESS_MODERATOR_REQUIRED", "Moderator access is required.")
 
 
 def require_workspace_role(

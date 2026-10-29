@@ -415,3 +415,29 @@ The baseline was checked against current official release pages on 2026-10-27. T
 - [Python downloads](https://www.python.org/downloads/)
 - [PostgreSQL 17 documentation](https://www.postgresql.org/docs/17/)
 - [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+# P2-16 implementation contract: audit and moderation API
+
+Every successful state-changing or private-output operation emits one central
+audit event through `AuditService`. The event keeps the verified actor type,
+workspace/resource IDs, middleware request ID, SHA-256 digests of the client IP
+and User-Agent, and bounded JSON metadata. Raw input text, audio, embeddings,
+secrets, authorization values, passwords, and arbitrary payload/content fields
+are replaced with `[REDACTED]`; metadata values and nesting are capped before
+the SQL repository writes `public.audit_events`. Existing domain-local audit
+events remain useful for lifecycle history, but the central service is the
+integration boundary for compliance reporting.
+
+The required route actions are `voice.upload_intent.created`, `voice.created`,
+`voice.updated`, `voice.consent_revoked`, `voice.deletion_queued`,
+`project.created`, `project.updated`, `project.editor_settings.updated`,
+`generation.created`, `generation.cancelled`, `generation.retried`,
+`generation.downloaded`, `api_key.created`, `api_key.revoked`,
+`webhook.created`, and `moderation.reported`. Generation download events never
+include an object key or source text.
+
+`POST /v1/reports` is available to an authenticated workspace member and stores
+a bounded `moderation_flags` row. `GET /v1/reports` is restricted to a verified
+JWT whose `app_metadata.profile_role` is `moderator`; it returns report metadata
+only and never grants access to source audio or generation input. The database
+RLS policies remain authoritative when the in-memory adapters are replaced by
+SQL repositories.

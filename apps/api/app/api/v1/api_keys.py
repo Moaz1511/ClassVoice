@@ -14,6 +14,7 @@ from app.core.authorization import (
 from app.core.errors import APIError, envelope
 from app.core.jwt import AuthClaims, JWTVerificationError, JWTVerifier
 from app.domains.api_keys.service import ApiKeyError, ApiKeyService
+from app.domains.audit.service import AuditService
 from fastapi import APIRouter, Depends, FastAPI, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -35,6 +36,10 @@ def _membership_store(request: Request) -> WorkspaceMembershipStore:
 
 def _service(request: Request) -> ApiKeyService:
     return request.app.state.api_key_service
+
+
+def _audit(request: Request) -> AuditService:
+    return request.app.state.audit_service
 
 
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
@@ -83,6 +88,18 @@ async def create_api_key(
         )
     except ApiKeyError as error:
         raise APIError(400, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="api_key.created",
+        resource_type="api_key",
+        workspace_id=issue.record.workspace_id,
+        resource_id=issue.record.id,
+        actor=claims,
+        metadata={
+            "scopes": body.scopes,
+            "expires_at": body.expires_at.isoformat() if body.expires_at else None,
+        },
+    )
     return envelope(
         request,
         data={
@@ -119,6 +136,14 @@ async def revoke_api_key(
     except ApiKeyError as error:
         status = 404 if error.code == "API_KEY_NOT_FOUND" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="api_key.revoked",
+        resource_type="api_key",
+        workspace_id=record.workspace_id,
+        resource_id=record.id,
+        actor=claims,
+    )
     return envelope(request, data={"api_key": record.as_dict()})
 
 

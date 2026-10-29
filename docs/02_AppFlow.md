@@ -280,3 +280,20 @@ Every collection screen must define:
 - Audio controls have text labels and keyboard shortcuts only when discoverable.
 - Progress states are announced with `aria-live="polite"`; errors use `role="alert"`.
 - Color is never the only status signal; pair with icon and text.
+# P2-16 audit and report flows
+
+All successful mutation and private-download screens show the existing request
+correlation ID in the error/receipt context; the API emits the corresponding
+central audit event without storing source text, audio bytes, signed object
+keys, API-key secrets, or webhook secrets. The audit screen consumes the
+workspace-admin SQL read path, while the report screen uses the following
+routes:
+
+| Action | Route | Authorization | Success | Failure/empty state |
+|---|---|---|---|---|
+| Submit report | `POST /v1/reports` | Authenticated workspace member | Report is `open` and a confirmation receipt is shown | `403` for a different workspace; `422` for invalid resource/reason; retain form text locally |
+| Review reports | `GET /v1/reports` | JWT `app_metadata.profile_role=moderator` | Newest-first list with status filter | `403` for non-moderators; empty list uses the standard empty-state panel |
+
+Moderator report rows contain only bounded report metadata and description. The
+moderator UI must not render generation input/audio or expose private storage
+URLs as part of a report review.

@@ -15,6 +15,8 @@ from .api.v1.api_keys import router as api_keys_router
 from .api.v1.generations import router as generations_router
 from .api.v1.projects import configure_project_state
 from .api.v1.projects import router as projects_router
+from .api.v1.reports import configure_moderation_state
+from .api.v1.reports import router as reports_router
 from .api.v1.voices import configure_upload_state
 from .api.v1.voices import router as voices_router
 from .api.v1.webhooks import configure_webhook_state
@@ -31,6 +33,7 @@ from .core.errors import (
 from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
+from .domains.audit.service import AuditService, InMemoryAuditEventStore
 from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
 from .domains.generations.outputs import PrivateGenerationOutputStore
 from .inference.adapter import SmokeCpuAdapter
@@ -69,6 +72,9 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     configure_upload_state(app)
     configure_api_key_state(app)
     configure_webhook_state(app)
+    configure_moderation_state(app)
+    app.state.audit_event_store = InMemoryAuditEventStore()
+    app.state.audit_service = AuditService(app.state.audit_event_store)
     configure_project_state(app)
     app.state.generation_store = InMemoryGenerationStore()
     app.state.generation_service = GenerationService(
@@ -106,6 +112,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.include_router(generations_router, prefix="/v1")
     app.include_router(api_keys_router, prefix="/v1")
     app.include_router(webhooks_router, prefix="/v1")
+    app.include_router(reports_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])
     async def live(request: Request) -> dict[str, object]:

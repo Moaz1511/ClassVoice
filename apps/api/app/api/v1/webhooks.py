@@ -12,6 +12,7 @@ from app.core.authorization import (
 )
 from app.core.errors import APIError, envelope
 from app.core.jwt import AuthClaims, JWTVerificationError, JWTVerifier
+from app.domains.audit.service import AuditService
 from app.domains.webhooks.service import WebhookError, WebhookService
 from fastapi import APIRouter, Depends, FastAPI, Header, Query, Request
 from pydantic import BaseModel, ConfigDict, Field
@@ -33,6 +34,10 @@ def _membership_store(request: Request) -> WorkspaceMembershipStore:
 
 def _service(request: Request) -> WebhookService:
     return request.app.state.webhook_service
+
+
+def _audit(request: Request) -> AuditService:
+    return request.app.state.audit_service
 
 
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
@@ -80,6 +85,15 @@ async def create_webhook(
         )
     except WebhookError as error:
         raise APIError(400, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="webhook.created",
+        resource_type="webhook_endpoint",
+        workspace_id=issue.endpoint.workspace_id,
+        resource_id=issue.endpoint.id,
+        actor=claims,
+        metadata={"events": body.events},
+    )
     return envelope(
         request,
         data={

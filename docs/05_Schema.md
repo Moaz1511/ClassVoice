@@ -564,3 +564,20 @@ The `profiles` update policy must be paired with a column privilege/trigger rule
 - Deleting a voice eventually deletes its samples, consent evidence, embeddings, and derived outputs while preserving a minimal audit tombstone.
 - `anon` cannot read any private table.
 - An accepted consent must use a published statement version and matching text hash, records the accepting actor, emits one `consent.accepted` audit event, and cannot be changed back to accepted after revocation/expiry.
+# P2-16 application integration notes
+
+The existing `audit_events` table is the persistence target for the central
+`AuditService`. `actor_type` is derived from the verified credential (including
+`api_key` versus `user`), `actor_user_id`/`actor_api_key_id` are populated only
+when applicable, and `request_id` is copied from the request-correlation
+middleware. `ip_hash` and `user_agent_hash` contain SHA-256 digests, never raw
+network or browser values. The service recursively redacts payload-like keys
+(`input_text`, `audio`, `content`, `raw`, `secret`, `token`, `password`, and
+similar), bounds strings/collections, and emits append-only rows.
+
+The existing `moderation_flags` table backs the report API. Members create a
+flag with a workspace/resource ID, reason code, and bounded description;
+moderators enumerate flags through the privileged API path. The route mirrors
+the RLS contract (`reporter_user_id = auth.uid()` for inserts and
+`app.is_moderator()` for the global read path), so the in-memory service does
+not relax the production database policy.

@@ -13,6 +13,7 @@ from app.core.authorization import (
 )
 from app.core.errors import APIError, envelope
 from app.core.jwt import AuthClaims, JWTVerificationError, JWTVerifier
+from app.domains.audit.service import AuditService
 from app.domains.projects.service import (
     EditorSettings,
     Project,
@@ -70,6 +71,10 @@ def _membership_store(request: Request) -> WorkspaceMembershipStore:
 
 def _project_service(request: Request) -> ProjectService:
     return request.app.state.project_service
+
+
+def _audit(request: Request) -> AuditService:
+    return request.app.state.audit_service
 
 
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
@@ -153,6 +158,15 @@ async def create_project(
     except ProjectError as error:
         status = 409 if error.code == "IDEMPOTENCY_KEY_REUSED" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="project.created",
+        resource_type="project",
+        workspace_id=project.workspace_id,
+        resource_id=project.id,
+        actor=claims,
+        metadata={"has_description": body.description is not None},
+    )
     return envelope(request, data=project.as_dict())
 
 
@@ -228,6 +242,15 @@ async def save_editor_settings(
     except ProjectError as error:
         status = 404 if error.code == "PROJECT_NOT_FOUND" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="project.editor_settings.updated",
+        resource_type="project",
+        workspace_id=project.workspace_id,
+        resource_id=project.id,
+        actor=claims,
+        metadata={"output_format": body.output_format, "language_code": body.language_code},
+    )
     return envelope(
         request,
         data={
@@ -287,6 +310,15 @@ async def update_project(
     except ProjectError as error:
         status = 404 if error.code == "PROJECT_NOT_FOUND" else 400
         raise APIError(status, error.code, str(error)) from error
+    await _audit(request).emit_request(
+        request,
+        action="project.updated",
+        resource_type="project",
+        workspace_id=project.workspace_id,
+        resource_id=project.id,
+        actor=claims,
+        metadata={"fields": sorted(body.model_fields_set)},
+    )
     return envelope(request, data=project.as_dict())
 
 

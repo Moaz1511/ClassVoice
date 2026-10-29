@@ -42,6 +42,7 @@ class AuthClaims:
     issued_at: datetime
     expires_at: datetime
     session_id: str | None = None
+    profile_role: str | None = None
 
 
 def _utc_now() -> datetime:
@@ -108,6 +109,26 @@ def _scopes(claims: Mapping[str, Any]) -> frozenset[str]:
                 raise JWTVerificationError("AUTH_TOKEN_CLAIMS_INVALID", "JWT scopes are invalid.")
             values.extend(metadata_scopes)
     return frozenset(value for value in values if value)
+
+
+def _profile_role(claims: Mapping[str, Any]) -> str | None:
+    """Read the application profile role without confusing it with JWT ``role``."""
+
+    value = claims.get("profile_role")
+    app_metadata = claims.get("app_metadata")
+    if app_metadata is not None:
+        if not isinstance(app_metadata, dict):
+            raise JWTVerificationError("AUTH_TOKEN_CLAIMS_INVALID", "JWT app metadata is invalid.")
+        metadata_role = app_metadata.get("profile_role")
+        if metadata_role is None:
+            metadata_role = app_metadata.get("role")
+        if metadata_role is not None:
+            value = metadata_role
+    if value is None:
+        return None
+    if not isinstance(value, str) or not value.strip():
+        raise JWTVerificationError("AUTH_TOKEN_CLAIMS_INVALID", "JWT profile role is invalid.")
+    return value.strip()
 
 
 class JWTVerifier:
@@ -227,4 +248,5 @@ class JWTVerifier:
             issued_at=issued_at,
             expires_at=expires_at,
             session_id=session_id,
+            profile_role=_profile_role(payload),
         )
