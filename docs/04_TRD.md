@@ -302,6 +302,11 @@ No external TTS API is required. If a provider adapter is added later, it must d
   Supabase uses server-only Storage signed-object endpoints. Upload and download
   URLs are always short-lived (exactly 600 seconds), and object keys are rejected
   when they contain traversal, absolute paths, control characters, or unknown buckets.
+- Inference runtimes emit validated mono WAV; the worker performs MP3 conversion
+  with fixed FFmpeg arguments, verifies the output checksum and limits, then writes
+  a content-addressed object under `generated-audio/<workspace>/<job>/<sha>.<ext>`.
+  The download endpoint rechecks workspace membership before signing and never
+  returns the private object key to clients.
 - Uploads are streamed to quarantine, checked by magic bytes and FFmpeg, then promoted to the private bucket.
 - Max upload 25 MB; reject path traversal, polyglot files, unsupported codecs, and remote URLs.
 - Encrypt in transit with TLS 1.2+ and at rest through the provider; do not log raw audio, transcripts, tokens, or embeddings.

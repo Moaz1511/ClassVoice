@@ -19,6 +19,8 @@ from app.domains.generations.jobs import (
     GenerationService,
     GenerationStatus,
 )
+from app.domains.generations.outputs import PrivateGenerationOutputStore
+from app.storage.ports import StorageError
 from fastapi import APIRouter, Depends, Header, Query, Request
 from pydantic import BaseModel, Field
 
@@ -51,6 +53,10 @@ def _generation_service(request: Request) -> GenerationService:
 
 def _generation_worker(request: Request):
     return request.app.state.generation_worker
+
+
+def _generation_outputs(request: Request) -> PrivateGenerationOutputStore:
+    return request.app.state.generation_outputs
 
 
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:
@@ -162,6 +168,57 @@ async def list_generations(
     )
     jobs = await _generation_service(request).list(workspace_id, status=status, limit=limit)
     return envelope(request, data={"items": [job.as_dict(include_text=False) for job in jobs]})
+
+
+@router.get("/{job_id}/download")
+async def download_generation(
+    job_id: UUID,
+    request: Request,
+    claims: AuthClaims = Depends(_claims),  # noqa: B008
+) -> dict[str, object]:
+    job = await _authorize_job(
+        request,
+        claims,
+        job_id,
+        minimum_role="viewer",
+        scope="generations:read",
+    )
+    if job.status != "succeeded":
+        raise APIError(
+            409,
+            "GENERATION_OUTPUT_NOT_READY",
+            "The generation output is not ready for download.",
+        )
+    output = await _generation_outputs(request).get(job.id)
+    if output is None:
+        raise APIError(
+            409,
+            "GENERATION_OUTPUT_NOT_READY",
+            "The generation output is not ready for download.",
+        )
+    try:
+        signed = await request.app.state.storage_adapter.create_download_url(
+            output.bucket,
+            output.object_key,
+        )
+    except StorageError as error:
+        raise APIError(
+            503,
+            "STORAGE_SIGN_FAILED",
+            "A private download URL could not be created.",
+        ) from error
+    return envelope(
+        request,
+        data={
+            "output": output.as_dict(),
+            "download": {
+                "url": signed.url,
+                "method": signed.method,
+                "expires_at": signed.expires_at.isoformat(),
+                "headers": dict(signed.headers),
+            },
+        },
+    )
 
 
 @router.get("/{job_id}")

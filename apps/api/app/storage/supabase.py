@@ -28,6 +28,36 @@ class SupabaseStorageAdapter:
         self._client = client or httpx.AsyncClient(timeout=15.0)
         self._owns_client = client is None
 
+    async def put_object(
+        self,
+        bucket: str,
+        key: str,
+        body: bytes,
+        *,
+        content_type: str,
+    ) -> None:
+        bucket, key = self._validate(bucket, key)
+        self._validate_content_type(content_type)
+        if not body:
+            raise StorageError("object body is empty")
+        try:
+            response = await self._client.request(
+                "POST",
+                f"{self._base_url}/object/{quote(bucket, safe='')}/{quote(key, safe='/')}",
+                headers={
+                    "Authorization": f"Bearer {self._settings.supabase_service_role_key}",
+                    "apikey": self._settings.supabase_service_role_key,
+                    "Content-Type": content_type,
+                    # The object key is content-addressed, so retrying a
+                    # crashed worker is idempotent and safe to overwrite.
+                    "x-upsert": "true",
+                },
+                content=body,
+            )
+            response.raise_for_status()
+        except httpx.HTTPError as error:
+            raise StorageError("Supabase object upload failed") from error
+
     async def create_upload_url(
         self,
         bucket: str,
@@ -36,13 +66,7 @@ class SupabaseStorageAdapter:
         content_type: str,
     ) -> SignedObjectUrl:
         bucket, key = self._validate(bucket, key)
-        if (
-            not content_type
-            or len(content_type) > 255
-            or "\r" in content_type
-            or "\n" in content_type
-        ):
-            raise StorageError("content type is invalid")
+        self._validate_content_type(content_type)
         response = await self._request(
             "POST",
             f"/object/upload/sign/{quote(bucket, safe='')}/{quote(key, safe='/')}?upsert=false",
@@ -111,3 +135,13 @@ class SupabaseStorageAdapter:
         if bucket not in ALLOWED_BUCKETS:
             raise StorageError("storage bucket is not allowlisted")
         return bucket, validate_object_key(key)
+
+    @staticmethod
+    def _validate_content_type(content_type: str) -> None:
+        if (
+            not content_type
+            or len(content_type) > 255
+            or "\r" in content_type
+            or "\n" in content_type
+        ):
+            raise StorageError("content type is invalid")

@@ -16,12 +16,14 @@ from typing import Protocol
 from uuid import UUID, uuid4
 
 from app.domains.generations.jobs import GenerationError, GenerationJob, GenerationService
+from app.domains.generations.outputs import GenerationOutputError, GenerationOutputSink
 from app.inference.adapter import (
     InferenceAdapter,
     InferenceError,
     InferenceRequest,
     InferenceResult,
 )
+from app.inference.postprocess import AudioPostProcessor
 
 
 @dataclass(frozen=True, slots=True)
@@ -212,7 +214,9 @@ class GenerationWorker:
         lease_id: UUID,
         actor_id: UUID,
         adapter: InferenceAdapter,
-        outputs: GenerationOutputStore,
+        outputs: GenerationOutputSink,
+        *,
+        postprocessor: AudioPostProcessor | None = None,
     ) -> tuple[GenerationJob, InferenceResult | None]:
         lease = await self._find_lease(lease_id)
         job = await self._service.get(lease.job_id)
@@ -220,9 +224,39 @@ class GenerationWorker:
             await self._leases.remove(lease.job_id)
             raise GenerationError("GENERATION_NOT_FOUND", "Generation was not found.")
         try:
-            result = await adapter.generate(InferenceRequest.from_job(job))
+            request = InferenceRequest.from_job(job)
+            # Model adapters normalize their native output as WAV.  MP3 is a
+            # worker concern, so never ask a runtime to implement encoding.
+            if request.output_format == "mp3":
+                request = InferenceRequest(
+                    job_id=request.job_id,
+                    input_text=request.input_text,
+                    language_code=request.language_code,
+                    output_format="wav",
+                    speed=request.speed,
+                    stability=request.stability,
+                    style=request.style,
+                    seed=request.seed,
+                    model_key=request.model_key,
+                    model_version=request.model_version,
+                    checkpoint_sha256=request.checkpoint_sha256,
+                    model_metadata=request.model_metadata,
+                )
+            result = await adapter.generate(request)
+            result = await (postprocessor or AudioPostProcessor()).normalize(
+                result, job.output_format
+            )
             await outputs.put(job, result)
         except InferenceError as error:
+            failed = await self.fail(
+                lease.lease_id,
+                actor_id,
+                error_code=error.code,
+                error_message_safe=str(error),
+                retryable=error.retryable,
+            )
+            return failed, None
+        except GenerationOutputError as error:
             failed = await self.fail(
                 lease.lease_id,
                 actor_id,

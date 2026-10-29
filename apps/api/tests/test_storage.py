@@ -19,6 +19,9 @@ class FakeS3Client:
         self.calls.append((operation, kwargs))
         return f"http://storage.test/{operation}?X-Amz-Expires={kwargs['ExpiresIn']}"
 
+    def put_object(self, **kwargs: Any) -> None:
+        self.calls.append(("put_object", kwargs))
+
 
 @pytest.mark.asyncio
 async def test_s3_adapter_only_signs_allowlisted_private_objects() -> None:
@@ -37,6 +40,26 @@ async def test_s3_adapter_only_signs_allowlisted_private_objects() -> None:
     assert [call[0] for call in client.calls] == ["put_object", "get_object"]
     assert client.calls[0][1]["ExpiresIn"] == 600
     assert client.calls[0][1]["Params"]["Bucket"] == "voice-inputs"
+
+
+@pytest.mark.asyncio
+async def test_s3_adapter_uploads_private_generated_bytes() -> None:
+    client = FakeS3Client()
+    adapter = S3StorageAdapter(APISettings.from_env({}), client=client)
+
+    await adapter.put_object(
+        "generated-audio",
+        "workspace/job/output.wav",
+        b"RIFFgenerated",
+        content_type="audio/wav",
+    )
+
+    operation, params = client.calls[0]
+    assert operation == "put_object"
+    assert params["Bucket"] == "generated-audio"
+    assert params["Key"] == "workspace/job/output.wav"
+    assert params["Body"] == b"RIFFgenerated"
+    assert params["ContentType"] == "audio/wav"
 
 
 @pytest.mark.asyncio
@@ -94,3 +117,34 @@ def test_supabase_provider_requires_https_and_server_key() -> None:
                 "SUPABASE_SERVICE_ROLE_KEY": "server-secret",
             }
         )
+
+
+@pytest.mark.asyncio
+async def test_supabase_adapter_uploads_private_generated_bytes() -> None:
+    settings = APISettings.from_env(
+        {
+            "STORAGE_PROVIDER": "supabase",
+            "NEXT_PUBLIC_SUPABASE_URL": "https://example.supabase.co",
+            "SUPABASE_SERVICE_ROLE_KEY": "server-secret",
+        }
+    )
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        return httpx.Response(200, json={"Key": "workspace/job/output.mp3"})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handler)) as client:
+        adapter = SupabaseStorageAdapter(settings, client=client)
+        await adapter.put_object(
+            "generated-audio",
+            "workspace/job/output.mp3",
+            b"ID3generated",
+            content_type="audio/mpeg",
+        )
+
+    assert len(requests) == 1
+    assert requests[0].method == "POST"
+    assert "/object/generated-audio/workspace/job/output.mp3" in str(requests[0].url)
+    assert requests[0].headers["x-upsert"] == "true"
+    assert requests[0].content == b"ID3generated"

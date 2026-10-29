@@ -26,6 +26,7 @@ from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
 from .core.settings import APISettings
 from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
+from .domains.generations.outputs import PrivateGenerationOutputStore
 from .inference.adapter import SmokeCpuAdapter
 from .inference.model_registry import ModelRegistry
 from .storage import build_storage_adapter
@@ -71,6 +72,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         app.state.generation_service,
         app.state.generation_queue,
     )
+    app.state.generation_outputs = PrivateGenerationOutputStore(app.state.storage_adapter)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=list(runtime_settings.cors_origins),

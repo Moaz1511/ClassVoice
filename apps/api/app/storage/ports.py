@@ -42,6 +42,15 @@ class SignedObjectUrl:
 class StorageAdapter(Protocol):
     """Provider-neutral private object storage operations."""
 
+    async def put_object(
+        self,
+        bucket: str,
+        key: str,
+        body: bytes,
+        *,
+        content_type: str,
+    ) -> None: ...
+
     async def create_upload_url(
         self,
         bucket: str,
