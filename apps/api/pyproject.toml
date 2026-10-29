@@ -22,3 +22,15 @@ disallow_any_generics = true
 testpaths = ["tests"]
 addopts = "-q"
 asyncio_mode = "auto"
+
+[tool.coverage.run]
+branch = true
+source = ["app"]
+omit = [
+  "app/db/migrations/*",
+]
+
+[tool.coverage.report]
+show_missing = true
+skip_covered = true
+fail_under = 55

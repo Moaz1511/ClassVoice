@@ -502,3 +502,8 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
 - Agent examples must use the documented {data,error,request_id} envelope, require Idempotency-Key for create operations, show API-key scopes, and never include real credentials or private object URLs.
 - The generation quickstart must demonstrate create → poll → download, use an approved model/checkpoint placeholder rather than inventing provenance, and state that signed output URLs expire after 600 seconds.
 - The UI must distinguish owner/admin JWT key issuance from machine API-key calls and must warn that service-role keys, JWT signing secrets, webhook secrets, raw audio, and source text are server-only/private.
+# P4-01 test hardening contract
+
+- API schema and domain tests must pin stable error codes for every P0 validation boundary, including text/language/format/settings/SHA/idempotency limits, malformed UUIDs, upload size, report description, and API-key scopes/expiry.
+- Lifecycle tests must exercise valid and invalid voice/generation transitions, terminal-state cancellation/retry policy, consent/model gates, workspace binding, and idempotent replay with changed metadata.
+- CI runs branch coverage over the API application with a minimum 55 percent gate using pytest-cov; the threshold is a floor while P4-02 through P4-07 add security, fuzz, reliability, load, and release coverage.

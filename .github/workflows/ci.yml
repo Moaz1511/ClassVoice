@@ -57,7 +57,7 @@ jobs:
       - name: Mypy
         run: mypy apps/api/app
       - name: Pytest
-        run: pytest apps/api/tests
+        run: pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests
 
   compose:
     name: Compose configuration
