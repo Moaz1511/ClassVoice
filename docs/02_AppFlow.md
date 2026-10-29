@@ -313,3 +313,7 @@ The protected App Router layout now owns the authenticated shell for all workspa
 # P3-04 voice screen implementation notes
 
 The voice list implements status/language/owner/search filters, archived inclusion, filtered-empty recovery, loading, retry/error, and workspace-scoped data messaging. The create screen follows `CONSENT_UNREAD` → `CONSENT_ACCEPTED` → `SAMPLE_SELECTED` → upload/validation/processing states, validates WAV/MP3/M4A and the 25 MB client limit, and explains that duration, silence, clipping, channels, speaker warnings, and policy checks are server truth. The consent modal is non-dismissable until the acknowledgement action is chosen, and no raw audio or storage key is rendered. The detail screen uses safe inaccessible-resource copy and requires confirmation for consent revocation and permanent deletion.
+
+# P3-05 Studio implementation notes
+
+The Studio editor is available at `/studio` and `/studio/:projectId`. It persists only draft text in a project-keyed browser draft and keeps saved project metadata/editor settings separate; raw draft text is never sent to the project save contract. The editor exposes project name, language, WAV/MP3, speed, stability, style, and a 10,000-character counter. Voice selection contains only the Ready/active-consent slot; revoked, archived, processing, and not-ready voices are excluded. Save and generation states are explicit, and internal navigation plus browser unload use a Stay/Discard/Save project guard whenever the editor is dirty.

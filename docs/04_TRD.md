@@ -478,3 +478,7 @@ The web shell uses a route-group-level `ProtectedRoute` before `AppShell`, preve
 # P3-04 voice screen implementation contract
 
 Voice screens remain inside the protected route group and do not render private voice rows before the guard resolves. `VoiceListScreen` owns filter state and truthful collection states; `VoiceCreateScreen` validates only cheap client constraints before the server remains authoritative for audio inspection and consent evidence; `VoiceDetailScreen` treats missing/inaccessible resources uniformly and keeps revoke/delete behind modal confirmation. Until the typed authenticated upload client is connected, the create flow explicitly stops before network transmission and says that no audio was sent or stored.
+
+# P3-05 Studio implementation contract
+
+`StudioScreen` is a client boundary under the protected route group. It stores only raw draft text in `localStorage` under a project-specific key; project name and editor settings are kept in a separate local metadata record until the authenticated project API is connected. The API-shaped settings match `EditorSettingsBody` (`voice_profile_id`, language, WAV/MP3, speed, stability, style), while generation remains disabled unless a Ready voice with active consent, non-empty text, and a valid character count are present. A capture-phase internal-link guard and `beforeunload` handler provide the documented Stay/Discard/Save project choices without persisting draft text to the server.
