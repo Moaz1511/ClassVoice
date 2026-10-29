@@ -441,3 +441,17 @@ JWT whose `app_metadata.profile_role` is `moderator`; it returns report metadata
 only and never grants access to source audio or generation input. The database
 RLS policies remain authoritative when the in-memory adapters are replaced by
 SQL repositories.
+# P3-01 web shell implementation contract
+
+The web workspace now runs the locked Next.js `16.4.3` App Router with React
+`19.3.0`, standalone output, strict TypeScript, and the documented responsive
+shell. `app/layout.tsx` bootstraps the selected light/dark/system theme before
+hydration; `ThemeProvider` persists only the theme preference in browser storage.
+Protected route groups render `ProtectedRoute` before `AppShell`, redirecting
+missing sessions to `/auth/sign-in?returnTo=...` without rendering private data.
+The current local sign-in action creates a development-only session marker; the
+Supabase auth form is the next P3 step.
+
+The web container builds from the monorepo lockfile and runs the Next standalone
+server. `/health/live` and `/health/ready` are Next route handlers so Docker
+health checks exercise the real web process rather than a placeholder server.

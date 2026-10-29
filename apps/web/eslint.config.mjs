@@ -1,7 +1,9 @@
+import { globalIgnores } from 'eslint/config';
+
 export default [
+  globalIgnores(['.next/**', 'node_modules/**']),
   {
     files: ['**/*.mjs'],
-    ignores: ['node_modules/**'],
     rules: {
       'no-undef': 'error',
       'no-unused-vars': 'error',
