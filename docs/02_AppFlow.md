@@ -331,3 +331,9 @@ The API-key screen uses the supported scope allowlist, bounded expiration choice
 - Profile export explains the asynchronous export-job/notification contract and short-lived authorized archive URL. Account deletion is disabled until the user re-enters a password, types `DELETE MY ACCOUNT`, and acknowledges the workspace/voice/project/output cascade effects.
 - `/admin/audit` contains action, actor, and request/resource filters with loading, error, and empty states. The UI contract is metadata-only: payloads, source text, audio bytes, signed URLs, and secrets are never rendered.
 - `/admin/reports` supports bounded resource/reason/description entry (`2,000` characters) and moderator status filtering. The screen warns users not to paste private content and keeps report submission truthful until the API mutation is connected.
+# P3-09 API documentation implementation notes
+
+- The protected /docs/api route is now a dedicated screen generated from packages/api-client/openapi.json, so endpoint inventory and operation summaries cannot drift from the typed client artifact.
+- The quickstart documents owner/admin JWT key issuance, one-time secret handling, scoped API-key use, stable Idempotency-Key values, generation creation, polling, and private signed download retrieval.
+- Examples use placeholders for workspace, voice, model, and checkpoint values; no real tokens, emails, audio, storage URLs, or model secrets are embedded in the UI.
+- Safety guidance states the 10,000-character generation limit, 25 MB upload limit, 600-second signed URL lifetime, consent/model gates, and redaction rules.

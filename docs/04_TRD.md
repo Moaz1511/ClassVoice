@@ -496,3 +496,9 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
 - Account export is asynchronous and must create a `data_exports` job, notify the requester, and issue only a short-lived, authorization-checked private URL. Account deletion requires recent password re-authentication, typed `DELETE MY ACCOUNT`, explicit cascade acknowledgement, audit emission, and asynchronous cleanup.
 - Audit UI consumes redacted audit metadata only. It must preserve append-only ordering, request correlation, actor/action filters, and never expose `metadata` values that contain source text, audio, embeddings, storage keys/URLs, or secrets.
 - Safety reports use the moderator-safe report contract: workspace/resource authorization, allowlisted reason codes, bounded descriptions, and moderator-only review metadata. Report screens must not fetch or render raw source assets.
+# P3-09 API documentation implementation contract
+
+- The protected /docs/api page must derive its endpoint inventory from the checked-in generated OpenAPI document and expose the same operation paths, methods, summaries, request-body schema names, and response status codes.
+- Agent examples must use the documented {data,error,request_id} envelope, require Idempotency-Key for create operations, show API-key scopes, and never include real credentials or private object URLs.
+- The generation quickstart must demonstrate create → poll → download, use an approved model/checkpoint placeholder rather than inventing provenance, and state that signed output URLs expire after 600 seconds.
+- The UI must distinguish owner/admin JWT key issuance from machine API-key calls and must warn that service-role keys, JWT signing secrets, webhook secrets, raw audio, and source text are server-only/private.
