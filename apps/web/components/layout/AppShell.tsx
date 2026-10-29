@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "../../lib/auth";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import { WorkspaceSwitcher } from "./WorkspaceSwitcher";
 
 const primaryNavigation = [
   { href: "/dashboard", label: "Dashboard", icon: "⌂" },
@@ -39,7 +40,8 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
           <span className="brand-mark" aria-hidden="true">CV</span>
           <span>ClassVoice</span>
         </Link>
-        <p className="workspace-label">My workspace</p>
+        <WorkspaceSwitcher />
+        <p className="workspace-label">Workspace navigation</p>
         <nav className="nav-list">
           {primaryNavigation.map((item) => (
             <Link className={`nav-link${isActive(item.href) ? " active" : ""}`} href={item.href} key={item.href}>
@@ -68,8 +70,13 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
             <span className="eyebrow">Academic voice studio</span>
             <span className="topbar-status"><span className="status-dot" />All systems operational</span>
           </div>
-          <div className="topbar-actions"><ThemeToggle /><button className="avatar" type="button" aria-label="Open account menu">M</button></div>
+          <div className="topbar-actions"><WorkspaceSwitcher /><ThemeToggle /><button className="avatar" type="button" aria-label="Open account menu">M</button></div>
         </header>
+        <nav className="mobile-nav" aria-label="Mobile workspace navigation">
+          {primaryNavigation.map((item) => (
+            <Link className={`mobile-nav-link${isActive(item.href) ? " active" : ""}`} href={item.href} key={item.href}>{item.label}</Link>
+          ))}
+        </nav>
         <main className="page-content">{children}</main>
       </div>
     </div>

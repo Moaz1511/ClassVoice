@@ -305,3 +305,7 @@ the same path with an explicit expiry message, and verification/reset errors are
 shown inline without exposing account existence. The local/CI provider models
 the documented state transitions; the Supabase callback replaces its transient
 adapter in the hosted profile.
+
+# P3-03 dashboard shell implementation notes
+
+The protected App Router layout now owns the authenticated shell for all workspace routes. The sidebar and mobile navigation expose dashboard, voice profiles, Studio, generations, API keys, webhooks, reports, audit, and settings destinations. A workspace switcher is intentionally a placeholder until the workspace API is connected; it never displays a fabricated member or workspace list. A protected catch-all route provides explicit loading/empty/error-safe placeholders for list, create, and detail routes, and every placeholder states that no private data is loaded until the authenticated API client is wired.

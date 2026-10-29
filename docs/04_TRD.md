@@ -470,3 +470,7 @@ token in module memory only; `sessionStorage` contains only a short-lived
 non-credential expiry marker used by the route guard. Production must replace
 that adapter with Supabase’s secure session cookies/refresh flow and must never
 move an access token into `localStorage`.
+
+# P3-03 dashboard shell implementation contract
+
+The web shell uses a route-group-level `ProtectedRoute` before `AppShell`, preventing protected content from rendering during session checks or after expiry. `PageState` standardizes loading, empty, and error presentation; `WorkspaceSwitcher` is a client-only placeholder with no workspace data source; and `app/(protected)/[...slug]/page.tsx` is the intentional placeholder boundary for documented workspace/admin/API/detail paths until their API-backed screens are implemented. Mobile navigation remains keyboard-accessible through horizontally scrollable primary links.
