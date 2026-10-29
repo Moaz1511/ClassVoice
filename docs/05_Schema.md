@@ -214,6 +214,8 @@ create table public.projects (
   created_by uuid not null references auth.users(id) on delete restrict,
   name text not null check (length(name) between 1 and 160),
   description text,
+  editor_settings jsonb not null default '{}'::jsonb
+    check (jsonb_typeof(editor_settings) = 'object'),
   archived_at timestamptz,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()

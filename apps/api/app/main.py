@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
 from .api.v1.generations import router as generations_router
+from .api.v1.projects import configure_project_state
+from .api.v1.projects import router as projects_router
 from .api.v1.voices import configure_upload_state
 from .api.v1.voices import router as voices_router
 from .core.auth_config import AuthConfigurationError
@@ -61,6 +63,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     )
     app.state.inference_adapter = SmokeCpuAdapter()
     configure_upload_state(app)
+    configure_project_state(app)
     app.state.generation_store = InMemoryGenerationStore()
     app.state.generation_service = GenerationService(
         app.state.generation_store,
@@ -92,6 +95,7 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
     app.add_exception_handler(RequestValidationError, validation_error_handler)
     app.add_exception_handler(Exception, unexpected_error_handler)
     app.include_router(voices_router, prefix="/v1")
+    app.include_router(projects_router, prefix="/v1")
     app.include_router(generations_router, prefix="/v1")
 
     @app.get("/health/live", tags=["health"])

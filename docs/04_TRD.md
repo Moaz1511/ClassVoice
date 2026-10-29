@@ -339,9 +339,12 @@ GET    /v1/voices/:voice_id
 PATCH  /v1/voices/:voice_id
 POST   /v1/voices/:voice_id/revoke
 DELETE /v1/voices/:voice_id
-POST   /v1/projects
-GET    /v1/projects/:project_id
-PATCH  /v1/projects/:project_id
+    POST   /v1/projects
+    GET    /v1/projects
+    GET    /v1/projects/:project_id
+    PATCH  /v1/projects/:project_id
+    GET    /v1/projects/:project_id/editor-settings
+    PUT    /v1/projects/:project_id/editor-settings
 POST   /v1/generations
 GET    /v1/generations
 GET    /v1/generations/:generation_id

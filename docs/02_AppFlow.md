@@ -187,6 +187,10 @@ Editor fields: project name, text, voice, language, format, speed, style/stabili
 Actions:
 
 - `Save project` → `SAVING` → `SAVED` or inline error.
+- `Save project` persists the project name/description and the explicit editor
+  settings snapshot (voice, language, format, speed, stability, and style).
+  Draft text is local-only until `Generate` submits it; project APIs reject
+  unknown draft fields and never persist unsaved text.
 - `Generate` validates text, voice readiness, and consent; then creates a job with an idempotency key.
 - `Cancel generation` is available while queued/processing; it changes the job to `CANCEL_REQUESTED`.
 - `Clear` requires confirmation if unsaved text exists.
