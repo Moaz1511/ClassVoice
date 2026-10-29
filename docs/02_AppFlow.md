@@ -309,3 +309,7 @@ adapter in the hosted profile.
 # P3-03 dashboard shell implementation notes
 
 The protected App Router layout now owns the authenticated shell for all workspace routes. The sidebar and mobile navigation expose dashboard, voice profiles, Studio, generations, API keys, webhooks, reports, audit, and settings destinations. A workspace switcher is intentionally a placeholder until the workspace API is connected; it never displays a fabricated member or workspace list. A protected catch-all route provides explicit loading/empty/error-safe placeholders for list, create, and detail routes, and every placeholder states that no private data is loaded until the authenticated API client is wired.
+
+# P3-04 voice screen implementation notes
+
+The voice list implements status/language/owner/search filters, archived inclusion, filtered-empty recovery, loading, retry/error, and workspace-scoped data messaging. The create screen follows `CONSENT_UNREAD` → `CONSENT_ACCEPTED` → `SAMPLE_SELECTED` → upload/validation/processing states, validates WAV/MP3/M4A and the 25 MB client limit, and explains that duration, silence, clipping, channels, speaker warnings, and policy checks are server truth. The consent modal is non-dismissable until the acknowledgement action is chosen, and no raw audio or storage key is rendered. The detail screen uses safe inaccessible-resource copy and requires confirmation for consent revocation and permanent deletion.

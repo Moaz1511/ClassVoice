@@ -474,3 +474,7 @@ move an access token into `localStorage`.
 # P3-03 dashboard shell implementation contract
 
 The web shell uses a route-group-level `ProtectedRoute` before `AppShell`, preventing protected content from rendering during session checks or after expiry. `PageState` standardizes loading, empty, and error presentation; `WorkspaceSwitcher` is a client-only placeholder with no workspace data source; and `app/(protected)/[...slug]/page.tsx` is the intentional placeholder boundary for documented workspace/admin/API/detail paths until their API-backed screens are implemented. Mobile navigation remains keyboard-accessible through horizontally scrollable primary links.
+
+# P3-04 voice screen implementation contract
+
+Voice screens remain inside the protected route group and do not render private voice rows before the guard resolves. `VoiceListScreen` owns filter state and truthful collection states; `VoiceCreateScreen` validates only cheap client constraints before the server remains authoritative for audio inspection and consent evidence; `VoiceDetailScreen` treats missing/inaccessible resources uniformly and keeps revoke/delete behind modal confirmation. Until the typed authenticated upload client is connected, the create flow explicitly stops before network transmission and says that no audio was sent or stored.
