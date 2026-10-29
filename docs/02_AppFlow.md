@@ -297,3 +297,11 @@ routes:
 Moderator report rows contain only bounded report metadata and description. The
 moderator UI must not render generation input/audio or expose private storage
 URLs as part of a report review.
+# P3-02 authentication implementation notes
+
+The implemented auth screens preserve `returnTo` only as a validated internal
+path. Sign-in rejects unsafe external return URLs, expired sessions redirect to
+the same path with an explicit expiry message, and verification/reset errors are
+shown inline without exposing account existence. The local/CI provider models
+the documented state transitions; the Supabase callback replaces its transient
+adapter in the hosted profile.

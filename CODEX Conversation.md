@@ -4009,3 +4009,371 @@ The next planned item is P2-15: webhook endpoint validation, signing, delivery r
 >
 > You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 9:35 AM.
 </details>
+
+> please continue
+
+<details><summary>9 previous messages</summary>
+
+> P2-15 is validated and documented. I’ll continue with P2-16: central audit-event emission for required mutations/downloads plus a moderator-safe report endpoint. I’ll first map the existing per-domain audit records and database/RLS audit contract so the new service does not duplicate or weaken existing evidence, then add the shared audit writer, reporting route, tests, OpenAPI regeneration, and plan update.
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m continuing with P2-16 now: I’ll first align the central audit model with the existing schema and authorization claims, then wire the required mutation/download events and add the moderator report flow. I’ll keep the existing domain-level audit behavior intact and verify the new integration with focused tests and generated API contracts.
+>
+> <details><summary>Created 5 files, edited 8 files, ran 13 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n -i "audit|moderation|report|actor_type|audit_events" apps/api/app apps/api/tests docs/04_TRD.md docs/05_Schema.md docs/02_AppFlow.md'`
+> - Ran `rg -n -i "audit|moderation|report|actor_type|audit_events" apps/api/app apps/api/tests docs/04_TRD.md docs/05_Schema.md docs/02_AppFlow.md`
+> - Ran `Get-Content apps/api/app/core/jwt.py; Get-Content apps/api/app/core/authorization.py; Get-Content apps/api/app/main.py`
+> - Ran `Get-Content apps/api/app/api/v1/voices.py; Get-Content apps/api/app/api/v1/projects.py; Get-Content apps/api/app/api/v1/generations.py; Get-Content apps/api/app/api/v1/api_keys.py; Get-Content apps/api/app/api/v1/webhooks.py`
+> - Ran `Get-Content db/migrations/versions/0005_integrations_audit.py; Get-Content db/migrations/versions/0006_rls_policies.py; Get-Content apps/api/app/core/errors.py; Get-Content apps/api/app/core/logging.py`
+> - Ran `Get-Content apps/api/pyproject.toml; Get-Content apps/api/tests/conftest.py; rg -n "def _token|jwt|app_metadata|request_id" apps/api/tests | Select-Object -First 100`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i /c:\"audit\" /c:\"report\" /c:\"moderator\" docs\\04_TRD.md docs\\02_AppFlow.md"`
+> - Wrote `./apps/api/app/domains/audit/__init__.py` (+5 -0)
+> - Wrote `./apps/api/app/domains/audit/service.py` (+203 -0)
+> - Wrote `./apps/api/app/core/authorization.py` (+6 -0)
+> - Wrote `./apps/api/app/core/jwt.py` (+22 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "mkdir apps\\api\\app\\domains\\audit apps\\api\\app\\domains\\moderation"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api\\app\\domains"`
+> - Wrote `./apps/api/app/api/v1/reports.py` (+118 -0)
+> - Wrote `./apps/api/app/domains/moderation/__init__.py` (+5 -0)
+> - Wrote `./apps/api/app/domains/moderation/service.py` (+109 -0)
+> - Wrote `./apps/api/app/api/v1/generations.py` (+5 -1)
+> - Wrote `./apps/api/app/main.py` (+7 -0)
+> - Wrote `./apps/api/app/api/v1/voices.py` (+48 -0)
+> - Ran `rg -n "class UploadIntent|upload_id|class Deletion" apps/api/app/domains/voices apps/api/app/domains`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "class VoiceDeletion|DeletionTask|queued_at|voice_id" apps/api/app/domains/voices/lifecycle.py'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"Deletion queued_at voice_id\" apps\\api\\app\\domains\\voices\\lifecycle.py"`
+> - Wrote `./apps/api/app/api/v1/voices.py` (+2 -2)
+> - Wrote `./apps/api/app/api/v1/projects.py` (+32 -0)
+> - Wrote `./apps/api/app/api/v1/generations.py` (+39 -0)
+> - Ran `rg -n "class GenerationOutput|output_format" apps/api/app/domains/generations/outputs.py`
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+22 -0)
+> - Wrote `./apps/api/app/api/v1/webhooks.py` (+14 -0)
+>
+> </details>
+>
+> The central event boundary and report service are now in place. I’ve wired audit emission into upload intents, voice/project mutations, generation create/cancel/retry/download, API-key and webhook lifecycle actions, plus report submission. I’m running the type/lint checks next; any mismatched domain field names will be corrected before adding the integration tests and updating the plan/contracts.
+>
+> <details><summary>Created 2 files, edited 7 files, ran 22 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --fix apps\\api"`
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+4 -1)
+> - Wrote `./apps/api/app/api/v1/generations.py` (+4 -1)
+> - Wrote `./apps/api/app/domains/audit/service.py` (+5 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api; apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_jwt.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_jwt.py"`
+> - Wrote `./apps/api/app/domains/audit/service.py` (+2 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_jwt.py"`
+> - Ran `Get-Content apps/api/tests/test_webhooks.py; Get-Content apps/api/tests/test_project_routes.py | Select-Object -First 100; Get-Content apps/api/tests/test_jwt.py | Select-Object -First 90`
+> - Wrote `./apps/api/tests/test_audit.py` (+47 -0)
+> - Wrote `./apps/api/tests/test_report_routes.py` (+93 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_audit.py apps\\api\\tests\\test_report_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_voice_routes.py apps\\api\\tests\\test_project_routes.py apps\\api\\tests\\test_generation_routes.py apps\\api\\tests\\test_api_keys.py apps\\api\\tests\\test_webhooks.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_audit.py apps\\api\\tests\\test_report_routes.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe scripts\\export_openapi.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run generate'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/api-client run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "P2-15|P2-16|Progress" docs/06_Plan.md; rg -n "audit|moderation|webhook|API key" docs/04_TRD.md docs/05_Schema.md docs/02_AppFlow.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Wrote `./docs/02_AppFlow.md` (+17 -0)
+> - Wrote `./docs/04_TRD.md` (+26 -0)
+> - Wrote `./docs/05_Schema.md` (+17 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git diff -- docs/04_TRD.md docs/05_Schema.md docs/02_AppFlow.md docs/06_Plan.md'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_jwt.py apps\\api\\tests\\test_authorization.py apps\\api\\tests\\test_main.py"`
+> - Wrote `./apps/api/app/domains/audit/service.py` (+7 -3)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_audit.py apps\\api\\tests\\test_report_routes.py"`
+> - Ran `rg -n 'reports|moderation' packages/api-client/openapi.json packages/api-client/src/schema.ts`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app apps\\api\\tests\\test_audit.py apps\\api\\tests\\test_report_routes.py"`
+>
+> </details>
+>
+> P2-16 is functionally complete. The new focused tests and all affected existing route tests pass, and the generated OpenAPI/client artifacts are updated. The only broader-suite limitation is the same Windows `WinError 10055` socket-buffer exhaustion during pytest’s async event-loop setup; lint and mypy are clean. I’m doing one final contract check for the changed files and exact handoff locations.
+>
+> <details><summary>Edited a file, ran 5 commands</summary>
+>
+> - Ran `rg -n "class AuditEvent|class AuditService|def redact_metadata" apps/api/app/domains/audit/service.py; rg -n "router = APIRouter|async def create_report|async def list_reports" apps/api/app/api/v1/reports.py; rg -n "profile_role|require_moderator" apps/api/app/core/jwt.py apps/api/app/core/authorization.py; rg -n "P2-16|audit and report flows|P2-16 application|P2-16 implementation" docs/06_Plan.md docs/02_AppFlow.md docs/04_TRD.md docs/05_Schema.md`
+> - Wrote `./apps/api/app/domains/audit/service.py` (+5 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api; apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\pytest.exe apps\\api\\tests\\test_audit.py apps\\api\\tests\\test_report_routes.py"`
+>
+> </details>
+>
+> <details><summary>Plan</summary>
+>
+> P2-16 is implemented and verified with focused API tests, existing mutation route regressions, lint/type checks, OpenAPI export, and client typecheck. The broader Windows async suite still encounters the previously documented WinError 10055 socket-buffer exhaustion.
+>
+> - [x] Inspect existing audit event models, mutation hooks, moderation schema/RLS, and auth roles
+> - [x] Add shared audit event domain/store with redacted metadata and actor types
+> - [x] Wire required mutation/download audit emissions and moderator-safe report endpoint
+> - [x] Add tests, OpenAPI/client regeneration, docs, and plan evidence
+> - [x] Run static checks and focused/full tests
+>
+> </details>
+</details>
+
+P2-16 is complete.
+
+Implemented:
+
+- Central append-only audit service with actor classification, request IDs, IP/User-Agent hashes, and sensitive metadata redaction.
+- Audit events for voice, project, generation, download, API-key, webhook, upload-intent, and moderation actions.
+- JWT `profile_role` parsing with moderator authorization.
+- `POST /v1/reports` for workspace members.
+- Moderator-only `GET /v1/reports`.
+- Reused existing `audit_events` and `moderation_flags` schema/RLS; no new migration required.
+- Regenerated OpenAPI and TypeScript client artifacts.
+- Updated architecture and implementation documentation.
+
+Key files:
+
+- [Audit service](E:/Developer/Voice%20Generation/apps/api/app/domains/audit/service.py)
+- [Report API](E:/Developer/Voice%20Generation/apps/api/app/api/v1/reports.py)
+- [Audit tests](E:/Developer/Voice%20Generation/apps/api/tests/test_audit.py)
+- [Report tests](E:/Developer/Voice%20Generation/apps/api/tests/test_report_routes.py)
+- [Implementation plan](E:/Developer/Voice%20Generation/docs/06_Plan.md)
+
+Verification passed:
+
+- Audit/report tests: 2 passed
+- Existing affected route tests: 14 passed
+- Ruff: passed
+- mypy: passed
+- OpenAPI export: passed
+- API client generation and typecheck: passed
+
+The broader Windows pytest run remains affected by the previously observed `WinError 10055` socket-buffer exhaustion during asyncio setup; this is an environment limitation, not an application test failure.
+
+The next dependency-ready step is Phase 3, P3-01: scaffold the Next.js application shell and route guards.
+
+> Now please proceed next.
+
+<details><summary>9 previous messages</summary>
+
+> I’m moving to P3-01 now: I’ll inspect the current web package and UI tokens first, then scaffold the Next.js shell, theme handling, layout, error boundaries, and route guards against the existing API/client contracts. I’ll update the plan only after the shell is runnable and verified.
+>
+> <details><summary>Created 16 files, edited 2 files, ran 10 commands</summary>
+>
+> - Ran `Get-ChildItem -Recurse apps/web -File | Select-Object -ExpandProperty FullName; Get-Content apps/web/package.json; Get-Content apps/web/tsconfig.json; Get-Content docs/03_UI_Spec.md | Select-Object -First 260; Get-Content docs/02_AppFlow.md | Select-Object -First 80`
+> - Ran `Get-Content apps/web/lib/baseline.ts; Get-Content apps/web/tests/smoke.test.mjs; Get-Content apps/web/eslint.config.mjs; Get-Content package.json; Get-Content docker-compose.yml | Select-Object -First 160`
+> - Ran `Get-Content infra/docker/Dockerfile.web; Get-Content infra/docker/health_server.mjs`
+> - Ran `rg -n "Next|React|next|P3-01|Tailwind|Radix" docs/04_TRD.md docs/06_Plan.md package-lock.json apps/web/package.json`
+> - Ran `rg -n "\| (Next.js|React|Tailwind|Radix|React Hook|Zod|TanStack|Playwright|ESLint|TypeScript)" docs/04_TRD.md`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'dir package-lock.json; findstr /n /c:"next" package-lock.json | more'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'dir package-lock.json'`
+> - Wrote `./apps/web/package.json` (+23 -10)
+> - Wrote `./apps/web/tsconfig.json` (+16 -10)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "mkdir apps\\web\\components\\auth apps\\web\\components\\layout apps\\web\\components\\theme apps\\web\\components\\ui apps\\web\\lib apps\\web\\app\\auth\\sign-in apps\\web\\app\\dashboard apps\\web\\app\\(protected)"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\web\\components & dir apps\\web\\app"`
+> - Wrote `./apps/web/app/(protected)/dashboard/page.tsx` (+20 -0)
+> - Wrote `./apps/web/app/(protected)/layout.tsx` (+6 -0)
+> - Wrote `./apps/web/app/auth/sign-in/page.tsx` (+28 -0)
+> - Wrote `./apps/web/app/error.tsx` (+8 -0)
+> - Wrote `./apps/web/app/globals.css` (+105 -0)
+> - Wrote `./apps/web/app/layout.tsx` (+27 -0)
+> - Wrote `./apps/web/app/loading.tsx` (+3 -0)
+> - Wrote `./apps/web/app/not-found.tsx` (+5 -0)
+> - Wrote `./apps/web/app/page.tsx` (+15 -0)
+> - Wrote `./apps/web/components/auth/ProtectedRoute.tsx` (+31 -0)
+> - Wrote `./apps/web/components/layout/AppShell.tsx` (+77 -0)
+> - Wrote `./apps/web/components/theme/ThemeProvider.tsx` (+60 -0)
+> - Wrote `./apps/web/components/ui/ThemeToggle.tsx` (+21 -0)
+> - Wrote `./apps/web/lib/auth.ts` (+20 -0)
+> - Wrote `./apps/web/next-env.d.ts` (+5 -0)
+> - Wrote `./apps/web/next.config.ts` (+8 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install'`
+>
+> </details>
+>
+> The shell scaffold is in place. Dependency installation is currently hanging without output (likely the same registry/network instability you saw with Docker), so I’m stopping that process and will first run the repository’s existing checks to distinguish code issues from dependency-fetch issues.
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --workspace @classvoice/web --offline'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --workspace @classvoice/web'`
+>
+> </details>
+>
+> The web code is written, but dependency installation hit a concrete environment blocker: npm returned `ENOSPC` (“no space left on device”) while fetching the locked Next.js dependency tree. I’m checking which local caches/install artifacts consumed the space so I can reclaim only the relevant recoverable cache and retry safely.
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "fsutil volume diskfree E: & dir /a node_modules & dir /a apps\\web\\node_modules"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /a /s /-c C:\\Users\\moaz9\\AppData\\Local\\npm-cache | findstr /i \"File(s)\""`
+>
+> </details>
+>
+> The free-space check confirms the project drive still has space; the `ENOSPC` is on the system drive where npm’s cache lives. I’m going to clear only npm’s recoverable cache (not project files or Docker data), then retry the locked web install.
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm cache clean --force'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --workspace @classvoice/web'`
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+</details>
+
+<details><summary>2 previous messages</summary>
+
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run typecheck'`
+>
+> </details>
+>
+> System error
+>
+> Selected model is at capacity. Please try a different model.
+</details>
+
+<details><summary>4 previous messages</summary>
+
+> <details><summary>Created 2 files, edited 7 files, explored a file, ran 23 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir node_modules\\next node_modules\\react node_modules\\@types\\react 2>nul; npm ls --workspace @classvoice/web --depth=0"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm ls --workspace @classvoice/web --depth=0'`
+>
+> - Wrote `./apps/web/package.json` (+2 -0)
+> - Wrote `./apps/web/tsconfig.json` (+2 -2)
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --workspace @classvoice/web'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run typecheck'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run lint'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run test'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run build'`
+>
+> - Wrote `./apps/web/package.json` (+1 -0)
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm install --workspace @classvoice/web'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run build'`
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./.dockerignore`
+>
+> </details>
+>
+> - Wrote `./apps/web/app/health/live/route.ts` (+3 -0)
+> - Wrote `./apps/web/app/health/ready/route.ts` (+3 -0)
+> - Wrote `./apps/web/next.config.ts` (+1 -0)
+> - Wrote `./infra/docker/Dockerfile.web` (+31 -8)
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\web\\tsconfig.json & type apps\\web\\next.config.ts"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run typecheck'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run lint'`
+>
+> - Wrote `./apps/web/eslint.config.mjs` (+7 -5)
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run lint'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run test'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm --workspace @classvoice/web run build'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b apps\\web\\.next\\standalone | findstr /i \"server.js\""`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\web\\.next /a; dir apps\\web\\.next\\standalone /a"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b apps\\web\\.next\\standalone | more"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "mkdir \"apps\\web\\app\\(protected)\\[[...slug]]\""`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir \"apps\\web\\app\\(protected)\""`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\web\\app"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "cd /d \"E:\\Developer\\Voice Generation\\apps\\web\\app\\(protected)\" && mkdir \"[[...slug]]\""`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'type .gitignore; git diff --check'`
+>
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+>
+> - Wrote `./docs/04_TRD.md` (+14 -0)
+>
+> </details>
+>
+> The shell now builds successfully with the real Next standalone server, and the Docker health endpoints are served by Next route handlers instead of the placeholder process. I’ve also recorded P3-01 in the implementation plan and documented the route-guard/theme/container contract. I’m doing the final workspace checks now.
+>
+> <details><summary>Edited a file, ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run test'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
+> - Wrote `./infra/docker/Dockerfile.web` (+0 -1)
+>
+> </details>
+>
+> <details><summary>Plan</summary>
+>
+> P3-01 is complete. The web app builds as a real Next standalone application, route guards and theme tokens are implemented, Docker now runs the standalone server, and all web verification gates pass.
+>
+> - [x] Inspect current web workspace, UI tokens, app flow, and container entrypoint
+> - [x] Install locked Next.js/React web dependencies and configure strict TypeScript
+> - [x] Implement App Router shell, theme system, responsive layout, route guard, and error/loading states
+> - [x] Switch web container to standalone Next server with health routes
+> - [x] Run web lint, typecheck, tests, production build, and update plan/docs
+>
+> </details>
+</details>
+
+P3-01 is complete.
+
+Implemented the Next.js application shell with:
+
+- Next.js `16.4.3`, React `19.3.0`, strict TypeScript, and standalone output.
+- Responsive sidebar/topbar layout based on `03_UI_Spec.md`.
+- Exact light/dark semantic color tokens and system-theme detection.
+- Theme persistence without hydration flash.
+- Protected route guard redirecting unauthenticated users to sign-in.
+- Public landing and development sign-in screen.
+- Loading, error, and not-found boundaries.
+- Real Next.js `/health/live` and `/health/ready` routes.
+- Production Dockerfile running the standalone Next server.
+
+Key files:
+
+- [App layout](<./apps/web/app/layout.tsx>)
+- [Theme provider](<./apps/web/components/theme/ThemeProvider.tsx>)
+- [Protected route guard](<./apps/web/components/auth/ProtectedRoute.tsx>)
+- [Application shell](<./apps/web/components/layout/AppShell.tsx>)
+- [Design tokens](<./apps/web/app/globals.css>)
+- [Web Dockerfile](<./infra/docker/Dockerfile.web>)
+- [Updated implementation plan](<./docs/06_Plan.md>)
+
+Verification passed:
+
+- Web lint
+- Web TypeScript typecheck
+- Web smoke test
+- Production `next build`
+- Docker Compose configuration validation
+
+npm initially reported system-drive `ENOSPC`; only npm’s recoverable cache was cleared, then dependency installation completed successfully. npm also reports one high-severity dependency advisory for later review.
+
+Next dependency-ready step: P3-02, authentication screens and session flows.
+
+> Now please proceed next.

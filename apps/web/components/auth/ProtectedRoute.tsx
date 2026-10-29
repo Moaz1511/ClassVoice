@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { hasStoredSession, type SessionState } from "../../lib/auth";
+import { getSessionStatus, subscribeAuth, type SessionState } from "../../lib/auth";
 
 export function ProtectedRoute({ children }: Readonly<{ children: React.ReactNode }>) {
   const router = useRouter();
@@ -10,12 +10,18 @@ export function ProtectedRoute({ children }: Readonly<{ children: React.ReactNod
   const [state, setState] = useState<SessionState>("checking");
 
   useEffect(() => {
-    if (hasStoredSession()) {
-      setState("signed-in");
-      return;
-    }
-    setState("signed-out");
-    router.replace(`/auth/sign-in?returnTo=${encodeURIComponent(pathname)}`);
+    const check = () => {
+      const sessionStatus = getSessionStatus();
+      if (sessionStatus === "active") {
+        setState("signed-in");
+        return;
+      }
+      setState("signed-out");
+      const reason = sessionStatus === "expired" ? "&reason=expired" : "";
+      router.replace(`/auth/sign-in?returnTo=${encodeURIComponent(pathname)}${reason}`);
+    };
+    check();
+    return subscribeAuth(check);
   }, [pathname, router]);
 
   if (state !== "signed-in") {

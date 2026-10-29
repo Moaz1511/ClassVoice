@@ -455,3 +455,18 @@ Supabase auth form is the next P3 step.
 The web container builds from the monorepo lockfile and runs the Next standalone
 server. `/health/live` and `/health/ready` are Next route handlers so Docker
 health checks exercise the real web process rather than a placeholder server.
+# P3-02 authentication screen implementation contract
+
+The web auth screens now cover sign-up, sign-in, verification, password reset,
+OAuth callback/error, onboarding, return-to routing, and expired-session
+re-entry. Zod schemas enforce the same baseline constraints as the local
+provider (valid email, 12-character password without spaces, confirmation, and
+terms acknowledgement). Reset requests always show the same response so the UI
+does not enumerate accounts.
+
+The local/CI adapter is intentionally a development boundary until Supabase
+Auth endpoints are connected. It keeps the local credential record and access
+token in module memory only; `sessionStorage` contains only a short-lived
+non-credential expiry marker used by the route guard. Production must replace
+that adapter with Supabase’s secure session cookies/refresh flow and must never
+move an access token into `localStorage`.
