@@ -507,3 +507,25 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
 - API schema and domain tests must pin stable error codes for every P0 validation boundary, including text/language/format/settings/SHA/idempotency limits, malformed UUIDs, upload size, report description, and API-key scopes/expiry.
 - Lifecycle tests must exercise valid and invalid voice/generation transitions, terminal-state cancellation/retry policy, consent/model gates, workspace binding, and idempotent replay with changed metadata.
 - CI runs branch coverage over the API application with a minimum 55 percent gate using pytest-cov; the threshold is a floor while P4-02 through P4-07 add security, fuzz, reliability, load, and release coverage.
+
+# P4-02 security integration contract
+
+- The HTTP integration suite must prove that anonymous requests receive a
+  stable authentication error before private rows are loaded, and that a
+  member of workspace A cannot list, fetch, or infer the existence of a voice
+  or generation belonging to workspace B.
+- Viewer memberships may read permitted workspace collections but cannot create
+  upload intents, projects, voices, or generations even when the JWT contains
+  the corresponding write scope. Authorization must fail at the workspace
+  role boundary before a domain mutation is attempted.
+- API keys are bound to their issuing workspace as well as their explicit
+  scopes. A key for workspace A cannot address workspace B, a read-only key
+  cannot create a generation, and revocation takes effect on the next request
+  with the stable `API_KEY_REVOKED` error.
+- A revoked voice consent record blocks new generation creation at the HTTP
+  boundary, and a disabled workspace blocks both reads and writes before any
+  private resource or upload URL is returned.
+- These assertions are exercised through the same FastAPI routes and
+  authentication dependencies used by the generated client. Database-backed
+  RLS replay remains authoritative for durable SQL access; no test may treat an
+  in-memory adapter as evidence that private storage objects are public.

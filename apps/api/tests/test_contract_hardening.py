@@ -4,8 +4,6 @@ from datetime import UTC, datetime, timedelta
 from uuid import UUID, uuid4
 
 import pytest
-from pydantic import ValidationError
-
 from app.api.v1.api_keys import CreateApiKeyBody
 from app.api.v1.generations import CreateGenerationBody
 from app.api.v1.reports import CreateReportBody
@@ -30,6 +28,7 @@ from app.domains.voices.lifecycle import (
     VoiceReadiness,
 )
 from app.inference.model_registry import ModelManifest, ModelManifestEntry, ModelRegistry
+from pydantic import ValidationError
 
 WORKSPACE_ID = UUID("00000000-0000-0000-0000-000000000101")
 OTHER_WORKSPACE_ID = UUID("00000000-0000-0000-0000-000000000102")
@@ -187,12 +186,14 @@ async def test_voice_policy_matrix_blocks_invalid_transitions_and_reuse() -> Non
     )
     assert repeated.id == voice.id
 
+    await service.transition(voice.id, ACTOR_ID, "validating")
+    await service.transition(voice.id, ACTOR_ID, "processing")
     with pytest.raises(VoiceLifecycleError) as not_ready:
         await service.transition(voice.id, ACTOR_ID, "ready")
     assert not_ready.value.code == "VOICE_NOT_READY"
 
     with pytest.raises(VoiceLifecycleError) as invalid_transition:
-        await service.transition(voice.id, ACTOR_ID, "processing")
+        await service.transition(voice.id, ACTOR_ID, "draft")
     assert invalid_transition.value.code == "VOICE_STATE_CONFLICT"
 
     ready = await _ready_voice(service)

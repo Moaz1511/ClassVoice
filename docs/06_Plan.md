@@ -2,7 +2,7 @@
 
 **Product:** ClassVoice  
 **Plan status:** In progress  
-**Last updated:** 2026-10-29  
+**Last updated:** 2026-10-30
 **Rule:** Execute in order. Complete and verify one checkbox before starting the next. Update this file immediately after every completed step with the commit/PR and evidence.
 
 ## How to use this plan
@@ -170,7 +170,7 @@
 - [~] **P4-01** Add unit/property tests for all input schemas, error codes, idempotency, state transitions, and policy decisions.
   - Depends on: Phase 2 complete.
   - Accept when: coverage gates are defined and all P0 branches are exercised.
-- [ ] **P4-02** Add RLS/security integration suite for anonymous, cross-workspace, viewer, revoked key, revoked consent, and disabled workspace cases.
+- [~] **P4-02** Add RLS/security integration suite for anonymous, cross-workspace, viewer, revoked key, revoked consent, and disabled workspace cases.
   - Depends on: P1-09, P2-14.
   - Accept when: no private row/object is accessible through direct API or generated client.
 - [ ] **P4-03** Add upload fuzz/fixture tests and resource limits for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases.
@@ -244,4 +244,5 @@
 | 2026-10-29 | P3-07 | n/a | Added protected API-key and webhook administration screens with scoped creation forms, expiry/event selection, one-time secret reveal/copy/dismiss state, metadata-only lists, revoke confirmation, HTTPS/SSRF-aware webhook setup, delivery states, and verified-endpoint test-event controls. Browser code never generates or persists secrets; server issuance remains the authenticated API boundary. Admin source-contract tests (3), web typecheck, ESLint, and production build passed with `/api-keys` and `/webhooks` routes. |
 | 2026-10-30 | P3-08 | n/a | Added dedicated profile, workspace, safety, audit, and safety-report screens. Profile export is an asynchronous server handoff and account deletion requires password re-authentication, exact `DELETE MY ACCOUNT` confirmation, and explicit cascade acknowledgement; the UI never claims a mutation was sent while the settings/export API is pending. Audit filters expose only append-only, redacted metadata; report submission bounds descriptions at 2,000 characters and never renders source audio, text, secrets, or private URLs. Added four web source-contract tests and settings/audit/report responsive styles. Web tests, typecheck, ESLint, and production build passed. |
 | 2026-10-30 | P3-09 | n/a | Replaced the protected `/docs/api` placeholder with an OpenAPI-driven endpoint reference, generated operation metadata, curl key-issuance and create→poll→download quickstarts, JavaScript fetch example, authentication/scope guidance, idempotency requirements, private 600-second download guidance, and safety limits. Added three API-docs surface tests and responsive documentation styles. The route imports the checked-in `packages/api-client/openapi.json`; no secrets or private sample data are embedded. |
-| 2026-10-30 | P4-01 | n/a | Added contract-hardening coverage for Pydantic request boundaries, stable generation/voice/project/API-key error codes, idempotency replay and metadata reuse, lifecycle terminal states, consent/model/workspace policy gates, and the API-key expiry/scope matrix. Added pinned pytest-cov branch coverage configuration with a 55% CI floor. The new test module compiles and all 24 web tests/typecheck/lint pass; authoritative API pytest/coverage execution remains pending because this Windows environment has no Python 3.13/pytest and Docker daemon access is denied. |
+| 2026-10-30 | P4-01 | n/a | Added contract-hardening coverage for Pydantic request boundaries, stable generation/voice/project/API-key error codes, idempotency replay and metadata reuse, lifecycle terminal states, consent/model/workspace policy gates, and the API-key expiry/scope matrix. Added pinned pytest-cov branch coverage configuration with a 55% CI floor. Focused project-venv pytest passed all 16 hardening tests, Ruff/mypy passed, and all 24 web tests/typecheck/lint pass. The locked CI coverage run remains pending because the local venv lacks pytest-cov and Docker daemon access is denied. |
+| 2026-10-30 | P4-02 | n/a | Added `test_security_integration.py` covering anonymous authentication failures, cross-workspace voice/generation reads, viewer write denial, workspace-bound API keys with scope enforcement and immediate revocation, revoked-consent generation blocking, and disabled-workspace read/write denial. Added the route-level security contract to `04_TRD.md`; focused project-venv pytest passed all 5 security tests, Ruff/mypy passed, and all 24 web tests/typecheck/lint pass. Database-backed RLS replay and generated-client isolation remain pending because Docker daemon access is denied, so the step remains `[~]`. |
