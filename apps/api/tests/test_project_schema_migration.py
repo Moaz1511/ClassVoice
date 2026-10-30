@@ -61,9 +61,14 @@ async def test_projects_store_editor_settings_as_json_object(
             user_id,
         )
         assert await database.fetchval(
-            "SELECT editor_settings FROM public.projects WHERE id = $1",
+            """
+            SELECT jsonb_typeof(editor_settings) = 'object'
+                AND editor_settings = '{}'::jsonb
+            FROM public.projects
+            WHERE id = $1
+            """,
             project_id,
-        ) == {}
+        )
 
         await database.execute(
             """

@@ -2,7 +2,7 @@
 
 **Product:** ClassVoice  
 **Document status:** Locked baseline v1.0  
-**Last updated:** 2026-10-27  
+**Last updated:** 2026-10-30
 **Version policy:** Exact pins below are the baseline. Upgrade only through an ADR, dependency review, and green CI.
 
 ## 1. Architecture decision summary
@@ -77,8 +77,8 @@ Rules:
 | SQLAlchemy | `2.1.6` | Async ORM/query layer |
 | Alembic | `1.17.1` | Schema migrations |
 | asyncpg | `0.30.0` | PostgreSQL driver |
-| redis-py | `6.4.0` | Redis client |
-| arq | `0.27.2` | Async job queue worker |
+| redis-py | `5.2.1` | Redis client compatible with the pinned arq worker |
+| arq | `0.27.0` | Async job queue worker |
 | httpx | `0.28.1` | Outbound HTTP with timeouts |
 | structlog | `25.4.0` | JSON structured logs |
 | boto3 | `1.43.120` | SigV4 presigned URLs for private S3-compatible storage |
@@ -529,3 +529,25 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   authentication dependencies used by the generated client. Database-backed
   RLS replay remains authoritative for durable SQL access; no test may treat an
   in-memory adapter as evidence that private storage objects are public.
+
+# Local Docker verification and Windows troubleshooting
+
+- The authoritative local stack is the `desktop-linux` Docker Desktop context.
+  On Windows, the Docker named pipe may require an elevated terminal even when
+  Docker Desktop reports `Engine running`; an access-denied daemon response is
+  a host permission problem, not a Compose proxy setting.
+- Verify the engine with `docker desktop status`, `docker info`, and
+  `docker compose ps`. A `401 Unauthorized` response from
+  `https://registry-1.docker.io/v2/` is the expected healthy anonymous registry
+  response; connection or DNS failures are not.
+- Do not enable Docker Desktop's manual proxy unless the host actually uses an
+  HTTP/HTTPS proxy. Direct Docker Hub and PyPI access are confirmed for this
+  development environment.
+- If host port `5432` resolves to a different PostgreSQL installation, do not
+  reset either database or delete Compose volumes. Run migration/security
+  verification from a disposable Python container on the Compose network and
+  point `DATABASE_URL` at service host `postgres:5432` using a uniquely named
+  test database. Drop only that verified disposable database after the run.
+- P4 database verification must run empty-to-head, head-to-base-to-head, the
+  complete API suite with branch coverage, and a post-replay RLS suite before
+  P4-01/P4-02 can be marked complete.
