@@ -3268,233 +3268,261 @@ Next step: create the dedicated OpenVoice worker runtime, run one real CPU synth
 > </details>
 </details>
 
+> E:\Developer\Voice Generation\CODEX Conversation.md
+>
 > please continue
 
-<details><summary>1 previous message</summary>
+<details><summary>41 previous messages</summary>
 
-> System error
+> I’m continuing from the Docker/P4-01/P4-02 work recorded in [CODEX Conversation.md](<./CODEX Conversation.md>). Docker itself is now confirmed healthy; the current blocker is narrower: the persistent Postgres volume was initialized with a password different from the repository default, so host Alembic cannot authenticate. I’ll verify the database safely from inside the container, align the local credential without deleting data, then run migration/RLS replay and both hardening suites.
 >
-> Selected model is at capacity. Please try a different model.
-</details>
-
-<details><summary>17 previous messages</summary>
-
-> I’m continuing with P4-02 while preserving P4-01’s honest `[~]` status. P4-02 is independently scoped to RLS/security behavior already implemented in the database migration and API-key boundary, so I’ll add the missing cross-workspace, anonymous, viewer-write, revoked-key, revoked-consent, and disabled-workspace integration assertions, then keep the environment limitation explicit.
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -Atc 'SELECT current_database(), current_user;'`
+> - Ran `Get-Content -Path 'CODEX Conversation.md' | Select-Object -Last 80`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d classvoice -Atc 'SELECT version_num FROM alembic_version;'`
+>
+> </details>
+>
+> The database is reachable and currently at `0009_audit_fk_maintenance`; the repo head includes `0010_project_editor_settings`. I found the concrete mismatch: the container’s existing `classvoice` role accepts local socket authentication, but its TCP password no longer matches `db/alembic.ini` and the Compose default. I’m aligning that development-only role password now—no volume or database data will be removed.
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `docker compose exec -T postgres psql -v ON_ERROR_STOP=1 -U classvoice -d classvoice -c "ALTER ROLE classvoice WITH PASSWORD 'change-me-local-only';"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -c \"import asyncio,asyncpg; asyncio.run(asyncpg.connect('postgresql://classvoice:change-me-local-only@127.0.0.1:5432/classvoice')).terminate()\""`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini current"`
+>
+> </details>
+>
+> The role update succeeded inside the Compose database, but host TCP still reports the old-password failure. That strongly suggests port `5432` on Windows is reaching a different PostgreSQL instance or stale port forward. I’m checking the bound process and testing the same password over TCP from inside the container; this will identify whether to repair the port mapping or use a clean isolated test port.
+>
+> <details><summary>Ran 5 commands</summary>
+>
+> - Ran `docker compose exec -T -e PGPASSWORD=change-me-local-only postgres psql -h 127.0.0.1 -U classvoice -d classvoice -Atc 'SELECT current_database(), current_user;'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose port postgres 5432'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'netstat -ano | findstr ":5432"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\env.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "set \"DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@127.0.0.1:5432/classvoice\" && apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini current"`
+>
+> </details>
+>
+> The Compose database password is valid over TCP inside the container, but Windows host port `5432` is not reaching that container—the host gets a password error from a different/stale PostgreSQL endpoint. I won’t disturb the running project volume or any other local PostgreSQL service. I’ll run the authoritative replay inside Docker’s `classvoice` network against a new isolated test database, which is also closer to CI behavior.
+>
+> <details><summary>Ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker network ls --format "{{.Name}}"'`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -Atc "SELECT datname FROM pg_database WHERE datname LIKE 'classvoice_p4%';"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres createdb -U classvoice classvoice_p4_verify'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "docker run --rm --network classvoice_default -v \"E:\\Developer\\Voice Generation:/workspace\" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'for %I in (.) do @echo %~sI'`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements-dev.txt"`
+>
+> </details>
+>
+> The isolated database migrated cleanly from empty state through all 10 revisions. I’m now running the complete API suite—not only the two new files—inside an ephemeral Python 3.13 container with the exact development lock, `pytest-cov`, FFmpeg, and the isolated Postgres URL. This will provide the authoritative P4-01 coverage and P4-02 RLS evidence in one run.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e PYTHONPATH=/workspace/apps/api -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install --disable-pip-version-check -r apps/api/requirements-dev.txt && pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests'`
+>
+> </details>
+>
+> The containerized verification is still running while it installs the exact test toolchain and executes the full suite. The application stack remains untouched; this is an ephemeral test container against the isolated database.
+>
+> The Docker run exposed a real dependency defect before tests could start: `arq==0.27.2` does not exist on the package index (available releases include `0.27.0` and `0.28.0`). The running image was built earlier and therefore did not validate the current dev lock. I’m checking every pin reference and the installed runtime before correcting this invalid baseline to the compatible published `0.27.0`, then I’ll rerun the exact same container gate.
+>
+> <details><summary>Edited 2 files, ran 8 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker run --rm classvoice-api python -c "import arq; print(arq.__version__)"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n \"arq|0\\.27\\.2\" . --glob \""'!node_modules/**" --glob "!.git/**"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pip show arq"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker run --rm classvoice-api python -m pip show arq'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* grep -n "arq=="'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* grep -n "0.27.2"'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /s /n /i /c:\"arq\" docs\\*.md apps\\api\\*.txt"`
+> - Wrote `./apps/api/requirements.txt` (+1 -1)
+> - Wrote `./docs/04_TRD.md` (+1 -1)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e PYTHONPATH=/workspace/apps/api -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install --disable-pip-version-check -r apps/api/requirements-dev.txt && pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests'`
+>
+> </details>
+>
+> The invalid dependency pin is corrected in both the runtime lock and TRD. The complete Python 3.13 container gate is running again against the already migrated isolated database.
+>
+> `arq 0.27.0` exists, but its declared dependency is `redis>=4.2,<6`, conflicting with the locked `redis==6.4.0`. I’m testing the published `arq 0.28.0` metadata against Redis 6.4 before changing the pin again; the correction must be installable as a complete lock, not merely an existing individual package.
+>
+> <details><summary>Edited 2 files, ran 3 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker run --rm python:3.13.14-slim python -m pip install --dry-run arq==0.28.0 redis==6.4.0'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker run --rm python:3.13.14-slim python -m pip install --dry-run arq==0.27.0 redis==5.2.1'`
+> - Wrote `./apps/api/requirements.txt` (+1 -1)
+> - Wrote `./docs/04_TRD.md` (+1 -1)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e PYTHONPATH=/workspace/apps/api -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install --disable-pip-version-check -r apps/api/requirements-dev.txt && pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests'`
+>
+> </details>
+>
+> Dependency resolution now succeeds with `arq 0.27.0` and `redis-py 5.2.1`; the container is finishing tool downloads before pytest starts. The Redis server remains the locked `7.4.2` image—only the Python client pin changed for arq compatibility.
+>
+> The full suite has reached 60% and found one failure while the rest continues. I’m letting the run finish so we get the precise failing assertion and complete coverage report before making any change.
+>
+> The authoritative run is nearly green: 119 passed, one failed, with 82.23% branch coverage—well above the 55% gate. The single failure is a test decoding issue, not a schema failure: asyncpg returns the `jsonb` value as the string `"{}"` unless a JSON codec is registered, while the test expected a Python dict. I’m correcting the assertion to validate the database JSON value explicitly, then rerunning the full suite.
+>
+> <details><summary>Edited a file, ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_project_schema_migration.py"`
+> - Wrote `./apps/api/tests/test_project_schema_migration.py` (+7 -2)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" --mount type=volume,source=classvoice-pip-cache,target=/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install -r apps/api/requirements-dev.txt && pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests'`
+>
+> </details>
+>
+> The complete Python 3.13 API suite is now green: 120 tests passed with 82.23% branch coverage, including the new security matrix and live PostgreSQL migration/RLS tests. I’m completing the CI-equivalent isolated database replay (`head → base → head`) and then rerunning the RLS test after the rebuild before marking P4-01/P4-02 complete.
+>
+> <details><summary>Ran 3 commands</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api python -m alembic -c db/alembic.ini downgrade base`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" --mount type=volume,source=classvoice-pip-cache,target=/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install pytest==8.4.2 pytest-asyncio==1.2.0 && pytest -q apps/api/tests/test_rls_migration.py apps/api/tests/test_security_integration.py'`
+>
+> </details>
+>
+> The replay itself passed. The post-replay command failed during collection only because the deliberately minimal test container omitted `argon2-cffi` required by the route-security module; no security assertion ran or failed. The full suite had already passed that module. I’m now rerunning the database-only RLS test after replay with the minimal dependencies it actually needs.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" --mount type=volume,source=classvoice-pip-cache,target=/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_verify classvoice-api sh -lc 'python -m pip install pytest==8.4.2 pytest-asyncio==1.2.0 && pytest -q apps/api/tests/test_rls_migration.py'`
+>
+> </details>
+>
+> The post-replay RLS test passes. Before closing the Docker issue, I’m rebuilding the API/worker images with the corrected dependency lock and restarting only those two services, then I’ll confirm all six services are healthy. This ensures the running stack—not just the ephemeral test container—uses an installable Python dependency set.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose build api worker'`
+>
+> </details>
+>
+> The full test and replay gates are already green. The final image rebuild is still downloading the pinned FFmpeg runtime layer because Docker’s build cache was cold; no failure has occurred. Once this finishes, only a targeted service restart and health check remain.
 >
 > Context compaction
 >
 > Source: automatic
 > Status: completed
 >
-> I’m continuing with P4-02. I’ll first map the existing authorization/RLS coverage, then add only the missing security integration assertions and update the implementation plan without overstating any tests that this machine cannot execute.
+> I’m continuing from the Docker/P4 verification checkpoint. The core suites are already passing; I’m finishing the API/worker image rebuild, restarting those services with the corrected dependency pins, then I’ll mark P4-01 and P4-02 complete with the exact evidence in `06_Plan.md`.
 >
-> <details><summary>Ran 19 commands</summary>
+> The previous long-running build session has closed, so its final exit status is no longer available. I’m rerunning the same build; the expensive system-package layer should now be cached, making this pass both faster and conclusive.
 >
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_rls_migration.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_authorization.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_api_keys.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_report_routes.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\core\\authorization.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\voices.py & type apps\\api\\app\\api\\v1\\generations.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\generations\\jobs.py & type apps\\api\\app\\domains\\voices\\lifecycle.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\main.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\model-registry\\manifest.json & type apps\\api\\app\\core\\jwt.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_generation_routes.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\domains\\api_keys\\service.py & type apps\\api\\app\\api\\v1\\api_keys.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P4-\" docs\\06_Plan.md & findstr /n /c:\"P4-01\" /c:\"P3-09\" docs\\04_TRD.md"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n \"P4-|P4-01|P3-09|Progress|Security\" docs\\06_Plan.md docs\\04_TRD.md"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\06_Plan.md"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type db\\migrations\\versions\\0006_rls_policies.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n \"disabled|workspace_status|workspace.*status|status\" db\\migrations\\versions\\0002_identity_workspace.py docs\\05_Schema.md | more"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /i \"disabled status\" db\\migrations\\versions\\0002_identity_workspace.py docs\\05_Schema.md"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Select-String -Path 'db/migrations/versions/0002_identity_workspace.py','docs/05_Schema.md' -Pattern 'disabled','status'\""`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\app\\api\\v1\\projects.py"`
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker compose build api worker`
 >
 > </details>
 >
-> The existing suite already covers low-level RLS and basic API-key revocation, but it does not exercise the full HTTP boundary as one matrix. I’m adding route-level integration coverage for anonymous access, cross-workspace reads, viewer writes, workspace-bound/revoked keys, revoked consent, and disabled workspaces.
+> The rebuild is now downloading and installing successfully—Docker’s outbound access to PyPI is working, and the corrected `arq 0.27.0` / `redis 5.2.1` pair resolves cleanly. I’m waiting for image export before restarting the two services.
 >
-> <details><summary>Created a file, edited 2 files, ran 12 commands</summary>
->
-> - Wrote `./apps/api/tests/test_security_integration.py` (+308 -0)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python -m py_compile apps\\api\\tests\\test_security_integration.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python -m pytest apps\\api\\tests\\test_security_integration.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Get-Content 'docs/04_TRD.md' | Select-Object -Last 180\""`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type docs\\04_TRD.md"`
-> - Wrote `./docs/04_TRD.md` (+22 -0)
-> - Wrote `./docs/06_Plan.md` (+2 -1)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_security_integration.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\pyproject.toml"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type .github\\workflows\\ci.yml"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python -m py_compile apps\\api\\tests\\test_contract_hardening.py apps\\api\\tests\\test_security_integration.py"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n \"P4-01 P4-02 P4-02 security integration\" docs\\06_Plan.md docs\\04_TRD.md"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python -c \"from pathlib import Path; [print(f'{p}:{i}:{line}') for p in ('docs/06_Plan.md','docs/04_TRD.md') for i,line in enumerate(Path(p).read_text().splitlines(),1) if 'P4-0' in line or 'security integration contract' in line]\""`
->
-> </details>
->
-> The security matrix is now in place and documented. Static checks pass (`py_compile`, `git diff --check`); the API test command confirms this host lacks `pytest`, so I’m running the unaffected web gates once more and will leave P4-02 explicitly in progress until CI/Linux or Docker-backed replay can execute it.
->
-> <details><summary>Ran 6 commands</summary>
->
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run typecheck'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run test'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'npm run lint'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat & git -c safe.directory=* diff -- docs/04_TRD.md docs/06_Plan.md'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir apps\\api /a & dir .venv /a"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe --version & apps\\api\\.venv\\Scripts\\python.exe -m pytest --version"`
->
-> </details>
->
-> A project-local virtual environment is available (Python 3.12 with pytest), so I can run the new API tests without changing system Python. I’m using it for the focused security/hardening suite now; this still does not replace the locked Python 3.13/Docker-backed CI and migration replay.
+> Both images rebuilt successfully. I’m replacing only the API and worker containers now, leaving PostgreSQL, Redis, storage, and the web container untouched; then I’ll verify health and installed versions from inside the new images.
 >
 > <details><summary>Ran 3 commands</summary>
 >
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_security_integration.py apps\\api\\tests\\test_contract_hardening.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "powershell.exe -NoProfile -Command \"Get-Content 'apps/api/tests/test_contract_hardening.py' | Select-Object -Skip 150 -First 75\""`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\tests\\test_contract_hardening.py"`
+> - Ran `docker compose up -d api worker`
+> - Ran `docker compose ps`
+> - Ran `docker compose exec -T api python -m pip show arq redis`
 >
 > </details>
 >
-> The focused run found one real regression in the earlier P4-01 test: it expected `VOICE_NOT_READY` while attempting an illegal `draft → ready` transition, which correctly returns `VOICE_STATE_CONFLICT`. I’m correcting the fixture to enter `processing` first, so it tests the intended readiness gate rather than the transition guard.
+> The rebuilt containers contain the intended package versions. Their health checks were still in the normal startup window at the first poll; while they settle, I’m updating the architecture plan with the authoritative results: 120 passing API tests, 82.23% branch coverage, full downgrade/upgrade replay, and post-replay RLS validation.
 >
-> <details><summary>Edited a file, ran a command</summary>
+> <details><summary>Edited 2 files, explored a file, ran 7 commands</summary>
 >
-> - Wrote `./apps/api/tests/test_contract_hardening.py` (+2 -0)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_security_integration.py apps\\api\\tests\\test_contract_hardening.py -q"`
+> - Ran `rg -n -C 10 "P4-01|P4-02|Docker|Troubleshoot|Progress Log|Last updated" docs/06_Plan.md docs/04_TRD.md`
+>
+> - Ran `docker compose ps`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n -C 10 \"P4-01|P4-02|Docker|Troubleshoot|Progress Log|Last updated\" docs\\06_Plan.md docs\\04_TRD.md"`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./docs/06_Plan.md`
 >
 > </details>
 >
-> The corrected test now reaches the intended readiness gate, but its next assertion still tried `processing → processing`, which is an idempotent no-op. I’m changing that assertion to an actually invalid `processing → draft` transition. The route tests are also hitting the known Windows socket-buffer exhaustion during asyncio setup, so their execution remains environment-limited.
+> - Wrote `./docs/06_Plan.md` (+5 -4)
 >
-> <details><summary>Edited 2 files, ran 7 commands</summary>
+> - Ran `Get-Content -LiteralPath 'docs\04_TRD.md' -Tail 120`
 >
-> - Wrote `./apps/api/tests/test_contract_hardening.py` (+1 -1)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_contract_hardening.py -q -k voice_policy_matrix"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_security_integration.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_contract_hardening.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check --select I --diff apps\\api\\tests\\test_contract_hardening.py"`
-> - Wrote `./apps/api/tests/test_contract_hardening.py` (+1 -2)
-> - Wrote `./apps/api/tests/test_security_integration.py` (+2 -3)
+> - Ran `Get-Content -LiteralPath 'docs\04_TRD.md' -TotalCount 180`
+>
+> - Wrote `./docs/04_TRD.md` (+23 -1)
+>
+> </details>
+>
+> All six services are now healthy, including the rebuilt API and worker. The plan and TRD have been updated; I’m doing the final repository hygiene checks and then deleting only the disposable `classvoice_p4_verify` database created for this verification—never the main `classvoice` database or its volume.
+>
+> <details><summary>Edited a file, ran 6 commands</summary>
+>
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -Atc 'SELECT datname FROM pg_database WHERE datname = ''classvoice_p4_verify'';'`
+> - Wrote `./docs/04_TRD.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'del /f /q .coverage'`
+> - Ran `docker compose exec -T postgres dropdb -U classvoice classvoice_p4_verify`
 >
 > </details>
 >
-> The focused API tests now pass: 5 new P4-02 security tests and 16 P4-01 hardening tests. Ruff and mypy also pass across the API. I’m doing the final diff/coverage checks next; the only remaining limitation is the full Docker/Postgres RLS replay, which still depends on the unavailable daemon.
+> The disposable test database and generated `.coverage` artifact have been removed successfully; neither is recoverable, but both contained only synthetic verification data. Ruff and mypy are clean. One Markdown trailing-space issue found by `git diff --check` was fixed, and I’m running the final clean-state and service-health confirmation now.
 >
-> <details><summary>Edited a file, ran 7 commands</summary>
+> <details><summary>Ran 8 commands</summary>
 >
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps\\api\\tests\\test_security_integration.py apps\\api\\tests\\test_contract_hardening.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_security_integration.py apps\\api\\tests\\test_contract_hardening.py -q"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check & git -c safe.directory=* status --short'`
-> - Wrote `./docs/06_Plan.md` (+2 -2)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check & git -c safe.directory=* status --short'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff -- apps/api/tests/test_contract_hardening.py'`
-> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
 > - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
-> - Wrote `./docs/06_Plan.md` (+1 -1)
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -Atc 'SELECT count(*) FROM pg_database WHERE datname = ''classvoice_p4_verify'';'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"[x] **P4-01**\" /c:\"[x] **P4-02**\" /c:\"Docker recovery\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "git -c safe.directory=* diff -- docs\\06_Plan.md docs\\04_TRD.md apps\\api\\requirements.txt apps\\api\\tests\\test_project_schema_migration.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -fsS http://127.0.0.1:8000/health/ready'`
 >
 > </details>
 >
 > <details><summary>Plan</summary>
 >
-> Focused project-venv API security and hardening tests pass, API Ruff/mypy pass, web test/typecheck/lint pass, and diff checks pass. P4-02 remains explicitly [~] only because the Docker/Postgres RLS replay and CI coverage plugin are unavailable on this host.
+> Docker recovery, isolated migration/RLS replay, full P4 validation, image rebuild/restart, documentation, hygiene checks, and disposable-database cleanup are all complete.
 >
-> - [x] Inventory existing RLS, authorization, API-key, and consent integration coverage
-> - [x] Add P4-02 database/API security integration tests
-> - [x] Update plan and security documentation
-> - [x] Run available static, web, and API verification gates
+> - [x] Diagnose Docker Desktop, registry, and Compose connectivity
+> - [x] Replay all migrations on an isolated Docker PostgreSQL database
+> - [x] Run full P4-01 hardening and coverage gates
+> - [x] Run P4-02 API security and database RLS suites
+> - [x] Rebuild and restart API/worker with corrected dependencies
+> - [x] Update plan evidence, run final hygiene checks, and remove the isolated test database
 >
 > </details>
 </details>
 
-Completed the next security-hardening slice, P4-02.
+Docker is working correctly, and P4-01/P4-02 are now complete.
 
-Changes:
+- All six Compose services are healthy.
+- API readiness endpoint returns `ready`.
+- API and worker images rebuilt successfully.
+- Fixed incompatible dependencies: `arq==0.27.0` with `redis==5.2.1`.
+- Full API suite: **120 passed**.
+- Branch coverage: **82.23%** against the 55% gate.
+- Migration replay: empty → head → base → head passed.
+- Post-replay database RLS tests passed.
+- Ruff and mypy passed.
+- Disposable verification database and `.coverage` artifact were removed.
 
-- Added [test_security_integration.py](<./apps/api/tests/test_security_integration.py>) covering:
-  - Anonymous access rejection
-  - Cross-workspace voice/generation isolation
-  - Viewer write denial
-  - API-key workspace binding, scope enforcement, and revocation
-  - Revoked-consent generation blocking
-  - Disabled-workspace read/write denial
-- Updated [04_TRD.md](<./docs/04_TRD.md>) with the P4-02 security contract.
-- Updated [06_Plan.md](<./docs/06_Plan.md>), progress log, and date.
-- Corrected a P4-01 lifecycle test so it properly exercises the `processing → ready` readiness gate.
+Updated files:
 
-Verification passed:
+- [06_Plan.md](</E:/Developer/Voice Generation/docs/06_Plan.md:167>)
+- [04_TRD.md](</E:/Developer/Voice Generation/docs/04_TRD.md:529>)
+- [requirements.txt](</E:/Developer/Voice Generation/apps/api/requirements.txt:11>)
+- [test_project_schema_migration.py](</E:/Developer/Voice Generation/apps/api/tests/test_project_schema_migration.py:61>)
 
-- API focused tests: 21 passed
-- Ruff: passed
-- Mypy: passed
-- Web tests: 24 passed
-- Web typecheck: passed
-- Web lint: passed
-- `git diff --check`: passed
+The original Docker failure was Windows named-pipe permission, not the disabled proxy. A separate PostgreSQL endpoint also appears to occupy host port `5432`; I avoided stopping or deleting it and documented the safe Compose-network approach.
 
-P4-02 remains marked `[~]` because Docker/Postgres-backed RLS replay has not run; Docker daemon access is still unavailable. Local coverage could not run because the project virtual environment lacks `pytest-cov`, although CI is configured for it.
-
-The next dependency-ordered item is P4-03: upload fuzz and malformed-audio fixture testing.
-
-> can you find and solve the docker issue and proceed from p4-01 and p4-02 again
-
-<details><summary>7 previous messages</summary>
-
-> I’ll diagnose Docker from the host first, then repair only the specific failure we can prove. After Docker is healthy, I’ll rerun the P4-01/P4-02 API and RLS gates and update the plan based on actual evidence. I won’t change proxy settings blindly because your screenshot shows Docker’s manual proxy toggle is already disabled.
->
-> <details><summary>Ran 4 commands</summary>
->
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker context show'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker desktop status'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker info'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
->
-> </details>
->
-> The failure is not a proxy or registry problem at this point. Docker CLI cannot read `C:\Users\moaz9\.docker\config.json`, cannot write Docker Desktop host logs, and is denied access to `//./pipe/docker_engine`; Docker Desktop status also reports it cannot retrieve status. I’m requesting an elevated diagnostic now to distinguish a sandbox permission issue from an actual Windows ACL/service issue.
->
-> <details><summary>Ran 7 commands</summary>
->
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker desktop status'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker info'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -I https://registry-1.docker.io/v2/'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker pull postgres:17.11-alpine'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose config --quiet'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type infra\\docker\\Dockerfile.api & type docker-compose.yml"`
->
-> </details>
->
-> Docker is healthy when accessed with the required elevation: the daemon is running, all six Compose services are healthy, Docker Hub returns the expected `401 Unauthorized` registry challenge, and `postgres:17.11-alpine` pulls successfully. The earlier “socket buffer/queue” error was a misleading consequence of denied access to Docker’s Windows named pipe/config/log paths in the non-elevated execution context—not a disabled proxy.
->
-> I’ll now verify the database revision, replay migrations if needed, and rerun P4-01/P4-02 with the working stack.
->
-> <details><summary>Ran 6 commands</summary>
->
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres psql -U classvoice -d classvoice -Atqc "select version from alembic_version;"'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\alembic.exe -c db\\alembic.ini current"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "type apps\\api\\requirements.txt & type db\\alembic.ini"`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'findstr /b /i "POSTGRES_" .env .env.example'`
-> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose exec -T postgres psql -U classvoice -d classvoice -At -c "SELECT 1"'`
->
-> </details>
->
-> System error
->
-> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Nov 4th, 2026 1:19 PM.
-</details>
-
-> please continue
-
-<details><summary>1 previous message</summary>
-
-> System error
->
-> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Nov 4th, 2026 1:19 PM.
-</details>
+Your pre-existing modification to `CODEX Conversation.md` remains untouched. No commit was created. The next implementation step is **P4-03: upload fuzzing and resource-limit tests**.

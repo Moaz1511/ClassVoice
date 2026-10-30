@@ -173,7 +173,7 @@
 - [x] **P4-02** Add RLS/security integration suite for anonymous, cross-workspace, viewer, revoked key, revoked consent, and disabled workspace cases.
   - Depends on: P1-09, P2-14.
   - Accept when: no private row/object is accessible through direct API or generated client.
-- [ ] **P4-03** Add upload fuzz/fixture tests and resource limits for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases.
+- [~] **P4-03** Add upload fuzz/fixture tests and resource limits for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases.
   - Depends on: P2-05.
   - Accept when: failures are bounded, classified, and do not crash the worker.
 - [ ] **P4-04** Add worker reliability tests for duplicate delivery, crash recovery, lease expiry, cancel races, retry exhaustion, and stale model manifests.
