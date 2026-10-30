@@ -2,7 +2,7 @@
 
 **Product:** ClassVoice  
 **Document status:** Locked baseline v1.0  
-**Last updated:** 2026-10-30
+**Last updated:** 2026-10-31
 **Version policy:** Exact pins below are the baseline. Upgrade only through an ADR, dependency review, and green CI.
 
 ## 1. Architecture decision summary
@@ -529,6 +529,33 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   authentication dependencies used by the generated client. Database-backed
   RLS replay remains authoritative for durable SQL access; no test may treat an
   in-memory adapter as evidence that private storage objects are public.
+
+# P4-03 upload and Unicode hardening contract
+
+- Quarantined WAV, MP3, and M4A bytes must pass a complete container-envelope
+  check before any external media process runs. WAV RIFF/chunk lengths, MP3
+  ID3/frame headers, and M4A top-level box lengths must terminate at the exact
+  object boundary. Embedded ZIP/PDF/executable/archive signatures at a container
+  boundary fail with `polyglot_detected`; malformed lengths/headers fail with
+  `malformed_container`.
+- Audio inspection is probe-first. FFprobe is restricted to the first audio
+  stream, a 1,000,000-byte probe window, 5-second analysis window, 10-second
+  process timeout, and 64,000-character metadata result. Duration and channel
+  policy are evaluated before PCM expansion.
+- FFmpeg decode is fixed to one thread, mono 16 kHz signed 16-bit PCM, a
+  20-second process timeout, a 64 MiB single-allocation ceiling, a `file,pipe`
+  protocol allowlist, discarded stderr, and a 31-second/992,000-byte capture
+  guard. More than 960,000 decoded bytes (30 seconds) fails with
+  `resource_limit_exceeded`; timeout and output-limit failures are classified
+  and must not escape as worker crashes.
+- Generation text is bounded at 10,000 Unicode code points at both the domain
+  and inference boundaries. Bengali, Arabic/RTL, CJK, combining marks, emoji,
+  tabs, and newlines remain valid. NUL/unsafe control characters, unpaired
+  surrogates, invalid UTF-8 representation, and over-limit input fail with the
+  stable `INPUT_TEXT_INVALID` or `INFERENCE_INPUT_INVALID` code. Text is not
+  Unicode-normalized, preserving the exact accepted content and provenance hash.
+- Tests use synthetic bytes/text only, never log payload contents, and must
+  include deterministic truncation/mutation cases plus a real FFmpeg fixture.
 
 # Local Docker verification and Windows troubleshooting
 

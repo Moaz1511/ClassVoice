@@ -2,7 +2,7 @@
 
 **Product:** ClassVoice  
 **Plan status:** In progress  
-**Last updated:** 2026-10-30
+**Last updated:** 2026-10-31
 **Rule:** Execute in order. Complete and verify one checkbox before starting the next. Update this file immediately after every completed step with the commit/PR and evidence.
 
 ## How to use this plan
@@ -173,7 +173,7 @@
 - [x] **P4-02** Add RLS/security integration suite for anonymous, cross-workspace, viewer, revoked key, revoked consent, and disabled workspace cases.
   - Depends on: P1-09, P2-14.
   - Accept when: no private row/object is accessible through direct API or generated client.
-- [~] **P4-03** Add upload fuzz/fixture tests and resource limits for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases.
+- [x] **P4-03** Add upload fuzz/fixture tests and resource limits for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases.
   - Depends on: P2-05.
   - Accept when: failures are bounded, classified, and do not crash the worker.
 - [ ] **P4-04** Add worker reliability tests for duplicate delivery, crash recovery, lease expiry, cancel races, retry exhaustion, and stale model manifests.
@@ -247,3 +247,4 @@
 | 2026-10-30 | Docker recovery | n/a | Confirmed Docker Desktop 29.1.3 and the `desktop-linux` daemon are healthy when accessed with the required elevated Windows named-pipe permission. Docker Hub `/v2/` returned the expected authenticated-registry `401`, `postgres:17.11-alpine` pulled successfully, and all six Compose services became healthy. Rebuilt and recreated API/worker images after correcting the compatible Python queue pair to `arq==0.27.0` and `redis==5.2.1`. The Windows host port `5432` reaches a separate/stale PostgreSQL endpoint, so destructive host changes were avoided and authoritative verification used an isolated database over the Compose network. |
 | 2026-10-30 | P4-01 | n/a | Added contract-hardening coverage for Pydantic request boundaries, stable generation/voice/project/API-key error codes, idempotency replay and metadata reuse, lifecycle terminal states, consent/model/workspace policy gates, and the API-key expiry/scope matrix. Added pinned pytest-cov branch coverage with a 55% CI floor. The complete Python 3.13.14 Docker suite passed all 120 tests in 66.52 seconds with 82.23% branch coverage; Ruff, mypy, and the existing 24 web tests/typecheck/lint gates also pass. |
 | 2026-10-30 | P4-02 | n/a | Added API security integration coverage for anonymous access, cross-workspace isolation, viewer denial, workspace-bound/revoked API keys, revoked consent, and disabled workspaces. Created an isolated `classvoice_p4_verify` database in Compose PostgreSQL, upgraded empty-to-head, replayed head-to-base-to-head across all ten revisions, ran the complete suite including live database RLS checks, and then passed the database-only RLS suite again after replay. No private row was exposed; the step's API and direct-database acceptance criteria are satisfied. |
+| 2026-10-31 | P4-03 | n/a | Added strict WAV/MP3/M4A structural validation and pre-decode polyglot rejection; split media inspection into probe-first policy and bounded decode; capped FFprobe/FFmpeg analysis, runtime, threads, allocation, protocols, and PCM output; and added shared Unicode/control-character validation at generation and inference boundaries. The focused Python 3.13 Docker suite passed 32 tests including a real six-second FFmpeg WAV. The complete isolated-database command passed all 141 API/migration/RLS tests in 47.67 seconds with 82.65% branch coverage; Ruff and strict mypy passed. Rebuilt API/worker images contain the verified changes. |

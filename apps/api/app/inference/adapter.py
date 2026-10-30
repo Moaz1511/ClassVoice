@@ -11,6 +11,11 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
+from app.core.text_validation import (
+    MAX_GENERATION_TEXT_CHARACTERS,
+    GenerationTextValidationError,
+    normalize_generation_text,
+)
 from app.domains.generations.jobs import GenerationJob
 
 
@@ -77,13 +82,15 @@ class SmokeCpuAdapter:
     sample_rate_hz = 24_000
     duration_ms = 500
     channels = 1
-    max_characters = 10_000
+    max_characters = MAX_GENERATION_TEXT_CHARACTERS
 
     async def generate(self, request: InferenceRequest) -> InferenceResult:
-        if not request.input_text.strip() or len(request.input_text) > self.max_characters:
+        try:
+            normalize_generation_text(request.input_text)
+        except GenerationTextValidationError as error:
             raise InferenceError(
                 "INFERENCE_INPUT_INVALID", "Inference text is empty or exceeds the limit."
-            )
+            ) from error
         if request.output_format != "wav":
             raise InferenceError(
                 "INFERENCE_FORMAT_UNSUPPORTED",

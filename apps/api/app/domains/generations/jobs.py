@@ -11,6 +11,11 @@ from datetime import UTC, datetime
 from typing import Literal, Protocol, cast
 from uuid import UUID, uuid4
 
+from app.core.text_validation import (
+    MAX_GENERATION_TEXT_CHARACTERS,
+    GenerationTextValidationError,
+    normalize_generation_text,
+)
 from app.domains.voices.lifecycle import VoiceLifecycleService
 from app.inference.model_registry import ModelRegistry, ModelRegistryError
 
@@ -18,7 +23,7 @@ GenerationStatus = Literal[
     "created", "queued", "processing", "succeeded", "failed", "cancel_requested", "canceled"
 ]
 OutputFormat = Literal["wav", "mp3"]
-MAX_INPUT_CHARACTERS = 10_000
+MAX_INPUT_CHARACTERS = MAX_GENERATION_TEXT_CHARACTERS
 _LANGUAGE_RE = re.compile(r"^[a-z]{2,3}(-[A-Z]{2}|-[A-Z][a-z]{2,4})?$")
 _VISIBLE_IDEMPOTENCY_RE = re.compile(r"^[^\x00-\x20\x7f]+$")
 _SHA256_RE = re.compile(r"^[0-9a-fA-F]{64}$")
@@ -420,9 +425,12 @@ def _validate_request(
     checkpoint_sha256: str,
     idempotency_key: str,
 ) -> tuple[str, str, OutputFormat, float, float | None, float | None, str, str]:
-    text = input_text.strip()
-    if not 1 <= len(text) <= MAX_INPUT_CHARACTERS:
-        raise GenerationError("INPUT_TEXT_INVALID", "Text must be between 1 and 10,000 characters.")
+    try:
+        text = normalize_generation_text(input_text)
+    except GenerationTextValidationError as error:
+        raise GenerationError(
+            "INPUT_TEXT_INVALID", "Text must be valid Unicode between 1 and 10,000 characters."
+        ) from error
     if not _LANGUAGE_RE.fullmatch(language_code.strip()):
         raise GenerationError("LANGUAGE_INVALID", "Language code is invalid.")
     if output_format not in {"wav", "mp3"}:

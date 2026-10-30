@@ -3526,3 +3526,67 @@ Updated files:
 The original Docker failure was Windows named-pipe permission, not the disabled proxy. A separate PostgreSQL endpoint also appears to occupy host port `5432`; I avoided stopping or deleting it and documented the safe Compose-network approach.
 
 Your pre-existing modification to `CODEX Conversation.md` remains untouched. No commit was created. The next implementation step is **P4-03: upload fuzzing and resource-limit tests**.
+
+> Now please proceed next.
+
+<details><summary>7 previous messages</summary>
+
+> I’m moving to P4-03: upload fuzzing and bounded-resource defenses for decompression bombs, polyglots, malformed headers, long text, and Unicode edge cases. I’ll first re-read the repository instructions and architecture contracts, then inspect the existing upload/audio validation boundaries before changing tests or implementation.
+>
+> <details><summary>Explored 7 files</summary>
+>
+> - Read `./CODEX.md`
+> - Read `./docs/01_PRD.md`
+> - Read `./docs/02_AppFlow.md`
+> - Read `./docs/03_UI_Spec.md`
+> - Read `./docs/04_TRD.md`
+> - Read `./docs/05_Schema.md`
+> - Read `./docs/06_Plan.md`
+>
+> </details>
+>
+> The P4-03 contract is clear and does not require a new route or schema change. I’m treating it as a worker-boundary hardening step: reject suspicious containers before expensive decode, place strict byte/time/output ceilings around FFprobe/FFmpeg, and prove Unicode/text limits remain deterministic without logging content.
+>
+> <details><summary>Edited a file, explored 8 files, ran 4 commands</summary>
+>
+> - Ran `rg --files apps/api/app apps/api/tests | rg "audio|upload|generation|inference|worker|voice"`
+>
+> - Ran `rg -n "AudioValidator|FFmpeg|ffprobe|ffmpeg|magic|polyglot|MAX_.*TEXT|10000|UploadIntent|byte_size|timeout|decode" apps/api/app apps/api/tests`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+>
+> <details><summary>Explored 8 files</summary>
+>
+> - Read `./apps/api/app/workers/audio_validation.py`
+> - Read `./apps/api/tests/test_audio_validation.py`
+> - Read `./apps/api/app/domains/voices/upload_intent.py`
+> - Read `./apps/api/app/domains/generations/jobs.py`
+> - Read `./apps/api/tests/test_generation_jobs.py`
+> - Read `./apps/api/tests/test_contract_hardening.py`
+> - Read `./apps/api/app/inference/adapter.py`
+> - Read `./apps/api/app/inference/openvoice.py`
+>
+> </details>
+>
+> - Ran `Get-Content -LiteralPath 'apps\api\app\api\v1\generations.py' -TotalCount 130`
+>
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+>
+> </details>
+>
+> The main vulnerability is confirmed: FFmpeg decoded into an unbounded captured stdout buffer, and duration/channel policy was evaluated only after decode. I’m refactoring the inspector into probe-then-decode so oversized duration/channel inputs are rejected before expansion, while FFmpeg itself receives a hard 31-second/992 KB guard ceiling.
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 9:40 PM.
+>
+> <details><summary>Plan</summary>
+>
+> - [ ] Inspect current upload, audio validation, FFmpeg, and generation text boundaries
+> - [ ] Implement bounded audio inspection/decoding and polyglot/malformed-container classification
+> - [ ] Add deterministic fuzz/fixture and Unicode/long-text tests
+> - [ ] Run focused and full API quality gates in Docker
+> - [ ] Update TRD and mark P4-03 complete with verification evidence
+>
+> </details>
+</details>

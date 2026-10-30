@@ -13,11 +13,16 @@ from app.workers.audio_validation import (
 
 class FakeInspector:
     def __init__(self, probe: AudioProbe, samples: tuple[int, ...]) -> None:
-        self.probe = probe
+        self.probe_result = probe
         self.samples = samples
+        self.decode_calls = 0
 
-    def inspect(self, _path: object) -> tuple[AudioProbe, tuple[int, ...]]:
-        return self.probe, self.samples
+    def probe(self, _path: object) -> AudioProbe:
+        return self.probe_result
+
+    def decode_pcm(self, _path: object) -> tuple[int, ...]:
+        self.decode_calls += 1
+        return self.samples
 
 
 class OversizedBytes(bytes):
@@ -26,7 +31,26 @@ class OversizedBytes(bytes):
 
 
 def wav_bytes() -> bytes:
-    return b"RIFF" + struct.pack("<I", 36) + b"WAVE" + b"fmt " + b"\x00" * 24
+    sample_data = b"\x01\x00\xff\xff"
+    format_chunk = b"fmt " + struct.pack("<IHHIIHH", 16, 1, 1, 16_000, 32_000, 2, 16)
+    data_chunk = b"data" + struct.pack("<I", len(sample_data)) + sample_data
+    body = b"WAVE" + format_chunk + data_chunk
+    return b"RIFF" + struct.pack("<I", len(body)) + body
+
+
+def mp3_bytes() -> bytes:
+    return b"ID3\x04\x00\x00\x00\x00\x00\x00" + b"\xff\xfb\x90\x64" + b"\x00" * 16
+
+
+def m4a_bytes() -> bytes:
+    def box(name: bytes, payload: bytes) -> bytes:
+        return struct.pack(">I", len(payload) + 8) + name + payload
+
+    return (
+        box(b"ftyp", b"M4A \x00\x00\x00\x00M4A ")
+        + box(b"moov", b"\x00" * 8)
+        + box(b"mdat", b"\x01" * 8)
+    )
 
 
 def validator(
@@ -46,8 +70,8 @@ def validator(
 
 def test_magic_byte_sniffing_accepts_wav_mp3_and_m4a() -> None:
     assert sniff_audio_format(wav_bytes()) == "wav"
-    assert sniff_audio_format(b"ID3" + b"\x00" * 20) == "mp3"
-    assert sniff_audio_format(b"\x00\x00\x00\x18ftypM4A " + b"\x00" * 8) == "m4a"
+    assert sniff_audio_format(mp3_bytes()) == "mp3"
+    assert sniff_audio_format(m4a_bytes()) == "m4a"
     assert sniff_audio_format(b"not audio") is None
 
 
@@ -55,8 +79,8 @@ def test_magic_byte_sniffing_accepts_wav_mp3_and_m4a() -> None:
     ("data", "filename", "content_type"),
     [
         (wav_bytes(), "lecture.wav", "audio/wav"),
-        (b"ID3" + b"\x00" * 20, "lecture.mp3", "audio/mpeg"),
-        (b"\x00\x00\x00\x18ftypM4A " + b"\x00" * 8, "lecture.m4a", "audio/mp4"),
+        (mp3_bytes(), "lecture.mp3", "audio/mpeg"),
+        (m4a_bytes(), "lecture.m4a", "audio/mp4"),
     ],
 )
 def test_supported_formats_are_accepted_with_quality_metrics(
@@ -71,7 +95,10 @@ def test_supported_formats_are_accepted_with_quality_metrics(
 
 
 class CorruptInspector:
-    def inspect(self, _path: object) -> tuple[AudioProbe, tuple[int, ...]]:
+    def probe(self, _path: object) -> AudioProbe:
+        return AudioProbe(8.0, 1, 16_000, "pcm_s16le")
+
+    def decode_pcm(self, _path: object) -> tuple[int, ...]:
         raise ValueError("decode failed")
 
 

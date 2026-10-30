@@ -15,6 +15,7 @@ import wave
 from collections.abc import Awaitable, Callable
 from typing import Protocol
 
+from app.core.text_validation import GenerationTextValidationError, normalize_generation_text
 from app.inference.adapter import InferenceError, InferenceRequest, InferenceResult
 from app.inference.model_registry import ModelManifestEntry, ModelRegistry, ModelRegistryError
 
@@ -53,10 +54,12 @@ class OpenVoiceV2Adapter:
         self.max_duration_ms = max_duration_ms
 
     async def generate(self, request: InferenceRequest) -> InferenceResult:
-        if not request.input_text.strip() or len(request.input_text) > 10_000:
+        try:
+            normalize_generation_text(request.input_text)
+        except GenerationTextValidationError as error:
             raise InferenceError(
                 "INFERENCE_INPUT_INVALID", "Inference text is empty or exceeds the limit."
-            )
+            ) from error
         if request.output_format != "wav":
             raise InferenceError(
                 "INFERENCE_FORMAT_UNSUPPORTED", "OpenVoice output must be normalized as WAV."
