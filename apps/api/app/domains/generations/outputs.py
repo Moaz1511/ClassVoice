@@ -77,6 +77,7 @@ class PrivateGenerationOutputStore:
         self._storage = storage
         self._bucket = bucket
         self._outputs: dict[UUID, GenerationOutput] = {}
+        self._job_locks: dict[UUID, asyncio.Lock] = {}
         self._lock = asyncio.Lock()
 
     async def put(self, job: GenerationJob, result: InferenceResult) -> GenerationOutput:
@@ -109,52 +110,71 @@ class PrivateGenerationOutputStore:
 
         extension = "mp3" if output_format == "mp3" else "wav"
         object_key = f"{job.workspace_id}/{job.id}/{checksum}.{extension}"
-        try:
-            await self._storage.put_object(
-                self._bucket,
-                object_key,
-                result.audio_bytes,
-                content_type=result.content_type,
-            )
-        except StorageError as error:
-            raise GenerationOutputError(
-                "STORAGE_WRITE_FAILED",
-                "The generated audio could not be stored privately.",
-                retryable=True,
-            ) from error
+        job_lock = await self._lock_for(job.id)
+        async with job_lock:
+            existing = await self.get(job.id)
+            if existing is not None:
+                if (
+                    existing.checksum_sha256 == checksum
+                    and existing.output_format == output_format
+                    and existing.content_type == result.content_type
+                ):
+                    return existing
+                raise GenerationOutputError(
+                    "OUTPUT_ALREADY_COMMITTED",
+                    "A different generated output is already committed for this job.",
+                    retryable=False,
+                )
+            try:
+                await self._storage.put_object(
+                    self._bucket,
+                    object_key,
+                    result.audio_bytes,
+                    content_type=result.content_type,
+                )
+            except StorageError as error:
+                raise GenerationOutputError(
+                    "STORAGE_WRITE_FAILED",
+                    "The generated audio could not be stored privately.",
+                    retryable=True,
+                ) from error
 
-        provenance = dict(result.metadata)
-        provenance.update(
-            {
-                "generation_job_id": str(job.id),
-                "model_key": job.model_key,
-                "model_version": job.model_version,
-                "checkpoint_sha256": job.checkpoint_sha256,
-                "output_sha256": checksum,
-                "output_format": output_format,
-            }
-        )
-        output = GenerationOutput(
-            id=uuid4(),
-            generation_job_id=job.id,
-            workspace_id=job.workspace_id,
-            bucket=self._bucket,
-            object_key=object_key,
-            output_format=output_format,
-            content_type=result.content_type,
-            byte_size=len(result.audio_bytes),
-            duration_ms=result.duration_ms,
-            checksum_sha256=checksum,
-            provenance=provenance,
-            created_at=datetime.now(UTC),
-        )
-        async with self._lock:
-            self._outputs[job.id] = output
-        return output
+            provenance = dict(result.metadata)
+            provenance.update(
+                {
+                    "generation_job_id": str(job.id),
+                    "model_key": job.model_key,
+                    "model_version": job.model_version,
+                    "checkpoint_sha256": job.checkpoint_sha256,
+                    "output_sha256": checksum,
+                    "output_format": output_format,
+                }
+            )
+            output = GenerationOutput(
+                id=uuid4(),
+                generation_job_id=job.id,
+                workspace_id=job.workspace_id,
+                bucket=self._bucket,
+                object_key=object_key,
+                output_format=output_format,
+                content_type=result.content_type,
+                byte_size=len(result.audio_bytes),
+                duration_ms=result.duration_ms,
+                checksum_sha256=checksum,
+                provenance=provenance,
+                created_at=datetime.now(UTC),
+            )
+            async with self._lock:
+                self._outputs[job.id] = output
+            return output
 
     async def get(self, job_id: UUID) -> GenerationOutput | None:
         async with self._lock:
             return self._outputs.get(job_id)
+
+    async def _lock_for(self, job_id: UUID) -> asyncio.Lock:
+        async with self._lock:
+            return self._job_locks.setdefault(job_id, asyncio.Lock())
 
 
 def _format_for_result(result: InferenceResult) -> GenerationOutputFormat:

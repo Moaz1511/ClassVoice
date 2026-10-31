@@ -249,7 +249,7 @@ def _parse_entry(value: object) -> ModelManifestEntry:
         checkpoint_path=checkpoint_path,
         runtime=runtime.strip(),
         license_name=license_name.strip(),
-        license_url=cast(str | None, license_url),
+        license_url=license_url,
         license_review_status=cast(LicenseReviewStatus, status),
         supported_languages=tuple(supported_languages),
         config=config,

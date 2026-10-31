@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Literal, cast
 from uuid import UUID
 
 from app.core.authorization import (
@@ -24,6 +24,7 @@ from app.domains.generations.jobs import (
 )
 from app.domains.generations.outputs import PrivateGenerationOutputStore
 from app.storage.ports import StorageError
+from app.workers.generation_queue import GenerationWorker
 from fastapi import APIRouter, Depends, Header, Query, Request
 from pydantic import BaseModel, Field
 
@@ -47,23 +48,23 @@ class CreateGenerationBody(BaseModel):
 
 
 def _membership_store(request: Request) -> WorkspaceMembershipStore:
-    return request.app.state.membership_store
+    return cast(WorkspaceMembershipStore, request.app.state.membership_store)
 
 
 def _generation_service(request: Request) -> GenerationService:
-    return request.app.state.generation_service
+    return cast(GenerationService, request.app.state.generation_service)
 
 
-def _generation_worker(request: Request):
-    return request.app.state.generation_worker
+def _generation_worker(request: Request) -> GenerationWorker:
+    return cast(GenerationWorker, request.app.state.generation_worker)
 
 
 def _generation_outputs(request: Request) -> PrivateGenerationOutputStore:
-    return request.app.state.generation_outputs
+    return cast(PrivateGenerationOutputStore, request.app.state.generation_outputs)
 
 
 def _audit(request: Request) -> AuditService:
-    return request.app.state.audit_service
+    return cast(AuditService, request.app.state.audit_service)
 
 
 async def _principal(

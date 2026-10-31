@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from typing import cast
 from uuid import UUID
 
 from app.core.authorization import (
@@ -37,15 +38,15 @@ class CreateReportBody(BaseModel):
 
 
 def _membership_store(request: Request) -> WorkspaceMembershipStore:
-    return request.app.state.membership_store
+    return cast(WorkspaceMembershipStore, request.app.state.membership_store)
 
 
 def _service(request: Request) -> ModerationReportService:
-    return request.app.state.moderation_report_service
+    return cast(ModerationReportService, request.app.state.moderation_report_service)
 
 
 def _audit(request: Request) -> AuditService:
-    return request.app.state.audit_service
+    return cast(AuditService, request.app.state.audit_service)
 
 
 async def _claims(request: Request, authorization: str | None = Header(default=None)) -> AuthClaims:

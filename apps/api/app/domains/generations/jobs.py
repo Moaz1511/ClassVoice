@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import re
-from collections.abc import Mapping
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime
 from typing import Literal, Protocol, cast
@@ -34,7 +34,7 @@ _TRANSITIONS: dict[GenerationStatus, frozenset[GenerationStatus]] = {
     "processing": frozenset({"succeeded", "failed", "cancel_requested", "canceled"}),
     "succeeded": frozenset(),
     "failed": frozenset({"created"}),
-    "cancel_requested": frozenset({"canceled", "processing", "failed"}),
+    "cancel_requested": frozenset({"canceled"}),
     "canceled": frozenset({"created"}),
 }
 
@@ -350,6 +350,43 @@ class GenerationService:
             )
             return updated
 
+    async def requeue_after_worker_failure(
+        self,
+        job_id: UUID,
+        actor_id: UUID,
+        *,
+        error_code: str,
+    ) -> GenerationJob:
+        """Requeue a retryable worker attempt without exposing a terminal state."""
+
+        async with self._lock:
+            job = await self._require(job_id)
+            if job.status == "cancel_requested":
+                return await self._transition_locked(job, actor_id, "canceled")
+            if job.status != "processing":
+                raise GenerationError(
+                    "GENERATION_STATE_CONFLICT",
+                    f"Generation cannot be requeued from {job.status}.",
+                )
+            updated = replace(
+                job,
+                status="queued",
+                error_code=None,
+                error_message_safe=None,
+                retryable=False,
+                queue_attempts=job.queue_attempts + 1,
+                started_at=None,
+                completed_at=None,
+            )
+            await self._store.put(updated)
+            await self._record(
+                updated,
+                actor_id,
+                "generation.worker_requeued",
+                {"queue_attempts": updated.queue_attempts, "error_code": error_code},
+            )
+            return updated
+
     async def transition(
         self,
         job_id: UUID,
@@ -362,32 +399,81 @@ class GenerationService:
     ) -> GenerationJob:
         async with self._lock:
             job = await self._require(job_id)
-            if target == job.status:
-                return job
-            if target not in _TRANSITIONS[job.status]:
-                raise GenerationError(
-                    "GENERATION_STATE_CONFLICT",
-                    f"Generation cannot transition from {job.status} to {target}.",
-                )
-            now = datetime.now(UTC)
-            updated = replace(
+            return await self._transition_locked(
                 job,
-                status=target,
-                started_at=job.started_at
-                or (now if target in {"processing", "cancel_requested"} else None),
-                completed_at=(
-                    now
-                    if target in {"succeeded", "failed", "canceled"}
-                    else job.completed_at
-                ),
-                canceled_at=now if target == "canceled" else job.canceled_at,
+                actor_id,
+                target,
                 error_code=error_code,
                 error_message_safe=error_message_safe,
                 retryable=retryable,
             )
-            await self._store.put(updated)
-            await self._record(updated, actor_id, "generation.status_changed", {"status": target})
-            return updated
+
+    async def commit_success(
+        self,
+        job_id: UUID,
+        actor_id: UUID,
+        persist_output: Callable[[GenerationJob], Awaitable[object]],
+    ) -> tuple[GenerationJob, bool]:
+        """Atomically choose cancellation or one successful output commit.
+
+        The in-memory service lock models the database transaction required by
+        the durable repository: a cancellation that wins the lock prevents an
+        output write, while a completion that wins persists exactly one output
+        before exposing ``succeeded``.  Duplicate/stale completions are no-ops.
+        """
+
+        async with self._lock:
+            job = await self._require(job_id)
+            if job.status == "succeeded":
+                return job, False
+            if job.status == "canceled":
+                return job, False
+            if job.status == "cancel_requested":
+                canceled = await self._transition_locked(job, actor_id, "canceled")
+                return canceled, False
+            if job.status != "processing":
+                raise GenerationError(
+                    "GENERATION_STATE_CONFLICT",
+                    f"Generation cannot complete from {job.status}.",
+                )
+            await persist_output(job)
+            completed = await self._transition_locked(job, actor_id, "succeeded")
+            return completed, True
+
+    async def _transition_locked(
+        self,
+        job: GenerationJob,
+        actor_id: UUID,
+        target: GenerationStatus,
+        *,
+        error_code: str | None = None,
+        error_message_safe: str | None = None,
+        retryable: bool = False,
+    ) -> GenerationJob:
+        if target == job.status:
+            return job
+        if target not in _TRANSITIONS[job.status]:
+            raise GenerationError(
+                "GENERATION_STATE_CONFLICT",
+                f"Generation cannot transition from {job.status} to {target}.",
+            )
+        now = datetime.now(UTC)
+        updated = replace(
+            job,
+            status=target,
+            started_at=job.started_at
+            or (now if target in {"processing", "cancel_requested"} else None),
+            completed_at=(
+                now if target in {"succeeded", "failed", "canceled"} else job.completed_at
+            ),
+            canceled_at=now if target == "canceled" else job.canceled_at,
+            error_code=error_code,
+            error_message_safe=error_message_safe,
+            retryable=retryable,
+        )
+        await self._store.put(updated)
+        await self._record(updated, actor_id, "generation.status_changed", {"status": target})
+        return updated
 
     async def _require(self, job_id: UUID) -> GenerationJob:
         job = await self._store.get(job_id)

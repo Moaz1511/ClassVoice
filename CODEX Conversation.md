@@ -3590,3 +3590,323 @@ Your pre-existing modification to `CODEX Conversation.md` remains untouched. No 
 >
 > </details>
 </details>
+
+
+<details><summary>32 previous messages</summary>
+
+> I’m continuing P4-03 from the exact checkpoint. The first rewrite patch was rejected before changing the audio validator because the patch engine does not allow delete-and-add of the same path in one operation; I’m applying the identical change as two atomic patches, then I’ll run focused tests before touching the plan’s completion state.
+>
+> <details><summary>Created 2 files, edited 4 files, deleted a file</summary>
+>
+> - Deleted `./apps/api/app/workers/audio_validation.py` (+0 -279)
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+521 -0)
+> - Wrote `./apps/api/app/core/text_validation.py` (+33 -0)
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+12 -4)
+> - Wrote `./apps/api/app/inference/adapter.py` (+10 -3)
+> - Wrote `./apps/api/app/inference/openvoice.py` (+5 -2)
+> - Wrote `./apps/api/tests/test_audio_validation.py` (+36 -9)
+>
+> </details>
+>
+> The validator now performs strict WAV chunk, MP3 frame/ID3, and M4A box-envelope checks before invoking external tools. I’ve also added shared Unicode validation so NUL/control characters and unpaired surrogates become stable `INPUT_TEXT_INVALID` / `INFERENCE_INPUT_INVALID` errors instead of encoding or database crashes. Next I’m adding adversarial fixtures that exercise those exact boundaries.
+>
+> <details><summary>Created a file, ran 2 commands</summary>
+>
+> - Wrote `./apps/api/tests/test_upload_hardening.py` (+278 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api\\app\\workers\\audio_validation.py apps\\api\\app\\core\\text_validation.py apps\\api\\app\\domains\\generations\\jobs.py apps\\api\\app\\inference\\adapter.py apps\\api\\app\\inference\\openvoice.py apps\\api\\tests\\test_audio_validation.py apps\\api\\tests\\test_upload_hardening.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_audio_validation.py apps\\api\\tests\\test_upload_hardening.py -q"`
+>
+> </details>
+>
+> The first focused run reached 26 passing tests. The remaining setup errors are test-harness issues, not product failures: pytest generated enormous/invalid node IDs from the 10,000-character and unpaired-surrogate parameters. I’m assigning safe explicit case IDs and fixing one Ruff strict-zip warning, then rerunning with compact tracebacks.
+>
+> <details><summary>Edited 2 files, ran 5 commands</summary>
+>
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+4 -1)
+> - Wrote `./apps/api/tests/test_upload_hardening.py` (+6 -1)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\python.exe -m pytest apps\\api\\tests\\test_audio_validation.py apps\\api\\tests\\test_upload_hardening.py -q --tb=short"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api\\app\\workers\\audio_validation.py apps\\api\\app\\core\\text_validation.py apps\\api\\app\\domains\\generations\\jobs.py apps\\api\\app\\inference\\adapter.py apps\\api\\app\\inference\\openvoice.py apps\\api\\tests\\test_audio_validation.py apps\\api\\tests\\test_upload_hardening.py"`
+> - Wrote `./apps/api/tests/test_upload_hardening.py` (+33 -0)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+>
+> </details>
+>
+> The synchronous adversarial suite now passes 30 cases; the only host failure is the previously documented Windows `WinError 10055` while pytest creates an asyncio loop. I’ve added one real six-second WAV fixture through installed FFmpeg, and I’m completing static checks before running the authoritative Python 3.13 Docker suite where that Windows socket limit does not apply.
+>
+> <details><summary>Explored 2 files, ran 2 commands</summary>
+>
+> <details><summary>Explored 2 files</summary>
+>
+> - Read `./apps/api/requirements-dev.txt`
+> - Read `./apps/api/pyproject.toml`
+>
+> </details>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
+>
+> - Ran `docker run --rm --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace/apps/api classvoice-api sh -lc "pip install -q -r requirements-dev.txt && python -m pytest tests/test_audio_validation.py tests/test_upload_hardening.py -q --tb=short"`
+>
+> </details>
+>
+> The authoritative focused suite passes all 32 tests in Python 3.13 Linux, including the real FFmpeg decode. The implementation is now functionally sound at the targeted boundary; I’m creating a new disposable P4-03 database so the complete API/coverage suite can run without touching the main development data.
+>
+> <details><summary>Explored a file, ran 5 commands</summary>
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./apps/api/tests/conftest.py`
+>
+> </details>
+>
+> - Ran `rg -n "DATABASE_URL|TEST_DATABASE|asyncpg.connect|create_pool" apps/api/tests`
+>
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -Atc 'SELECT count(*) FROM pg_database WHERE datname = ''classvoice_p4_03_verify'';'`
+>
+> - Ran `docker compose exec -T postgres createdb -U classvoice classvoice_p4_03_verify`
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head`
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api sh -lc "pip install -q -r requirements-dev.txt && python -m pytest --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+>
+> </details>
+>
+> The full Docker gate is progressing normally through the suite with the isolated database and real FFmpeg available. No regression has appeared so far; I’m waiting for the migration/RLS tail and branch-coverage report before documenting completion.
+>
+> The complete suite found no P4-03 regression: 140 tests passed and coverage rose to 82.71%. One repository-manifest test failed only because I launched pytest from `apps/api`, while that existing test intentionally resolves `infra/model-registry/manifest.json` from the repository root. I’m rerunning from the correct root with `PYTHONPATH` set explicitly; no code change is needed for that harness-path mistake.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m pytest -c apps/api/pyproject.toml apps/api/tests --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+>
+> </details>
+>
+> The corrected full run is green: **141 passed**, including migrations/RLS and the new hardening cases, with **82.65% branch coverage**. I’m now rebuilding only the API and worker images so the running Compose stack actually contains these protections; after health verification I’ll lock the P4-03 contract into the TRD and mark the plan step complete.
+>
+> <details><summary>Edited 2 files, ran 7 commands</summary>
+>
+> - Ran `docker compose build api worker`
+> - Ran `docker compose up -d api worker`
+> - Wrote `./docs/04_TRD.md` (+27 -1)
+> - Wrote `./docs/06_Plan.md` (+3 -2)
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'docker compose ps'`
+> - Ran `docker compose exec -T worker python -c "from app.workers.audio_validation import MAX_CAPTURED_PCM_BYTES, MAX_DECODED_PCM_BYTES; print(MAX_CAPTURED_PCM_BYTES, MAX_DECODED_PCM_BYTES)"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'curl.exe -fsS http://127.0.0.1:8000/health/ready'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+>
+> </details>
+>
+> The deployed worker reports the exact 992,000-byte capture guard and 960,000-byte accepted PCM ceiling, and all six services are healthy. I’m cleaning only the two generated coverage files and the disposable `classvoice_p4_03_verify` database, then I’ll perform the final diff/status audit.
+>
+> <details><summary>Ran 7 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'del /f /q .coverage'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'del /f /q .coverage'`
+> - Ran `docker compose exec -T postgres dropdb -U classvoice classvoice_p4_03_verify`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short'`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -Atc 'SELECT count(*) FROM pg_database WHERE datname = ''classvoice_p4_03_verify'';'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --stat'`
+>
+> </details>
+>
+> A final threat-boundary review found one worthwhile tightening before handoff: output/time/thread limits were explicit, but FFmpeg’s individual allocation size and captured error stream were not. I’m adding a 64 MiB single-allocation ceiling, a `file,pipe` protocol allowlist, and discarding stderr so a malformed file cannot inflate an in-memory error buffer. Then I’ll rerun the authoritative gates on the exact final code.
+>
+> <details><summary>Edited 3 files, ran 6 commands</summary>
+>
+> - Wrote `./apps/api/app/workers/audio_validation.py` (+13 -2)
+> - Wrote `./apps/api/tests/test_upload_hardening.py` (+4 -0)
+> - Wrote `./docs/04_TRD.md` (+3 -2)
+> - Ran `docker run --rm --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace/apps/api classvoice-api sh -lc "pip install -q -r requirements-dev.txt && python -m pytest tests/test_audio_validation.py tests/test_upload_hardening.py -q --tb=short"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\ruff.exe check apps\\api"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "apps\\api\\.venv\\Scripts\\mypy.exe apps\\api\\app"`
+> - Ran `docker compose exec -T postgres createdb -U classvoice classvoice_p4_03_verify`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m pytest -c apps/api/pyproject.toml apps/api/tests --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+>
+> </details>
+>
+> The final full rerun did not reach pytest because Docker’s transient outbound PyPI connection failed while re-resolving already-pinned test tools; the focused final-code suite had just passed in the same image. I’m retrying the unchanged command—this is the same intermittent Docker/PyPI network behavior seen earlier, not a test or dependency conflict.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_03_verify classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m pytest -c apps/api/pyproject.toml apps/api/tests --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+>
+> </details>
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m continuing the final P4-03 verification now. The implementation is complete; I’m waiting on the authoritative Docker test run, then I’ll rebuild the API/worker with the final resource limits, verify health, clean only the disposable test artifacts, and hand off the result.
+>
+> The exact final-code suite passed: 141 tests, 82.65% branch coverage. I’m now rebuilding and restarting the two affected containers so the running environment includes the final FFmpeg allocation and protocol safeguards.
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `docker compose build api worker`
+> - Ran `docker compose up -d api worker`
+>
+> </details>
+>
+> The rebuilt services are running. I’m checking all container health, API readiness, and the worker’s live limit constants before cleaning the isolated verification database and coverage file.
+>
+> <details><summary>Ran 6 commands</summary>
+>
+> - Ran `curl.exe -fsS http://127.0.0.1:8000/health/ready`
+> - Ran `docker compose ps`
+> - Ran `docker compose exec -T worker python -c "from app.workers.audio_validation import MAX_CAPTURED_PCM_BYTES, MAX_DECODED_PCM_BYTES, MAX_FFMPEG_ALLOCATION_BYTES; print(MAX_CAPTURED_PCM_BYTES, MAX_DECODED_PCM_BYTES, MAX_FFMPEG_ALLOCATION_BYTES)"`
+> - Ran `docker compose ps`
+> - Ran `docker compose exec -T postgres dropdb -U classvoice --if-exists classvoice_p4_03_verify`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -tAc "SELECT count(*) FROM pg_database WHERE datname = 'classvoice_p4_03_verify';"`
+>
+> </details>
+>
+> All six services are healthy, readiness is green, and the live worker reports the expected 992,000-byte capture, 960,000-byte accepted PCM, and 64 MiB allocation limits. I’ve removed and confirmed deletion of only the disposable P4-03 database; next I’m cleaning generated coverage artifacts and reviewing the final diff.
+>
+> <details><summary>Ran 6 commands</summary>
+>
+> - Ran `Get-Item -LiteralPath '.coverage','apps\api\.coverage' -ErrorAction SilentlyContinue | Select-Object FullName,Length`
+> - Ran `Remove-Item -LiteralPath 'E:\Developer\Voice Generation\.coverage' -Force`
+> - Ran `git diff --check`
+> - Ran `git status --short`
+> - Ran `git diff --stat`
+> - Ran `rg -n "P4-03|Last updated|Upload and Unicode|upload and Unicode|82\.65|141 passed" docs\04_TRD.md docs\06_Plan.md`
+>
+> </details>
+>
+> Final review is clean: no whitespace errors, only expected CRLF warnings, and the user’s existing `CODEX Conversation.md` edit remains untouched. I found one documentation timing from the earlier pre-refinement run; I’m correcting it to the authoritative final-code result of 47.67 seconds.
+>
+> <details><summary>Edited a file, ran 7 commands</summary>
+>
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Ran `git diff --check`
+> - Ran `git status --short`
+> - Ran `rg -n "P4-03|47\.67|MAX_FFMPEG_ALLOCATION_BYTES|protocol_whitelist|normalize_generation_text" docs\06_Plan.md docs\04_TRD.md apps\api\app\workers\audio_validation.py apps\api\app\core\text_validation.py apps\api\tests\test_upload_hardening.py`
+> - Ran `Test-Path -LiteralPath '.coverage'; Test-Path -LiteralPath 'apps\api\.coverage'`
+> - Ran `git diff --check`
+> - Ran `git status --short`
+> - Ran `rg -n "P4-03|47\.67|MAX_FFMPEG_ALLOCATION_BYTES|protocol_whitelist|normalize_generation_text" docs\06_Plan.md docs\04_TRD.md apps\api\app\workers\audio_validation.py apps\api\app\core\text_validation.py apps\api\tests\test_upload_hardening.py`
+>
+> </details>
+>
+> <details><summary>Plan</summary>
+>
+> P4-03 is implemented, verified on the exact final code, deployed to the local Compose services, documented, and cleaned up.
+>
+> - [x] Inspect upload, worker, generation, and inference validation boundaries
+> - [x] Implement strict container/polyglot checks and bounded media decoding
+> - [x] Add shared Unicode-safe text validation and adversarial test coverage
+> - [x] Run focused and full Docker quality gates, rebuild services, and verify runtime health
+> - [x] Update TRD and mark P4-03 complete in the implementation plan
+>
+> </details>
+</details>
+
+P4-03 is complete and deployed locally.
+
+- Added strict WAV/MP3/M4A validation, polyglot detection, malformed-header handling, and bounded FFmpeg execution in [audio_validation.py](</E:/Developer/Voice Generation/apps/api/app/workers/audio_validation.py:1>).
+- Added Unicode-safe generation text validation in [text_validation.py](</E:/Developer/Voice Generation/apps/api/app/core/text_validation.py:1>).
+- Added adversarial and real-FFmpeg coverage in [test_upload_hardening.py](</E:/Developer/Voice Generation/apps/api/tests/test_upload_hardening.py:1>).
+- Updated [04_TRD.md](</E:/Developer/Voice Generation/docs/04_TRD.md:533>) and marked P4-03 complete in [06_Plan.md](</E:/Developer/Voice Generation/docs/06_Plan.md:176>).
+
+Verification:
+
+- Focused suite: 32 passed
+- Complete suite: 141 passed in 47.67 seconds
+- Branch coverage: 82.65%
+- Ruff and strict mypy passed
+- All six Docker services are healthy
+- API readiness is green
+- Final API and worker images rebuilt and restarted
+
+The disposable verification database and generated `.coverage` file were removed; no project data was affected. Your `CODEX Conversation.md` changes were left untouched. No Git commit was created.
+
+Next sequential task: P4-04 worker reliability and retry testing.
+
+> Now please proceed next.
+
+<details><summary>6 previous messages</summary>
+
+> I’ll proceed with the next unchecked item after P4-03. I’m first reloading the architecture contract and current plan, then I’ll implement and verify that single item end-to-end before marking it complete.
+>
+> <details><summary>Explored 7 files, ran 3 commands</summary>
+>
+> <details><summary>Explored 12 files</summary>
+>
+> - Read `./CODEX.md`
+> - Read `./docs/01_PRD.md`
+> - Read `./docs/02_AppFlow.md`
+> - Read `./docs/03_UI_Spec.md`
+> - Read `./docs/04_TRD.md`
+> - Read `./docs/05_Schema.md`
+> - Read `./docs/06_Plan.md`
+> - Read `./docs/02_AppFlow.md`
+> - Read `./docs/03_UI_Spec.md`
+> - Read `./docs/04_TRD.md`
+> - Read `./docs/05_Schema.md`
+> - Read `./docs/06_Plan.md`
+>
+> </details>
+>
+> - Ran `(Get-Content -LiteralPath 'docs\06_Plan.md').Count`
+>
+> - Ran `Get-Content -LiteralPath 'docs\06_Plan.md' | Select-Object -First 140`
+>
+> - Ran `Get-Content -LiteralPath 'docs\06_Plan.md' | Select-Object -Skip 140`
+>
+> </details>
+>
+> The next item is P4-04: worker reliability under duplicate delivery, crashes, expired leases, cancellation races, exhausted retries, and stale model manifests. I’m inspecting the current queue/lease state machine and its existing tests now; I’ll preserve the P4-03 working-tree changes and extend only the reliability boundary.
+>
+> <details><summary>Explored 8 files, ran 5 commands</summary>
+>
+> - Ran `git status --short`
+>
+> - Ran `rg --files apps\api\app apps\api\tests | rg "generation_queue|generation|model_registry|worker|output"`
+>
+> - Ran `rg -n "lease|duplicate|retry|cancel|terminal|manifest|output|claim|heartbeat|attempt" apps\api\app\workers apps\api\app\domains\generations apps\api\app\inference apps\api\tests`
+>
+> <details><summary>Explored 7 files</summary>
+>
+> - Read `./apps/api/app/workers/generation_queue.py`
+> - Read `./apps/api/app/domains/generations/jobs.py`
+> - Read `./apps/api/app/domains/generations/outputs.py`
+> - Read `./apps/api/app/inference/model_registry.py`
+> - Read `./apps/api/app/inference/openvoice.py`
+> - Read `./apps/api/tests/test_generation_queue.py`
+> - Read `./apps/api/app/workers/arq_worker.py`
+>
+> </details>
+>
+> - Ran `rg -n "generation_worker|generation_queue|generation_outputs|process_generation|reap_expired" apps\api\app\main.py apps\api\app -g "*.py"`
+>
+> - Ran `rg -n "\.succeed\(|complete\(" apps\api\tests apps\api\app -g "*.py"`
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./apps/api/app/inference/adapter.py`
+>
+> </details>
+>
+> </details>
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 4:02 AM.
+>
+> <details><summary>Plan</summary>
+>
+> Proceeding with the next sequential checklist item, P4-04.
+>
+> - [ ] Inspect the worker queue, lease, cancellation, output, and model-registry state machine
+> - [ ] Define and implement any missing atomic terminal/output invariants
+> - [ ] Add deterministic reliability tests for all six P4-04 scenarios
+> - [ ] Run focused and complete quality gates in Docker
+> - [ ] Update the technical contract and mark P4-04 complete with evidence
+>
+> </details>
+</details>

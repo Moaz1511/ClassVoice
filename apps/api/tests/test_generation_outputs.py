@@ -35,6 +35,7 @@ class FakePrivateStorage:
     def __init__(self) -> None:
         self.objects: dict[tuple[str, str], bytes] = {}
         self.sign_calls: list[tuple[str, str]] = []
+        self.put_calls = 0
 
     async def put_object(
         self,
@@ -45,6 +46,7 @@ class FakePrivateStorage:
         content_type: str,
     ) -> None:
         assert content_type in {"audio/wav", "audio/mpeg"}
+        self.put_calls += 1
         self.objects[(bucket, key)] = body
 
     async def create_upload_url(
@@ -251,6 +253,21 @@ async def test_worker_persists_private_wav_and_mp3_assets() -> None:
         assert output.object_key.endswith(f".{output_format}")
         assert output.checksum_sha256 == hashlib.sha256(result.audio_bytes).hexdigest()
         assert (output.bucket, output.object_key) in storage.objects
+
+
+async def test_private_output_store_is_idempotent_for_the_same_job_checksum() -> None:
+    app, user_id, storage = _app()
+    job_id = await _ready_job(app, user_id, "wav")
+    job = await app.state.generation_service.get(job_id)
+    assert job is not None
+    result = await SmokeCpuAdapter().generate(InferenceRequest.from_job(job))
+
+    first = await app.state.generation_outputs.put(job, result)
+    repeated = await app.state.generation_outputs.put(job, result)
+
+    assert repeated.id == first.id
+    assert storage.put_calls == 1
+    assert len(storage.objects) == 1
 
 
 async def test_download_rechecks_workspace_access_and_hides_object_key() -> None:

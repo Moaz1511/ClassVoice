@@ -557,6 +557,36 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
 - Tests use synthetic bytes/text only, never log payload contents, and must
   include deterministic truncation/mutation cases plus a real FFmpeg fixture.
 
+# P4-04 worker reliability contract
+
+- Lease stores provide atomic acquire, heartbeat renewal, exact-lease release,
+  and expired-lease removal. Concurrent deliveries for the same job/attempt may
+  produce only one active lease; a stale worker must revalidate its lease after
+  inference and cannot commit after crash recovery assigns a replacement.
+- Automatic retryable failures move directly from `processing` back to
+  `queued`, increment the durable queue-attempt counter, and preserve the error
+  code only in bounded audit metadata. They do not expose an intermediate
+  terminal `failed` state. `failed` is persisted only when attempts are
+  exhausted or the error is non-retryable.
+- Output persistence and the final state decision are one application-level
+  commit boundary. If cancellation wins, the job becomes `canceled` and no
+  output is written. If output commit wins, the job becomes `succeeded` and a
+  later cancellation receives `GENERATION_STATE_CONFLICT`. A job/checksum pair
+  is idempotent and a different second output fails closed with
+  `OUTPUT_ALREADY_COMMITTED`.
+- Expired leases are reaped with compare-and-swap semantics so a concurrent
+  heartbeat cannot be deleted. A worker holding an expired/replaced lease fails
+  with a stable lease error and cannot overwrite the replacement attempt's
+  terminal state or output.
+- The worker resolves every job's pinned model key, version, and checkpoint SHA
+  against its current repository-controlled manifest. A missing, disabled, or
+  changed entry fails non-retryably before runtime creation and produces no
+  audio object.
+- Reliability tests use deterministic events rather than sleeps to exercise
+  duplicate delivery, in-flight crash recovery, final lease expiry, both sides
+  of cancellation races, retry exhaustion, and stale manifests. Each scenario
+  asserts one final terminal state and at most one output write.
+
 # Local Docker verification and Windows troubleshooting
 
 - The authoritative local stack is the `desktop-linux` Docker Desktop context.
