@@ -2,7 +2,7 @@
 
 **Product:** ClassVoice  
 **Document status:** Locked baseline v1.0  
-**Last updated:** 2026-10-31
+**Last updated:** 2026-11-01
 **Version policy:** Exact pins below are the baseline. Upgrade only through an ADR, dependency review, and green CI.
 
 ## 1. Architecture decision summary
