@@ -35,6 +35,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
 
   return (
     <div className="app-shell">
+      <a className="skip-link" href="#main-content">Skip to main content</a>
       <aside className="sidebar" aria-label="Primary navigation">
         <Link className="brand" href="/dashboard" aria-label="ClassVoice dashboard">
           <span className="brand-mark" aria-hidden="true">CV</span>
@@ -77,7 +78,7 @@ export function AppShell({ children }: Readonly<{ children: React.ReactNode }>) 
             <Link className={`mobile-nav-link${isActive(item.href) ? " active" : ""}`} href={item.href} key={item.href}>{item.label}</Link>
           ))}
         </nav>
-        <main className="page-content">{children}</main>
+        <main className="page-content" id="main-content" tabIndex={-1}>{children}</main>
       </div>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import { ModalDialog } from "../ui/ModalDialog";
 
 type CreateStage = "consent_unread" | "consent_accepted" | "sample_selected" | "uploading" | "validating" | "processing" | "ready" | "sample_invalid" | "error";
 
@@ -115,7 +116,7 @@ export function VoiceCreateScreen() {
             <strong>{file ? file.name : "Choose or drop an audio file"}</strong>
             <span>{file ? `${Math.ceil(file.size / 1024)} KB selected` : "WAV, MP3, or M4A · 6–30 seconds recommended"}</span>
           </button>
-          <input ref={inputRef} className="sr-only" type="file" accept="audio/wav,audio/x-wav,audio/mpeg,audio/mp4,.wav,.mp3,.m4a" onChange={(event) => selectFile(event.target.files?.[0])} />
+          <input ref={inputRef} className="sr-only" type="file" aria-label="Audio reference file" accept="audio/wav,audio/x-wav,audio/mpeg,audio/mp4,.wav,.mp3,.m4a" onChange={(event) => selectFile(event.target.files?.[0])} />
           {validationMessage ? <p className="validation-note" role="status">{validationMessage}</p> : null}
           {stage === "sample_invalid" ? <div className="form-error" role="alert">{validationMessage || "This sample needs attention. Choose another file."}<button className="inline-action" type="button" onClick={replaceSample}>Replace sample</button></div> : null}
           {errorMessage ? <div className="form-error" role="alert">{errorMessage}</div> : null}
@@ -127,7 +128,7 @@ export function VoiceCreateScreen() {
         <aside className="card voice-create-aside" aria-labelledby="validation-heading"><div className="card-kicker">Server validation</div><h2 id="validation-heading">What happens next</h2><ol className="validation-list"><li className={stage === "uploading" ? "active" : ""}><strong>Secure upload</strong><span>Private quarantine storage with an idempotency key.</span></li><li className={stage === "validating" || stage === "processing" ? "active" : ""}><strong>Audio checks</strong><span>Magic bytes, duration, silence, clipping, channels, and speaker warnings.</span></li><li className={stage === "ready" ? "active" : ""}><strong>Ready gate</strong><span>Consent, sample, and approved model evidence must all be present.</span></li></ol><p className="notice">No embeddings, raw storage keys, or audio bytes are displayed in this interface.</p></aside>
       </div>
 
-      {consentModalOpen ? <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="consent-dialog-title"><div className="modal-header"><div><p className="eyebrow">Consent statement · v1</p><h2 id="consent-dialog-title">Permission to create a voice profile</h2></div><button className="icon-button" type="button" aria-label="Close consent statement" onClick={() => setConsentModalOpen(false)}>×</button></div><div className="modal-body"><p>I confirm that I am the speaker or have the speaker’s permission to create and use this voice profile for lawful educational content. I understand that consent can be revoked, which immediately blocks new generation jobs.</p><p className="muted">The API records the statement version, text hash, accepting actor, and timestamp. This screen does not upload audio until the consent checkbox is accepted.</p></div><div className="modal-actions"><button className="button button-secondary" type="button" onClick={() => setConsentModalOpen(false)}>Not now</button><button className="button button-primary" type="button" onClick={acceptConsent}>I understand &amp; acknowledge</button></div></section></div> : null}
+      {consentModalOpen ? <ModalDialog labelledBy="consent-dialog-title" onClose={() => setConsentModalOpen(false)}><div className="modal-header"><div><p className="eyebrow">Consent statement · v1</p><h2 id="consent-dialog-title">Permission to create a voice profile</h2></div><button className="icon-button" type="button" aria-label="Close consent statement" onClick={() => setConsentModalOpen(false)}>×</button></div><div className="modal-body"><p>I confirm that I am the speaker or have the speaker’s permission to create and use this voice profile for lawful educational content. I understand that consent can be revoked, which immediately blocks new generation jobs.</p><p className="muted">The API records the statement version, text hash, accepting actor, and timestamp. This screen does not upload audio until the consent checkbox is accepted.</p></div><div className="modal-actions"><button className="button button-secondary" type="button" onClick={() => setConsentModalOpen(false)}>Not now</button><button className="button button-primary" type="button" onClick={acceptConsent}>I understand &amp; acknowledge</button></div></ModalDialog> : null}
     </>
   );
 }

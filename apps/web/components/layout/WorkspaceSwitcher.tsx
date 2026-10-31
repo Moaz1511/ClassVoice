@@ -10,6 +10,7 @@ export function WorkspaceSwitcher() {
       <button
         className="workspace-switcher-trigger"
         type="button"
+        aria-label="Switch workspace"
         aria-expanded={open}
         aria-controls="workspace-switcher-panel"
         onClick={() => setOpen((current) => !current)}

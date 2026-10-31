@@ -22,8 +22,10 @@ FROM node:24.22.1-alpine AS runner
 WORKDIR /opt/classvoice
 ENV NODE_ENV=production
 ENV PORT=3000
+ENV HOSTNAME=0.0.0.0
 COPY --from=builder /opt/classvoice/apps/web/.next/standalone ./
 COPY --from=builder /opt/classvoice/apps/web/.next/static ./apps/web/.next/static
+COPY infra/docker/health_server.mjs ./health_server.mjs
 
 EXPOSE 3000
 

@@ -12,7 +12,9 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "test": "node --test"
+    "test": "node --test",
+    "pretest:e2e": "next build && node scripts/prepare-e2e-server.mjs",
+    "test:e2e": "playwright test"
   },
   "dependencies": {
     "@tanstack/react-query": "5.90.6",
@@ -22,9 +24,10 @@
     "zod": "4.1.12"
   },
   "devDependencies": {
+    "@types/node": "24.10.0",
     "@types/react": "19.1.16",
     "@types/react-dom": "19.1.9",
-    "@types/node": "24.10.0",
+    "axe-core": "4.14.0",
     "eslint": "9.38.0",
     "eslint-config-next": "16.4.3",
     "playwright": "1.55.1",

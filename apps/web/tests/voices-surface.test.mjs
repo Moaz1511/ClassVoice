@@ -38,5 +38,6 @@ test('voice screens cover filters and destructive lifecycle confirmations', () =
   assert.match(detailSource, /Delete permanently/);
   assert.match(detailSource, /Type the voice name to confirm/);
   assert.match(detailSource, /deletion is disabled until the voice loads successfully/);
-  assert.match(detailSource, /role="dialog"/);
+  assert.match(detailSource, /ModalDialog/);
+  assert.match(readFileSync(resolve(webRoot, 'components/ui/ModalDialog.tsx'), 'utf8'), /role="dialog"/);
 });

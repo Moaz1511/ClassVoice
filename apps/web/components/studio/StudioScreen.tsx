@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import { ModalDialog } from "../ui/ModalDialog";
 
 const MAX_TEXT_LENGTH = 10_000;
 const DRAFT_PREFIX = "classvoice.studio.draft.";
@@ -195,7 +196,7 @@ export function StudioScreen({ projectId = "new" }: Readonly<{ projectId?: strin
         </aside>
       </div>
 
-      {pendingAction ? <div className="modal-backdrop"><section className="modal" role="dialog" aria-modal="true" aria-labelledby="unsaved-dialog-title"><div className="modal-header"><div><p className="eyebrow">Unsaved draft</p><h2 id="unsaved-dialog-title">{pendingAction.kind === "clear" ? "Clear this lesson text?" : "Leave Studio?"}</h2></div><button className="icon-button" type="button" aria-label="Stay in Studio" onClick={() => setPendingAction(null)}>×</button></div><div className="modal-body"><p>{pendingAction.kind === "clear" ? "Your draft text has not been sent to the server. Choose whether to save project settings before clearing it." : "Your draft text has not been sent to the server. Choose whether to save project settings before leaving."}</p></div><div className="modal-actions"><button className="button button-secondary" type="button" onClick={() => setPendingAction(null)}>Stay</button><button className="button button-secondary" type="button" onClick={discardAndContinue}>Discard</button><button className="button button-primary" type="button" onClick={saveAndContinue}>Save project</button></div></section></div> : null}
+      {pendingAction ? <ModalDialog labelledBy="unsaved-dialog-title" closeOnEscape={false} onClose={() => setPendingAction(null)}><div className="modal-header"><div><p className="eyebrow">Unsaved draft</p><h2 id="unsaved-dialog-title">{pendingAction.kind === "clear" ? "Clear this lesson text?" : "Leave Studio?"}</h2></div><button className="icon-button" type="button" aria-label="Stay in Studio" onClick={() => setPendingAction(null)}>×</button></div><div className="modal-body"><p>{pendingAction.kind === "clear" ? "Your draft text has not been sent to the server. Choose whether to save project settings before clearing it." : "Your draft text has not been sent to the server. Choose whether to save project settings before leaving."}</p></div><div className="modal-actions"><button className="button button-secondary" type="button" onClick={() => setPendingAction(null)}>Stay</button><button className="button button-secondary" type="button" onClick={discardAndContinue}>Discard</button><button className="button button-primary" type="button" onClick={saveAndContinue}>Save project</button></div></ModalDialog> : null}
     </>
   );
 }

@@ -54,6 +54,7 @@ The browser never talks directly to the GPU worker. The API is the authority for
 | Zod | `4.1.12` | Shared request/response validation at web boundary |
 | Vitest | `3.2.4` | Unit/component tests |
 | Playwright | `1.55.1` | Browser integration tests |
+| axe-core | `4.14.0` | WCAG 2.2 accessibility assertions in Playwright |
 | ESLint | `9.38.0` | Linting with flat config |
 
 Rules:
@@ -455,6 +456,9 @@ Supabase auth form is the next P3 step.
 The web container builds from the monorepo lockfile and runs the Next standalone
 server. `/health/live` and `/health/ready` are Next route handlers so Docker
 health checks exercise the real web process rather than a placeholder server.
+The runner must set `HOSTNAME=0.0.0.0` so the standalone server accepts traffic
+from the container network, and it must copy `infra/docker/health_server.mjs` to
+the exact path used by the Compose healthcheck.
 # P3-02 authentication screen implementation contract
 
 The web auth screens now cover sign-up, sign-in, verification, password reset,
@@ -586,6 +590,28 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   duplicate delivery, in-flight crash recovery, final lease expiry, both sides
   of cancellation races, retry exhaustion, and stale manifests. Each scenario
   asserts one final terminal state and at most one output write.
+
+# P4-05 web accessibility and responsive-test contract
+
+- Playwright runs the production standalone Next.js output at 375, 768, 1,024,
+  and 1,440 px widths. Each width exercises authenticated dashboard, voice,
+  Studio, succeeded-generation/player, and account-settings surfaces, asserts
+  that the page does not overflow horizontally, and scans WCAG 2 A/AA, 2.1
+  A/AA, and 2.2 AA rules with axe-core. Critical violations fail CI.
+- Keyboard-only flows cover invalid and demo authentication with safe
+  `returnTo`, voice consent plus file selection, the Studio skip link/editor and
+  unsaved-draft dialog, generated-audio play/seek/speed/download controls, and
+  typed account deletion. Shared dialogs trap focus, return it to the trigger,
+  and permit Escape only for non-destructive actions.
+- Reduced-motion coverage emulates `prefers-reduced-motion: reduce`, verifies
+  decorative animation and transition durations are effectively removed, and
+  confirms operational status remains visible. Responsive checks retain the
+  documented mobile navigation at 375 px and desktop/collapsed sidebar from
+  768 px upward.
+- Synthetic WAV and caption fixtures are server-only test boundaries. They are
+  available solely when `CLASSVOICE_E2E_FIXTURES=1`, contain no user data, and
+  return 404 in normal development and production processes. The real player
+  still requires an authorization-checked short-lived private URL.
 
 # Local Docker verification and Windows troubleshooting
 

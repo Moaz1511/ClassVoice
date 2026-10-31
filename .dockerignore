@@ -4,6 +4,11 @@
 !.env.example
 node_modules
 .next
+**/node_modules
+**/.next
+**/playwright-report
+**/test-results
+**/tsconfig.tsbuildinfo
 .venv
 __pycache__
 models
