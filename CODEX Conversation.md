@@ -3910,3 +3910,111 @@ Next sequential task: P4-04 worker reliability and retry testing.
 >
 > </details>
 </details>
+
+
+<details><summary>15 previous messages</summary>
+
+> The current code already covers the happy retry path, but inspection found three real race gaps: lease acquisition/removal is not compare-and-swap safe, an expired worker can still try to commit after a replacement attempt, and output persistence is separate from the terminal-state decision. I’m tightening those boundaries, then the new tests will exercise both sides of each race deterministically.
+>
+> <details><summary>Edited 4 files, ran a command</summary>
+>
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+72 -23)
+> - Ran `rg -n "leases\.(put|remove|get|list|acquire|renew|release|pop_expired)" apps\api -g "*.py"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+172 -48)
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+1 -1)
+> - Wrote `./apps/api/app/domains/generations/outputs.py` (+60 -40)
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+9 -0)
+>
+> </details>
+>
+> One reliability invariant needs a small lifecycle correction: automatic retries should not briefly publish a terminal `failed` state and then resurrect the same job. I’m changing worker-owned retries to `processing → queued` with an incremented attempt, reserving `failed` for true exhaustion; user-triggered retry remains the documented `failed/canceled → created` flow.
+>
+> <details><summary>Created a file, edited 3 files, ran 4 commands</summary>
+>
+> - Wrote `./apps/api/app/domains/generations/jobs.py` (+37 -0)
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+36 -23)
+> - Ran `python -m ruff check apps/api/app/domains/generations/jobs.py apps/api/app/domains/generations/outputs.py apps/api/app/workers/generation_queue.py`
+> - Ran `python -m mypy --config-file apps/api/pyproject.toml apps/api/app`
+> - Ran `Get-Content -LiteralPath 'apps\api\tests\test_generation_outputs.py' | Select-Object -First 180`
+> - Wrote `./apps/api/tests/test_worker_reliability.py` (+391 -0)
+> - Ran `Get-Content -LiteralPath 'apps\api\tests\test_generation_outputs.py' | Select-Object -Skip 180`
+> - Wrote `./apps/api/tests/test_generation_outputs.py` (+17 -0)
+>
+> </details>
+>
+> The reliability layer and deterministic race tests are now in place, including an idempotent private-output assertion. I’m running the focused Docker gate next—Ruff, strict mypy, and the generation/worker/output/model test set—before attempting the complete suite.
+>
+> <details><summary>Edited 2 files, ran 6 commands</summary>
+>
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m ruff check apps/api/app apps/api/tests && python -m mypy --config-file apps/api/pyproject.toml apps/api/app && python -m pytest -c apps/api/pyproject.toml apps/api/tests/test_generation_queue.py apps/api/tests/test_worker_reliability.py apps/api/tests/test_generation_outputs.py apps/api/tests/test_generation_jobs.py apps/api/tests/test_openvoice_adapter.py apps/api/tests/test_model_registry.py apps/api/tests/test_contract_hardening.py"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+4 -1)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m ruff check apps/api/app apps/api/tests && python -m mypy --config-file apps/api/pyproject.toml apps/api/app && python -m pytest -c apps/api/pyproject.toml apps/api/tests/test_generation_queue.py apps/api/tests/test_worker_reliability.py apps/api/tests/test_generation_outputs.py apps/api/tests/test_generation_jobs.py apps/api/tests/test_openvoice_adapter.py apps/api/tests/test_model_registry.py apps/api/tests/test_contract_hardening.py"`
+> - Ran `Get-Content -LiteralPath 'apps\api\requirements-dev.txt' -Raw; Get-Content -LiteralPath 'apps\api\pyproject.toml' -Raw`
+> - Ran `rg -n -C 5 "type: ignore" apps\api\app\workers\generation_queue.py`
+> - Wrote `./apps/api/app/inference/model_registry.py` (+1 -1)
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+2 -2)
+> - Ran `Get-Content -LiteralPath 'apps\api\app\api\v1\generations.py' | Select-Object -First 85`
+> - Ran `rg -n "^from typing|^def _(membership_store|.*service|audit|generation_worker|generation_outputs)" apps\api\app\api\v1\api_keys.py apps\api\app\api\v1\generations.py apps\api\app\api\v1\projects.py apps\api\app\api\v1\reports.py apps\api\app\api\v1\voices.py apps\api\app\api\v1\webhooks.py`
+>
+> </details>
+>
+> The focused run stopped before tests because strict mypy exposed pre-existing untyped FastAPI `app.state` dependency helpers under the pinned checker. I’m applying the narrow, type-safe fix—explicit `cast(...)` at those dynamic framework boundaries—along with removing two obsolete ARQ ignores, so the promised full strict gate is genuinely green rather than bypassed.
+>
+> <details><summary>Edited 6 files, ran 2 commands</summary>
+>
+> - Ran `rg -n "^(from|import) " apps\api\app\api\v1\api_keys.py apps\api\app\api\v1\generations.py apps\api\app\api\v1\projects.py apps\api\app\api\v1\reports.py apps\api\app\api\v1\voices.py apps\api\app\api\v1\webhooks.py`
+> - Wrote `./apps/api/app/api/v1/api_keys.py` (+4 -3)
+> - Wrote `./apps/api/app/api/v1/generations.py` (+8 -7)
+> - Wrote `./apps/api/app/api/v1/projects.py` (+4 -4)
+> - Wrote `./apps/api/app/api/v1/reports.py` (+4 -3)
+> - Wrote `./apps/api/app/api/v1/voices.py` (+4 -4)
+> - Wrote `./apps/api/app/api/v1/webhooks.py` (+4 -3)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m ruff check apps/api/app apps/api/tests && python -m mypy --config-file apps/api/pyproject.toml apps/api/app && python -m pytest -c apps/api/pyproject.toml apps/api/tests/test_generation_queue.py apps/api/tests/test_worker_reliability.py apps/api/tests/test_generation_outputs.py apps/api/tests/test_generation_jobs.py apps/api/tests/test_openvoice_adapter.py apps/api/tests/test_model_registry.py apps/api/tests/test_contract_hardening.py"`
+>
+> </details>
+>
+> The focused gate is green: Ruff passed, strict mypy passed across all 48 source files, and 42 generation/worker/output/model tests passed. I’m moving to the authoritative full suite on a fresh, isolated Compose database, including migration and RLS tests; the main project database will not be touched.
+>
+> <details><summary>Edited a file, ran 5 commands</summary>
+>
+> - Ran `docker compose ps`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -tAc "SELECT count(*) FROM pg_database WHERE datname = 'classvoice_p4_04_verify';"`
+> - Ran `docker compose exec -T postgres createdb -U classvoice classvoice_p4_04_verify`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -w /workspace -e DATABASE_URL=postgresql+asyncpg://classvoice:change-me-local-only@postgres:5432/classvoice_p4_04_verify classvoice-api python -m alembic -c db/alembic.ini upgrade head`
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_04_verify classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m pytest -c apps/api/pyproject.toml apps/api/tests --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+> - Wrote `./apps/api/app/workers/generation_queue.py` (+0 -10)
+>
+> </details>
+>
+> The complete isolated-database suite passed all 149 tests with 81.76% branch coverage. I’ve also removed the unused direct “mark succeeded” path so success can only be committed through the output-aware transaction. I’m documenting the locked P4-04 reliability contract now, then I’ll rerun the exact final code and deploy it to the local API/worker containers.
+>
+> <details><summary>Edited 2 files, ran a command</summary>
+>
+> - Wrote `./docs/04_TRD.md` (+30 -0)
+> - Wrote `./docs/06_Plan.md` (+2 -1)
+> - Ran `docker run --rm --network classvoice_default --mount "type=bind,source=$PWD,target=/workspace" -v classvoice-pip-cache:/root/.cache/pip -w /workspace -e PYTHONPATH=/workspace/apps/api -e CLASSVOICE_INTEGRATION_DATABASE_URL=postgresql://classvoice:change-me-local-only@postgres:5432/classvoice_p4_04_verify classvoice-api sh -lc "pip install -q -r apps/api/requirements-dev.txt && python -m ruff check apps/api/app apps/api/tests && python -m mypy --config-file apps/api/pyproject.toml apps/api/app && python -m pytest -c apps/api/pyproject.toml apps/api/tests --cov=app --cov-branch --cov-report=term-missing --cov-fail-under=55"`
+> - Wrote `./docs/06_Plan.md` (+1 -1)
+>
+> </details>
+>
+> The exact final gate is green: 149 tests in 37.60 seconds, 81.86% branch coverage, plus full Ruff and strict mypy. I’m rebuilding the API and worker images with this verified code now, then I’ll confirm live health and remove only the disposable database and generated coverage artifact.
+>
+> <details><summary>Ran 9 commands</summary>
+>
+> - Ran `docker compose build api worker`
+> - Ran `docker compose up -d api worker`
+> - Ran `docker compose ps`
+> - Ran `curl.exe -fsS http://127.0.0.1:8000/health/ready`
+> - Ran `docker compose exec -T worker python -c "from app.workers.generation_queue import InMemoryGenerationLeaseStore; print(all(hasattr(InMemoryGenerationLeaseStore, name) for name in ('acquire', 'renew', 'release', 'pop_expired')))"`
+> - Ran `docker compose exec -T postgres dropdb -U classvoice --if-exists classvoice_p4_04_verify`
+> - Ran `docker compose exec -T postgres psql -U classvoice -d postgres -tAc "SELECT count(*) FROM pg_database WHERE datname = 'classvoice_p4_04_verify';"`
+> - Ran `Get-Item -LiteralPath '.coverage','apps\api\.coverage' -ErrorAction SilentlyContinue | Select-Object FullName,Length`
+> - Ran `Remove-Item -LiteralPath 'E:\Developer\Voice Generation\.coverage' -Force`
+>
+> </details>
+>
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 9:22 PM.
+</details>
