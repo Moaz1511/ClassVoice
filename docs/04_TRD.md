@@ -613,6 +613,36 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   return 404 in normal development and production processes. The real player
   still requires an authorization-checked short-lived private URL.
 
+# P4-06 load and reference-GPU measurement contract
+
+- `apps/api/benchmarks/p4_06_load.py` uses the locked HTTPX/FastAPI stack, the
+  real boto3 SigV4 signing path, and synthetic private object writes to measure
+  the complete authentication,
+  authorization, routing, serialization, signed-download, generation-create,
+  queue, lease, inference-port, and private-output control-plane boundaries.
+  The default reproducible profile runs 200 authenticated reads, 100
+  authorization-checked signed-download requests, and 24 distinct 10,000
+  character generation jobs with four worker consumers.
+- API-read and signed-download P95 latency are compared with the PRD's 400 ms
+  API-read target. Maximum-text acceptance reports the same 400 ms operational
+  guardrail. Queue pressure must observe the configured worker concurrency,
+  persist exactly one terminal success and one output per job, and compare its
+  synthetic queue-to-complete proxy with the 90-second target.
+- ASGI transport excludes reverse-proxy and network latency, and the bounded
+  smoke adapter is not model-performance evidence. Reports must label these
+  limitations and cannot be used to claim OpenVoice GPU latency or quality.
+- `apps/api/benchmarks/p4_06_openvoice_gpu.py` is the separate offline model
+  gate. It verifies the approved registry license status and exact checkpoint
+  SHA before execution, requires CUDA, disables request-time model downloads,
+  generates only deterministic synthetic academic text, and runs inference in
+  a child process with a hard timeout. CUDA absence, timeout, OOM, output over
+  25 MB/120 seconds, or a missed 90-second target is recorded as a known gap,
+  never converted into a pass.
+- Benchmark reports contain only workload counts, hashes, timings, bounded
+  hardware/model metadata, and pass/known-gap classification. They never store
+  source text, reference or generated audio, credentials, signed URLs, private
+  object keys, embeddings, or user/workspace identifiers.
+
 # Local Docker verification and Windows troubleshooting
 
 - The authoritative local stack is the `desktop-linux` Docker Desktop context.
