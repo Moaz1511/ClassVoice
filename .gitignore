@@ -6,6 +6,11 @@ coverage/
 playwright-report/
 test-results/
 npm-debug.log*
+*.tsbuildinfo
+.eslintcache
+.turbo/
+.npm/
+.pnpm-store/
 
 # Python
 .venv/
@@ -14,6 +19,14 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
+.hypothesis/
+.tox/
+.nox/
+.coverage
+.coverage.*
+coverage.xml
+htmlcov/
+.ipynb_checkpoints/
 dist/
 build/
 *.egg-info/
@@ -22,9 +35,13 @@ build/
 .env
 .env.*
 !.env.example
+.envrc
+.direnv/
 *.pem
 *.key
 *.crt
+*.p12
+*.pfx
 
 # Local infrastructure state
 infra/.data/
@@ -34,20 +51,35 @@ postgres-data/
 redis-data/
 
 # ML artifacts and audio (never commit real voice data)
-models/
-checkpoints/
+/private/
+/models/
+/checkpoints/
+/runs/
+/wandb/
+/mlruns/
 *.ckpt
 *.safetensors
 *.pt
 *.pth
+*.onnx
 *.wav
 *.mp3
 *.m4a
 *.flac
 *.ogg
 
+# Logs, caches, and temporary files
+*.log
+*.tmp
+.cache/
+tmp/
+temp/
+
 # OS / editor
 .DS_Store
 Thumbs.db
 .idea/
 .vscode/
+.fleet/
+*.swp
+*~
