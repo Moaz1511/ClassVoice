@@ -643,6 +643,35 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   source text, reference or generated audio, credentials, signed URLs, private
   object keys, embeddings, or user/workspace identifiers.
 
+# P4-07 security, recovery, and production-safety contract
+
+- The repository-wide threat model, dependency/license evidence, incident
+  runbook, and backup/restore procedure are maintained under `docs/security`,
+  `docs/operations`, and `docs/decisions`. Each pilot release must review those
+  records and close or explicitly fail closed every critical/high finding.
+- CI checks the production npm closure, Python runtime requirements, current
+  tracked files plus Git history for likely credentials, and the complete
+  installed dependency/model license inventory. Dependency installation runs
+  with npm lifecycle scripts disabled; model approval requires an exact
+  registry checksum and an approved license-review state.
+- Staging and production cannot start while the application routes persist
+  tenant resources, API keys, audit data, queues, or leases only in process
+  memory. Those environments require SQL repositories, Redis-backed queues and
+  leases, and integration tests exercising the durable adapters.
+- Staging and production also require Redis-backed distributed limits for
+  authentication, uploads, generation creation/characters, signed downloads,
+  reports, API-key operations, and webhook delivery. Removing the startup guard
+  before durable state and those limits exist is a release-blocking security
+  regression.
+- Production recovery uses provider-managed encrypted PostgreSQL PITR and
+  versioned/retained private objects. A restore must occur in an isolated target
+  and verify migration head, schema/data integrity, RLS, consent/revocation,
+  object checksums, and application health before traffic is switched.
+- OpenVoice V2 is engineering-approved under MIT only for the exact checkpoint
+  recorded in the model manifest and ADR-001. The model stays disabled until
+  consent, quality, performance, durable-runtime, rate-limit, backup, and pilot
+  gates independently pass.
+
 # Local Docker verification and Windows troubleshooting
 
 - The authoritative local stack is the `desktop-linux` Docker Desktop context.
