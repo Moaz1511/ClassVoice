@@ -60,3 +60,21 @@ def test_invalid_runtime_urls_are_rejected() -> None:
 
     with pytest.raises(SettingsError, match="S3_ENDPOINT"):
         APISettings.from_env({"S3_ENDPOINT": "not-a-url"})
+
+
+@pytest.mark.parametrize("app_env", ["staging", "production"])
+def test_hosted_startup_fails_closed_while_runtime_adapters_are_in_memory(
+    app_env: str,
+) -> None:
+    settings = APISettings(
+        app_env=app_env,
+        database_url="postgresql+asyncpg://classvoice:change-me-hosted@db.internal/classvoice",
+        redis_url="redis://redis.internal:6379/0",
+        s3_endpoint="https://storage.example.edu",
+        s3_access_key_id="test-hosted-access-key",
+        s3_secret_access_key="test-hosted-secret-key",
+        cors_origins=("https://classvoice.example.edu",),
+    )
+
+    with pytest.raises(SettingsError, match="startup is blocked"):
+        settings.validate()

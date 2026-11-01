@@ -46,7 +46,7 @@ def test_supabase_profile_accepts_real_values_without_exposing_secrets() -> None
             "NEXT_PUBLIC_SUPABASE_URL": "https://project.supabase.co",
             "NEXT_PUBLIC_SUPABASE_ANON_KEY": "anon-key-from-secret-store",
             "SUPABASE_SERVICE_ROLE_KEY": "service-role-from-secret-store",
-            "SUPABASE_JWT_SECRET": "jwt-secret-from-secret-store",
+            "SUPABASE_JWT_SECRET": "test-jwt-secret-from-store",
             "CLASSVOICE_AUTH_REDIRECT_ALLOWLIST": "https://app.example.com/auth/callback",
         }
     )

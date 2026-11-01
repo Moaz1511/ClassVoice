@@ -19,7 +19,7 @@ from app.workers.generation_queue import GenerationWorker, InMemoryGenerationQue
 
 pytestmark = pytest.mark.asyncio
 
-SECRET = "security-integration-jwt-secret"
+SECRET = "test-security-integration-jwt-secret"
 ISSUER = "https://project.supabase.co/auth/v1"
 WORKSPACE_A = UUID("00000000-0000-0000-0000-000000000031")
 WORKSPACE_B = UUID("00000000-0000-0000-0000-000000000032")

@@ -160,6 +160,12 @@ class APISettings:
             self.auth.validate()
         except AuthConfigurationError as error:
             raise SettingsError(str(error)) from error
+        if self.app_env in {"staging", "production"}:
+            raise SettingsError(
+                "staging/production startup is blocked until durable SQL/Redis "
+                "runtime adapters and distributed rate limits replace local "
+                "in-memory adapters"
+            )
 
     def redacted(self) -> dict[str, object]:
         """Return startup diagnostics without credentials or connection secrets."""
