@@ -14,6 +14,11 @@ from app.core.authorization import (
 )
 from app.core.errors import APIError, envelope
 from app.core.jwt import JWTVerificationError, JWTVerifier
+from app.core.rate_limit import (
+    GENERATION_CHARACTER_POLICY,
+    RateLimiter,
+    enforce_rate_limit,
+)
 from app.domains.api_keys.service import ApiKeyError, ApiKeyService
 from app.domains.audit.service import AuditService
 from app.domains.generations.jobs import (
@@ -163,6 +168,13 @@ async def create_generation(
     )
     if idempotency_key is None:
         raise APIError(400, "IDEMPOTENCY_KEY_REQUIRED", "Idempotency-Key is required.")
+    limiter = cast(RateLimiter, request.app.state.rate_limiter)
+    await enforce_rate_limit(
+        limiter,
+        GENERATION_CHARACTER_POLICY,
+        f"workspace:{body.workspace_id}:actor:{claims.subject}",
+        cost=len(body.input_text),
+    )
     try:
         job = await _generation_service(request).create(
             workspace_id=body.workspace_id,

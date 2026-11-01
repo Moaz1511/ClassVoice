@@ -96,7 +96,7 @@ jobs:
       - name: Verify generated API client is current
         run: npm run api-client:check
       - name: Ruff
-        run: ruff check apps/api
+        run: ruff check apps/api scripts
       - name: Mypy
         run: mypy apps/api/app
       - name: Pytest

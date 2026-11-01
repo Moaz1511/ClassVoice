@@ -672,6 +672,33 @@ Generation screens use the API `GenerationStatus` union as the only job-state vo
   consent, quality, performance, durable-runtime, rate-limit, backup, and pilot
   gates independently pass.
 
+# P4-08 pilot release contract
+
+- All `/v1` traffic is protected by endpoint-specific fixed-window quotas. The
+  hosted backend is Redis with atomic increments/expiry, hashed credential/IP
+  subjects, `RateLimit-*` and `Retry-After` response headers, and fail-closed
+  `503 RATE_LIMIT_UNAVAILABLE` behavior. Generation creation additionally
+  consumes a 50,000-character per-actor/workspace hourly quota after auth and
+  idempotency validation. Local/test may use the deterministic memory backend.
+- `/health/ready` includes the rate-limit backend; an unavailable Redis limiter
+  makes readiness return 503. Durable database/storage/queue checks must join
+  readiness when the corresponding production adapters replace memory stores.
+- `scripts/pilot_release_preflight.py` is the final tag guard. It requires a
+  clean exact-SHA tree, available candidate tag, approved/enabled pinned model,
+  assigned incident contacts, accepted hosting and long-text ADRs, hosted
+  startup, successful exact-SHA CI, immutable image digests, hosted backup
+  RPO/RTO evidence, consent-confirmed smoke output, SLO metrics, rollback
+  rehearsal, and named release/security/privacy approvals.
+- `scripts/pilot_smoke.py` accepts credentials only through environment
+  variables, requires an explicit consent confirmation, uses fixed synthetic
+  academic text, verifies live/ready health plus generation/poll/download,
+  checks the private audio checksum, and emits hashes/timings without raw IDs,
+  text, audio, credentials, object keys, or signed URLs.
+- A pilot tag is annotated and pushed only after the executable preflight exits
+  successfully. Application rollback uses prior immutable image digests without
+  automatic database downgrade; integrity failures escalate to isolated PITR
+  and object restore. No blocked preflight may be overridden.
+
 # Local Docker verification and Windows troubleshooting
 
 - The authoritative local stack is the `desktop-linux` Docker Desktop context.

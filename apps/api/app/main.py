@@ -5,7 +5,7 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException
@@ -32,6 +32,7 @@ from .core.errors import (
 )
 from .core.jwt import JWTVerifier
 from .core.logging import RequestContextMiddleware, configure_logging
+from .core.rate_limit import InMemoryRateLimiter, RateLimitMiddleware, RedisRateLimiter
 from .core.settings import APISettings
 from .domains.audit.service import AuditService, InMemoryAuditEventStore
 from .domains.generations.jobs import GenerationService, InMemoryGenerationStore
@@ -69,6 +70,14 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         else ModelRegistry.empty()
     )
     app.state.inference_adapter = SmokeCpuAdapter()
+    app.state.rate_limiter = (
+        RedisRateLimiter(
+            runtime_settings.redis_url,
+            namespace=runtime_settings.rate_limit_namespace,
+        )
+        if runtime_settings.rate_limit_backend == "redis"
+        else InMemoryRateLimiter()
+    )
     configure_upload_state(app)
     configure_api_key_state(app)
     configure_webhook_state(app)
@@ -100,9 +109,21 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
             "Idempotency-Key",
             runtime_settings.request_id_header,
         ],
-        expose_headers=[runtime_settings.request_id_header],
+        expose_headers=[
+            runtime_settings.request_id_header,
+            "RateLimit-Limit",
+            "RateLimit-Remaining",
+            "RateLimit-Reset",
+            "Retry-After",
+        ],
+    )
+    app.add_middleware(
+        RateLimitMiddleware,
+        limiter=app.state.rate_limiter,
+        fail_closed=runtime_settings.app_env in {"staging", "production"},
     )
     app.add_middleware(RequestContextMiddleware, header_name=runtime_settings.request_id_header)
+    app.router.add_event_handler("shutdown", app.state.rate_limiter.close)
     app.add_exception_handler(APIError, api_error_handler)
     app.add_exception_handler(StarletteHTTPException, http_error_handler)
     app.add_exception_handler(RequestValidationError, validation_error_handler)
@@ -126,15 +147,19 @@ def create_app(settings: APISettings | None = None) -> FastAPI:
         )
 
     @app.get("/health/ready", tags=["health"])
-    async def ready(request: Request) -> dict[str, object]:
-        return envelope(
-            request,
-            data={
-                "status": "ready",
-                "service": runtime_settings.app_name,
-                "checks": {"configuration": "ok"},
+    async def ready(request: Request, response: Response) -> dict[str, object]:
+        rate_limit_ready = await request.app.state.rate_limiter.healthcheck()
+        data: dict[str, object] = {
+            "status": "ready" if rate_limit_ready else "unavailable",
+            "service": runtime_settings.app_name,
+            "checks": {
+                "configuration": "ok",
+                "rate_limit": "ok" if rate_limit_ready else "error",
             },
-        )
+        }
+        if not rate_limit_ready:
+            response.status_code = 503
+        return envelope(request, data=data)
 
     @app.get("/", include_in_schema=False)
     async def root(request: Request) -> dict[str, object]:

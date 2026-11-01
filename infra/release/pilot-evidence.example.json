@@ -1,0 +1,39 @@
+{
+  "release": {
+    "commit_sha": "0000000000000000000000000000000000000000",
+    "ci_conclusion": "success",
+    "ci_run_url": "https://github.com/example/example/actions/runs/0000000000"
+  },
+  "deployment": {
+    "environment": "staging",
+    "provider": "UNASSIGNED",
+    "api_image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "web_image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000",
+    "worker_image_digest": "sha256:0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "backup": {
+    "achieved_rpo_minutes": null,
+    "achieved_rto_minutes": null,
+    "evidence_reference": "UNASSIGNED"
+  },
+  "smoke": {
+    "status": "blocked",
+    "consent_confirmed": false,
+    "output_sha256": "0000000000000000000000000000000000000000000000000000000000000000"
+  },
+  "metrics": {
+    "api_read_p95_ms": null,
+    "platform_failure_rate": null,
+    "signed_url_ttl_seconds": 600
+  },
+  "rollback": {
+    "status": "blocked",
+    "previous_release_ref": "UNASSIGNED",
+    "rehearsal_seconds": null
+  },
+  "approvals": {
+    "release_owner": "UNASSIGNED",
+    "security_reviewer": "UNASSIGNED",
+    "privacy_reviewer": "UNASSIGNED"
+  }
+}

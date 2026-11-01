@@ -21,12 +21,14 @@ class APIError(Exception):
         code: str,
         message: str,
         details: Mapping[str, Any] | None = None,
+        headers: Mapping[str, str] | None = None,
     ) -> None:
         super().__init__(message)
         self.status_code = status_code
         self.code = code
         self.message = message
         self.details = dict(details) if details is not None else None
+        self.headers = dict(headers) if headers is not None else None
 
 
 def request_id_for(request: Request) -> str:
@@ -48,6 +50,7 @@ async def api_error_handler(request: Request, error: Exception) -> JSONResponse:
         return await unexpected_error_handler(request, error)
     return JSONResponse(
         status_code=error.status_code,
+        headers=error.headers,
         content=envelope(
             request,
             error={"code": error.code, "message": error.message, "details": error.details},

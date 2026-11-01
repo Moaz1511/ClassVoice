@@ -18,6 +18,8 @@ def test_local_settings_have_safe_defaults_and_redacted_diagnostics() -> None:
         "port": 8000,
         "database_configured": True,
         "redis_configured": True,
+        "rate_limit_backend": "memory",
+        "rate_limit_namespace": "classvoice",
         "cors_origins": ("http://localhost:3000",),
         "storage_provider": "s3",
         "s3_endpoint": "http://localhost:4566",
@@ -61,6 +63,9 @@ def test_invalid_runtime_urls_are_rejected() -> None:
     with pytest.raises(SettingsError, match="S3_ENDPOINT"):
         APISettings.from_env({"S3_ENDPOINT": "not-a-url"})
 
+    with pytest.raises(SettingsError, match="RATE_LIMIT_BACKEND"):
+        APISettings.from_env({"RATE_LIMIT_BACKEND": "process"})
+
 
 @pytest.mark.parametrize("app_env", ["staging", "production"])
 def test_hosted_startup_fails_closed_while_runtime_adapters_are_in_memory(
@@ -69,7 +74,8 @@ def test_hosted_startup_fails_closed_while_runtime_adapters_are_in_memory(
     settings = APISettings(
         app_env=app_env,
         database_url="postgresql+asyncpg://classvoice:change-me-hosted@db.internal/classvoice",
-        redis_url="redis://redis.internal:6379/0",
+        redis_url="rediss://redis.internal:6379/0",
+        rate_limit_backend="redis",
         s3_endpoint="https://storage.example.edu",
         s3_access_key_id="test-hosted-access-key",
         s3_secret_access_key="test-hosted-secret-key",

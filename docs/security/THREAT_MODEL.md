@@ -36,7 +36,7 @@ This review covers the web application, API, worker, PostgreSQL/RLS layer, Redis
 |---|---|---|---|---|
 | TM-01 | Cross-workspace IDOR or role escalation | Critical privacy breach | Auth dependencies resolve membership server-side; RLS replay and HTTP integration tests cover anonymous, cross-workspace, viewer, API-key, revoked-consent, and disabled-workspace paths | Mitigated; retain as release gate |
 | TM-02 | Production data/queue state held only in process memory | High integrity and availability loss; multi-instance divergence | `RuntimeSettings` rejects `staging` and `production` while in-memory runtime adapters remain | Contained by fail-closed startup; P4-08 release blocker until SQL/Redis adapters replace local stores |
-| TM-03 | Missing distributed request/generation rate limits | High cost/availability abuse | Staging/production startup is blocked under the same runtime safety gate | Contained by fail-closed startup; P4-08 release blocker until Redis-backed limits and tests exist |
+| TM-03 | Missing distributed request/generation rate limits | High cost/availability abuse | Endpoint-specific request quotas, weighted generation-character quotas, atomic Redis counters, hashed subjects, rate headers, backend readiness, and fail-closed hosted behavior are covered by unit and live Redis tests | Mitigated; hosted profile must select Redis and retain monitoring |
 | TM-04 | Malicious or polyglot audio exploits media tools | High worker compromise or resource exhaustion | Exact container-envelope checks, signature rejection, probe/decode timeouts, protocol allowlist, byte/duration caps, synthetic adversarial fixtures | Mitigated |
 | TM-05 | Unicode/control-character or oversized prompt abuse | High resource exhaustion or provenance ambiguity | 10,000-code-point boundary, unsafe-control/surrogate rejection, no normalization, bounded logs and hashes | Mitigated |
 | TM-06 | SSRF through webhook configuration | High internal-network access | HTTPS validation and server-side URL policy exist; production also requires private-network egress policy and DNS revalidation | Mitigated in application; infrastructure control required before pilot |
@@ -66,5 +66,6 @@ This review covers the web application, API, worker, PostgreSQL/RLS layer, Redis
 - [x] Dependency, license, model provenance, and secret-history evidence recorded.
 - [x] Database and object restore procedure exercised.
 - [x] Incident containment and recovery actions documented.
-- [ ] Durable production repositories and distributed rate limits implemented (P4-08 blocker).
+- [x] Distributed request and generation-character rate limits implemented and tested with Redis.
+- [ ] Durable production repositories implemented (P4-08 blocker).
 - [ ] Hosted PITR and production-network egress controls exercised (P4-08 blocker).

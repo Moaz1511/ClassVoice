@@ -16,6 +16,7 @@ class SettingsError(ValueError):
 
 _APP_ENVS = frozenset({"local", "test", "staging", "production"})
 _STORAGE_PROVIDERS = frozenset({"s3", "supabase"})
+_RATE_LIMIT_BACKENDS = frozenset({"memory", "redis"})
 _BUCKET_NAMES = frozenset({"voice-inputs", "voice-derived", "generated-audio", "exports"})
 
 
@@ -44,6 +45,8 @@ class APISettings:
     port: int = 8000
     database_url: str = "postgresql+asyncpg://classvoice:change-me-local-only@localhost:5432/classvoice"
     redis_url: str = "redis://localhost:6379/0"
+    rate_limit_backend: str = "memory"
+    rate_limit_namespace: str = "classvoice"
     cors_origins: tuple[str, ...] = ("http://localhost:3000",)
     storage_provider: str = "s3"
     s3_endpoint: str = "http://localhost:4566"
@@ -75,6 +78,10 @@ class APISettings:
                 "postgresql+asyncpg://classvoice:change-me-local-only@localhost:5432/classvoice",
             ).strip(),
             redis_url=values.get("REDIS_URL", "redis://localhost:6379/0").strip(),
+            rate_limit_backend=values.get("RATE_LIMIT_BACKEND", "memory").strip().lower(),
+            rate_limit_namespace=values.get(
+                "RATE_LIMIT_NAMESPACE", "classvoice"
+            ).strip().lower(),
             cors_origins=_split_csv(
                 values.get("CORS_ORIGINS", "http://localhost:3000")
             ),
@@ -118,8 +125,25 @@ class APISettings:
             raise SettingsError("DATABASE_URL must use the postgresql+asyncpg scheme")
         if self.app_env == "production" and "localhost" in self.database_url:
             raise SettingsError("production DATABASE_URL cannot target localhost")
-        if not self.redis_url.startswith("redis://"):
-            raise SettingsError("REDIS_URL must use the redis scheme")
+        redis_scheme = urlsplit(self.redis_url).scheme
+        if redis_scheme not in {"redis", "rediss"}:
+            raise SettingsError("REDIS_URL must use the redis or rediss scheme")
+        if self.app_env in {"staging", "production"} and redis_scheme != "rediss":
+            raise SettingsError("staging/production REDIS_URL must use TLS (rediss)")
+        if self.rate_limit_backend not in _RATE_LIMIT_BACKENDS:
+            raise SettingsError(
+                f"RATE_LIMIT_BACKEND must be one of {sorted(_RATE_LIMIT_BACKENDS)}"
+            )
+        if (
+            not 1 <= len(self.rate_limit_namespace) <= 32
+            or any(
+                character not in "abcdefghijklmnopqrstuvwxyz0123456789_-"
+                for character in self.rate_limit_namespace
+            )
+        ):
+            raise SettingsError("RATE_LIMIT_NAMESPACE is invalid")
+        if self.app_env in {"staging", "production"} and self.rate_limit_backend != "redis":
+            raise SettingsError("staging/production RATE_LIMIT_BACKEND must be redis")
         if self.storage_provider not in _STORAGE_PROVIDERS:
             raise SettingsError(f"STORAGE_PROVIDER must be one of {sorted(_STORAGE_PROVIDERS)}")
         parsed_s3 = urlsplit(self.s3_endpoint)
@@ -163,8 +187,7 @@ class APISettings:
         if self.app_env in {"staging", "production"}:
             raise SettingsError(
                 "staging/production startup is blocked until durable SQL/Redis "
-                "runtime adapters and distributed rate limits replace local "
-                "in-memory adapters"
+                "runtime adapters replace local in-memory adapters"
             )
 
     def redacted(self) -> dict[str, object]:
@@ -178,6 +201,8 @@ class APISettings:
             "port": self.port,
             "database_configured": bool(self.database_url),
             "redis_configured": bool(self.redis_url),
+            "rate_limit_backend": self.rate_limit_backend,
+            "rate_limit_namespace": self.rate_limit_namespace,
             "cors_origins": self.cors_origins,
             "storage_provider": self.storage_provider,
             "s3_endpoint": self.s3_endpoint,
