@@ -4940,3 +4940,393 @@ P4-08 is next, but pilot deployment remains intentionally blocked until durable 
 >
 > </details>
 </details>
+
+> please continue
+
+<details><summary>19 previous messages</summary>
+
+> Continuing from the failed exact-SHA CI run: every job except API pytest passed. I’m reproducing the GitHub coverage command locally with the same pinned pytest-cov stack; this will distinguish a coverage-threshold regression from a test behavior difference, then I’ll patch and repush.
+>
+> Context compaction
+>
+> Source: automatic
+> Status: completed
+>
+> I’m continuing from the failed API CI job on commit `9505105`. I’ll reproduce the exact coverage-enabled test command locally, fix the actual failure, push the correction, and verify the new GitHub Actions run before moving to the remaining P4-08 deployment decisions.
+>
+> <details><summary>Ran a command</summary>
+>
+> - Ran `git status --short --branch; docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" --env PYTHONPATH=/workspace/private/p4-06-test-tools:/workspace/private/p4-08-ci-tools:/workspace/apps/api:/workspace -w /workspace classvoice-api python -m pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests`
+>
+> </details>
+>
+> The exact coverage command passes locally: 157 passed, 9 skipped, 82.19% coverage. So the CI failure is environment-specific rather than the coverage threshold. I’m retrieving the failed GitHub step details now and will make the smallest reproducible correction.
+>
+> <details><summary>Ran 5 commands, searched the web</summary>
+>
+> Searched the web for `https://github.com/Moaz-abdullah/voice-generation/actions/runs/41321606254`
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'gh run view 41321606254 --log-failed'`
+>
+> - Ran `Get-Content -Path .github\workflows\ci.yml; Get-Content -Path apps\api\requirements.txt; rg -n "POSTGRES|REDIS|integration|DATABASE_URL|docker" apps/api/tests .github/workflows/ci.yml`
+>
+> - Ran `Get-Content -Path apps\api\requirements-dev.txt; Get-Content -Path apps\api\tests\test_release_tooling.py; Get-Content -Path scripts\pilot_release_preflight.py`
+>
+> - Ran `docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" --env PYTHONPATH=/workspace/private/p4-06-test-tools:/workspace/private/p4-08-ci-tools:/workspace/apps/api:/workspace -w /workspace classvoice-api python -c "import fastapi,pydantic,pytest,pytest_cov,coverage; print(fastapi.__version__, pydantic.__version__, pytest.__version__, pytest_cov.__version__, coverage.__version__)"`
+>
+> - Ran ``$credentialLines = "protocol=https`nhost=github.com`n`n" | git credential fill; $credential = @{}; foreach ($line in $credentialLines) { if ($line -match '^([^=]+)=(.*)$') { $credential[$matches[1]] = $matches[2] } }; if (-not $credential.ContainsKey('password')) { throw 'No GitHub credential is available through Git Credential Manager.' }; $headers = @{ Authorization = "Bearer $($credential['password'])"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }; $jobs = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/Moaz-abdullah/voice-generation/actions/runs/41321606254/jobs?per_page=100'; $failed = $jobs.jobs | Where-Object { $_.conclusion -eq 'failure' }; foreach ($job in $failed) { Write-Output "FAILED JOB: $($job.name) ID=$($job.id)"; $log = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/Moaz-abdullah/voice-generation/actions/jobs/$($job.id)/logs"; $lines = ($log -split "`n"); $marker = ($lines | Select-String -Pattern 'FAILURES|FAILED |ERRORS|Error:|AssertionError|short test summary' | Select-Object -First 1).LineNumber; if ($marker) { $start = [Math]::Max(0, $marker - 15); $lines | Select-Object -Skip $start -First 160 } else { $lines | Select-Object -Last 180 } }``
+>
+> </details>
+>
+> The local suite is fully green; I’ve received permission to inspect the private CI log securely through your existing GitHub credential session. The log retrieval is still running, so I’m waiting for that precise failure rather than guessing at a fix.
+>
+> <details><summary>Ran 2 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* remote -v && git -c safe.directory=* rev-parse HEAD && git -c safe.directory=* log -1 --pretty=%s'`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* status --short --branch && git -c safe.directory=* log --oneline --decorate -12'`
+>
+> </details>
+>
+> I found an important state change: the branch advanced after my P4-08 commit. `origin/Moaz_Workspace` now points to `0564fae` (“Implement code changes to enhance functionality and improve performance”), one commit after `9505105`. The working tree is clean, so I’m auditing that new commit before touching anything and switching CI inspection to the repository’s actual remote, `Moaz1511/ClassVoice`.
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* show --stat --oneline --decorate 0564fae && git -c safe.directory=* show --format=fuller --no-ext-diff --find-renames --find-copies -- . ":(exclude)package-lock.json"'`
+> - Ran ``$credentialLines = "protocol=https`nhost=github.com`n`n" | git credential fill; $credential = @{}; foreach ($line in $credentialLines) { if ($line -match '^([^=]+)=(.*)$') { $credential[$matches[1]] = $matches[2] } }; if (-not $credential.ContainsKey('password')) { throw 'No GitHub credential is available through Git Credential Manager.' }; $headers = @{ Authorization = "Bearer $($credential['password'])"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }; $runs = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/Moaz1511/ClassVoice/actions/runs?branch=Moaz_Workspace&per_page=10'; $runs.workflow_runs | Select-Object id,head_sha,status,conclusion,html_url,created_at | Format-Table -AutoSize``
+> - Ran ``$credentialLines = "protocol=https`nhost=github.com`n`n" | git credential fill; $credential = @{}; foreach ($line in $credentialLines) { if ($line -match '^([^=]+)=(.*)$') { $credential[$matches[1]] = $matches[2] } }; if (-not $credential.ContainsKey('password')) { throw 'No GitHub credential is available through Git Credential Manager.' }; $headers = @{ Authorization = "Bearer $($credential['password'])"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }; $jobs = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/Moaz1511/ClassVoice/actions/runs/41324275412/jobs?per_page=100'; $failed = $jobs.jobs | Where-Object { $_.conclusion -eq 'failure' }; foreach ($job in $failed) { Write-Output "FAILED JOB: $($job.name) ID=$($job.id)"; $log = Invoke-RestMethod -Headers $headers -Uri "https://api.github.com/repos/Moaz1511/ClassVoice/actions/jobs/$($job.id)/logs"; $lines = ($log -split "`n"); $markerMatch = $lines | Select-String -Pattern 'FAILURES|FAILED |ERRORS|Error:|AssertionError|short test summary|Traceback' | Select-Object -Last 1; if ($markerMatch) { $start = [Math]::Max(0, $markerMatch.LineNumber - 80); $lines | Select-Object -Skip $start -First 180 } else { $lines | Select-Object -Last 180 } }``
+> - Ran `Get-Content -Path apps\api\tests\conftest.py; rg -n "sys\.path|pythonpath|pytest" pyproject.toml apps/api/pyproject.toml apps/api/tests -g "*.py"`
+>
+> </details>
+>
+> The failure is now exact: Linux CI could not import the repository-level `scripts` package because the API test bootstrap only added `apps/api` to `sys.path`. I’m fixing the shared test bootstrap to include the repository root, then I’ll reproduce it using the `pytest` console entry point (the important difference from the local `python -m pytest` run).
+>
+> <details><summary>Edited 2 files, ran 12 commands</summary>
+>
+> - Wrote `./apps/api/tests/conftest.py` (+5 -2)
+> - Ran `Get-Content -Path apps\api\tests\conftest.py; docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" --env PYTHONPATH=/workspace/private/p4-06-test-tools:/workspace/private/p4-08-ci-tools -w /workspace classvoice-api /workspace/private/p4-06-test-tools/bin/pytest apps/api/tests/test_release_tooling.py -q`
+> - Ran `docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" --env PYTHONPATH=/workspace/private/p4-06-test-tools:/workspace/private/p4-08-ci-tools -w /workspace classvoice-api /workspace/private/p4-06-test-tools/bin/pytest --cov=apps/api/app --cov-branch --cov-report=term-missing --cov-fail-under=55 apps/api/tests`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "rg -n -C 8 \"P4-08|preflight|Redis\" docs\\06_Plan.md; git -c safe.directory=* diff -- apps/api/tests/conftest.py docs/06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "findstr /n /c:\"P4-08\" /c:\"preflight\" docs\\06_Plan.md"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir docs\\06_Plan.md && git -c safe.directory=* status --short"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* grep -n -C 5 P4-08 -- docs/06_Plan.md'`
+> - Wrote `./docs/06_Plan.md` (+1 -0)
+> - Ran `docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" --env PYTHONPATH=/workspace/private/p4-06-test-tools:/workspace/apps/api:/workspace -w /workspace classvoice-api /workspace/private/p4-06-test-tools/bin/ruff check apps/api scripts`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "dir /s /b private\\*ruff*"`
+> - Ran `docker run --rm --mount "type=bind,source=E:\Developer\Voice Generation,target=/workspace" -w /workspace classvoice-api ruff check apps/api scripts`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'where ruff & where python & python --version'`
+> - Ran `python scripts/scan_secrets.py`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* diff --check && git -c safe.directory=* status --short && git -c safe.directory=* diff -- apps/api/tests/conftest.py docs/06_Plan.md'`
+>
+> </details>
+>
+> The fix now passes the CI-equivalent Linux console invocation: 157 passed, 9 skipped, 82.19% coverage. The secret scan and whitespace check also pass, and only the bootstrap plus the required P4-08 progress log changed. I’m committing and pushing this correction, then I’ll monitor the new exact-SHA workflow to completion.
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `git add apps/api/tests/conftest.py docs/06_Plan.md; git commit -m "Fix Linux release tooling test imports"; git push origin Moaz_Workspace`
+> - Ran ``$credentialLines = "protocol=https`nhost=github.com`n`n" | git credential fill; $credential = @{}; foreach ($line in $credentialLines) { if ($line -match '^([^=]+)=(.*)$') { $credential[$matches[1]] = $matches[2] } }; if (-not $credential.ContainsKey('password')) { throw 'No GitHub credential is available through Git Credential Manager.' }; $headers = @{ Authorization = "Bearer $($credential['password'])"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }; $runs = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/Moaz1511/ClassVoice/actions/runs?head_sha=32af43b78a07bc82f2be3da32c380285a41d45d5&per_page=10'; if ($runs.total_count -eq 0) { Write-Output 'RUN_NOT_CREATED' } else { $runs.workflow_runs | Select-Object id,head_sha,status,conclusion,html_url | Format-List }``
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'git -c safe.directory=* rev-parse HEAD && git -c safe.directory=* status --short --branch'`
+> - Ran ``$credentialLines = "protocol=https`nhost=github.com`n`n" | git credential fill; $credential = @{}; foreach ($line in $credentialLines) { if ($line -match '^([^=]+)=(.*)$') { $credential[$matches[1]] = $matches[2] } }; if (-not $credential.ContainsKey('password')) { throw 'No GitHub credential is available through Git Credential Manager.' }; $headers = @{ Authorization = "Bearer $($credential['password'])"; Accept = 'application/vnd.github+json'; 'X-GitHub-Api-Version' = '2022-11-28' }; $runs = Invoke-RestMethod -Headers $headers -Uri 'https://api.github.com/repos/Moaz1511/ClassVoice/actions/runs?head_sha=32af43b114bfad0eb2d54e7c56bb45370e3653a9&per_page=10'; if ($runs.total_count -eq 0) { Write-Output 'RUN_NOT_CREATED' } else { $runs.workflow_runs | Select-Object id,head_sha,status,conclusion,html_url | Format-List }``
+>
+> </details>
+>
+> The correction is now fully verified and pushed. Commit `32af43b` has a green exact-SHA GitHub Actions run: all five jobs succeeded.
+>
+> I’m moving to the next P4-08 gate now. I’ll re-run the fail-closed release preflight at the green commit, separate engineering work I can complete autonomously from decisions that require your input, and continue with the next dependency-safe item.
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c "python scripts\\pilot_release_preflight.py"`
+> - Ran `"C:\\WINDOWS\\system32\\cmd.exe" /c 'rg -n "InMemory|Repository|repository|Store|storage" apps/api/app'`
+> - Ran `rg -n "InMemory|Repository|repository|Store|storage" apps/api/app`
+> - Ran `Get-Content -Path apps\api\app\main.py; Get-Content -Path apps\api\app\core\settings.py; Get-Content -Path docs\04_TRD.md | Select-Object -First 260`
+>
+> </details>
+>
+> The green CI commit leaves five genuine release gates: durable runtime repositories, hosting ADR, long-text ADR, named incident owners, and private deployment evidence. I can implement the durable adapters, but the hosted topology and accountable contacts materially determine that implementation. I’m checking the current official service constraints before I ask you for the one deployment decision I cannot safely invent.
+>
+> <details><summary>Ran a command, searched the web</summary>
+>
+> Searched the web for `site:supabase.com/docs production Postgres Auth Storage PITR backups official ...`
+>
+> - Ran `Get-Content -Path docs\performance\P4-08_Baseline.md; Get-Content -Path docs\performance\P4-06_Results.md | Select-Object -First 260; Get-Content -Path docs\security\INCIDENT_RESPONSE.md | Select-Object -First 180`
+>
+> </details>
+>
+> <details><summary>Plan</summary>
+>
+> The fail-closed preflight was rerun at green commit 32af43b. Engineering CI is resolved; the remaining P4-08 blockers now require the pilot topology, recovery budget, long-text policy, and accountable contacts to be chosen before durable adapters and hosted evidence can be finalized.
+>
+> - [x] Repair and verify exact-SHA CI for the P4-08 preflight commit
+> - [x] Re-run P4-08 preflight and audit the remaining blockers at the green commit
+> - [ ] Confirm pilot hosting/recovery topology, long-text policy, and incident owners
+> - [ ] Implement durable hosted runtime repositories and their verification gates
+> - [ ] Run hosted deploy, backup/restore, smoke, metrics, and rollback drills
+> - [ ] Complete P4-08, create the pilot tag, and verify rollback instructions
+>
+> </details>
+</details>
+
+CI is fixed and green:
+
+- Commit: `32af43b`
+- Tests: 157 passed, 9 skipped, 82.19% coverage
+- [GitHub Actions run 41346685318](https://github.com/Moaz1511/ClassVoice/actions/runs/41346685318)
+- P4-08 remains safely blocked; no release tag was created.
+
+Before implementing the hosted runtime, please confirm:
+
+1. **Hosting:** May I use Supabase for DB/Auth/Storage, Render for Docker web/API, Upstash Redis, and your local GTX 1660 Ti as the pilot GPU worker? Render supports Docker deployments and rollback; Upstash provides durable Redis. [Render](https://render.com/docs/docker), [Upstash](https://upstash.com/redis)
+
+2. **Recovery budget:** The required ≤15-minute RPO needs Supabase PITR, currently approximately $100/month for seven-day retention plus required compute. Database backups also exclude Storage objects, requiring separate object backups. Is this budget acceptable, or should I revise the pilot recovery target? [Supabase backups](https://supabase.com/docs/guides/platform/backups)
+
+3. **Long text:** I recommend limiting each pilot generation job to 512 characters, with longer academic content divided into project segments. Should I use this limit, or must 10,000-character generation work before pilot release?
+
+Also provide role names or aliases for:
+
+- Incident commander
+- Privacy/legal contact
+- Hosting escalation owner
+- User communications owner
+- Security/privacy reviewer
+
+One person can cover multiple pilot roles, but an independent reviewer is preferable.
+
+> i want to view or run development version first, how can i check or view the dev run in docker or web? i am new in docker.give me clear instructions
+
+<details><summary>4 previous messages</summary>
+
+> I’ll first check whether Docker Desktop and the project containers are currently running, then I’ll give you the exact commands and browser URLs for this repository—without assuming Docker knowledge.
+>
+> <details><summary>Ran 4 commands</summary>
+>
+> - Ran `docker desktop status`
+> - Ran `docker compose ps`
+> - Ran `docker desktop status`
+> - Ran `docker compose ps`
+>
+> </details>
+>
+> Good news: Docker Desktop is running correctly, and all six ClassVoice services are already healthy. The web app is available on port 3000 and the API on port 8000. I’m checking the live URLs and the project’s local sign-in flow so the instructions include exactly what you should click.
+>
+> <details><summary>Explored a file, ran 4 commands</summary>
+>
+> - Ran `curl.exe -I http://localhost:3000`
+>
+> - Ran `curl.exe -fsS http://localhost:8000/health/ready`
+>
+> <details><summary>Explored a file</summary>
+>
+> - Read `./docker-compose.yml`
+>
+> </details>
+>
+> - Ran `rg -n "demo|login|sign in|password|local auth|seed" README.md docs apps/web db/seed .env.example -g "*.md" -g "*.tsx" -g "*.ts" -g "*.sql" -g ".env.example"`
+>
+> - Ran `Get-Content -Path package.json; Get-Content -Path apps\web\package.json; Get-Content -Path infra\docker\Dockerfile.web; curl.exe -I http://localhost:3000/auth/sign-in; curl.exe -I http://localhost:3000/dashboard`
+>
+> </details>
+</details>
+
+Your development version is already running successfully in Docker. All six services are healthy.
+
+### View the application now
+
+1. Open [http://localhost:3000](http://localhost:3000) in Chrome or Edge.
+2. Open [http://localhost:3000/auth/sign-in](http://localhost:3000/auth/sign-in).
+3. Click **Continue with local demo**. No email or password is needed.
+4. You can also inspect the API at:
+   - [API documentation](http://localhost:8000/docs)
+   - [API health check](http://localhost:8000/health/ready)
+
+I verified both the web application and API return `200 OK`.
+
+### Starting the project later
+
+Open PowerShell and run:
+
+```powershell
+cd "E:\Developer\Voice Generation"
+docker compose up -d
+docker compose ps
+```
+
+`docker compose ps` should show `healthy` for:
+
+- `web`
+- `api`
+- `worker`
+- `postgres`
+- `redis`
+- `storage`
+
+For the first run, or after code/dependency changes, rebuild everything:
+
+```powershell
+docker compose up -d --build
+```
+
+The build might take several minutes.
+
+### After changing source code
+
+The current Docker web container is a compiled preview, not hot reload. Rebuild the affected services:
+
+```powershell
+docker compose up -d --build web api worker
+```
+
+Then refresh the browser with `Ctrl+F5`.
+
+### Check errors and logs
+
+Web logs:
+
+```powershell
+docker compose logs --tail=100 web
+```
+
+API logs:
+
+```powershell
+docker compose logs --tail=100 api
+```
+
+Watch live logs:
+
+```powershell
+docker compose logs -f web api worker
+```
+
+Press `Ctrl+C` to stop watching logs. This does not stop the containers.
+
+### Stop and restart
+
+Stop while preserving all local data:
+
+```powershell
+docker compose stop
+```
+
+Start again:
+
+```powershell
+docker compose start
+```
+
+Restart a problem service:
+
+```powershell
+docker compose restart web api
+```
+
+Remove containers while preserving database volumes:
+
+```powershell
+docker compose down
+```
+
+Do **not** run `docker compose down -v` unless you intentionally want to delete the local database, Redis data, and stored development files.
+
+In Docker Desktop, you can also open **Containers → classvoice** to view all six services and their logs.
+
+> now how can i use/ deploy it free? i have supabase account there i can use free, also i uave free render account. also i have hostinger vps without gpu
+
+<details><summary>2 previous messages</summary>
+
+> I’ll map the deployment against what the repository actually supports today and verify the current free-tier limits. The key distinction is between a public UI demo and real voice generation: the present Docker worker is only a health placeholder, the production model remains disabled, and hosted startup intentionally fails until durable database adapters are finished.
+>
+> <details><summary>Searched the web</summary>
+>
+> Searched the web for `site:supabase.com/docs free plan quotas project pause storage official 2026 ...`
+>
+> Searched the web for `site:tailscale.com/kb pricing personal free users devices official ...`
+>
+> </details>
+</details>
+
+## Recommended zero-additional-cost setup
+
+Use:
+
+```text
+Students
+   │ HTTPS
+   ▼
+Hostinger VPS
+├── Web application
+├── FastAPI
+├── Redis
+└── HTTPS reverse proxy
+       │
+       ├── Supabase Free: database, authentication, file storage
+       │
+       └── Private VPN ──► Your Windows PC + GTX 1660 Ti
+                              OpenVoice inference worker
+```
+
+This costs nothing extra if your VPS and domain are already paid. Voice generation works only while your Windows PC and GPU worker are online.
+
+### Why not Render for everything?
+
+Render Free is suitable for a temporary preview, but:
+
+- Services sleep after 15 minutes without traffic.
+- The free allowance is 750 shared hours monthly.
+- Local files are temporary.
+- Free Redis can lose all data after a restart.
+- Background workers are not available as free instances.
+
+Therefore, keep Render for previews, not the main functional deployment. [Render Free limitations](https://render.com/docs/free)
+
+### Supabase Free limitations
+
+Supabase Free currently provides:
+
+- 500 MB database
+- 1 GB file storage
+- 5 GB monthly egress
+- 50,000 monthly active users
+
+Inactive projects may pause after approximately seven days. This is enough for development and a small controlled demo, but audio can consume 1 GB quickly. [Supabase pricing](https://supabase.com/pricing), [project pausing](https://supabase.com/docs/guides/platform/free-project-pausing)
+
+### Important: the application is not ready for public deployment yet
+
+The current version is intentionally development-only:
+
+- Supabase database repositories are not connected yet.
+- Hosted `staging` and `production` startup is blocked.
+- The Docker worker is currently a health placeholder.
+- OpenVoice remains disabled in the production model registry.
+- The current Compose file exposes Redis and LocalStack ports, which must not be exposed publicly.
+- The free setup cannot meet the P4-08 15-minute recovery requirement.
+
+Deploying it now would show the UI, but students would not receive reliable real voice generation.
+
+Kaggle cannot be used as a permanent worker because notebook GPU sessions are limited to around 12 hours and GPU availability is not guaranteed. [Kaggle Notebook limits](https://www.kaggle.com/docs/notebooks)
+
+## What I recommend doing next
+
+I should prepare a dedicated Hostinger deployment package containing:
+
+1. Supabase-backed durable repositories.
+2. A production-safe `docker-compose.hostinger.yml`.
+3. Caddy or Nginx HTTPS configuration.
+4. Firewall rules exposing only ports `80` and `443`.
+5. Private Redis with no public port.
+6. Supabase migration and bucket setup scripts.
+7. A real Redis/ARQ OpenVoice worker.
+8. A private VPN connection to your local GPU machine.
+9. Deployment, update, backup, and rollback commands.
+
+For personal/non-commercial testing, Tailscale offers a free private network. For organizational or commercial student use, we should use self-hosted WireGuard or confirm the applicable Tailscale plan. [Tailscale pricing](https://tailscale.com/pricing)
+
+Before I create those files, please provide:
+
+- Hostinger VPS operating system and version, for example `Ubuntu 24.04`.
+- VPS RAM, CPU cores, and disk size.
+- The domain or subdomain you want, for example `voice.example.com`.
+- Whether your Windows GTX 1660 Ti computer can remain online while students generate voices.
+- Whether this deployment is a private development demo or a public student pilot.
+
+Do not send Supabase passwords, service-role keys, database passwords, or VPS passwords here. We will place those directly into a private environment file later.
