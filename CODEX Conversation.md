@@ -5330,3 +5330,16 @@ Before I create those files, please provide:
 - Whether this deployment is a private development demo or a public student pilot.
 
 Do not send Supabase passwords, service-role keys, database passwords, or VPS passwords here. We will place those directly into a private environment file later.
+> </details>
+</details>
+
+> E:\Developer\Voice Generation\CODEX Conversation.md
+>
+> without checking the voice output in the demo or local run how can i proceed next, here has the voice example: "E:\Developer\NeuroCrack\Work\Teachers Voice\Kazi Rakibul Hasan motivation.mp3", i want to run locally or want to clone voiced regenerated texts outpt voice. then i will proceed the vps deployment.
+
+<details><summary>1 previous message</summary>
+
+> System error
+>
+> You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at Nov 6th, 2026 4:40 PM.
+</details>
